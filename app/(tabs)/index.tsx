@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, ScrollView, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 // Import Vector Icons
 import Icon from 'react-native-vector-icons/FontAwesome';
+import * as SplashScreen from 'expo-splash-screen';
+
 
 const MoodMap = () => {
   const [selectedMood, setSelectedMood] = useState(null);
@@ -91,7 +93,6 @@ const MoodMap = () => {
     {
       id: 1,
       name: 'Happy',
-      color: '#68D391', // Green color
       emoji: '😊',
       locations: [
         {
@@ -134,7 +135,6 @@ const MoodMap = () => {
     {
       id: 2,
       name: 'Calm',
-      color: '#F6E05E', // Yellow color
       emoji: '🙂',
       locations: [
         {
@@ -177,7 +177,6 @@ const MoodMap = () => {
     {
       id: 3,
       name: 'Stressed',
-      color: '#F56565', // Red/orange color
       emoji: '🙁',
       locations: [
         {
@@ -220,7 +219,6 @@ const MoodMap = () => {
     {
       id: 4,
       name: 'Lonely',
-      color: '#4299E1', // Blue color
       emoji: '😔',
       locations: [
         {
@@ -482,15 +480,19 @@ const MoodMap = () => {
                 onPress={() => handleMoodSelection(mood.id)}
               >
                 <View 
-                  style={[
-                    styles.moodCircle,
-                    { backgroundColor: mood.color },
-                    selectedMood === mood.id && styles.selectedMoodCircle
+                  style={[selectedMood === mood.id && styles.selectedMoodCircle
                   ]}
                 >
                   <Text style={styles.moodEmoji}>{mood.emoji}</Text>
                 </View>
-                <Text style={styles.moodName}>{mood.name}</Text>
+                <Text 
+                style={[
+                  styles.moodName,
+                  selectedMood === mood.id && styles.selectedMoodName
+                ]}
+              >
+                {mood.name}
+              </Text>
               </TouchableOpacity>
             ))}
             
@@ -500,10 +502,7 @@ const MoodMap = () => {
             >
               <View 
                 style={[
-                  styles.moodCircle,
-                  { backgroundColor: '#E53E3E' }
-                ]}
-              >
+                  styles.moodCircle]}>
                 <Text style={styles.moodEmoji}>🎤</Text>
               </View>
             </TouchableOpacity>
@@ -693,7 +692,7 @@ const MoodMap = () => {
             
             <ScrollView style={styles.otherSuggestionsContainer}>
               {selectedMood && currentLocations
-                .filter(loc => loc.id !== selectedSuggestedPlace?.id)
+                .filter(loc => loc.id !== selectedSuggestedPlace?.id)       
                 .map(loc => (
                   <TouchableOpacity
                     key={loc.id}
@@ -1031,16 +1030,19 @@ const styles = StyleSheet.create({
   },
   selectedMoodCircle: {
     borderWidth: 2,
-    borderColor: '#fff',
+    // borderColor: '#fff',
   },
   moodEmoji: {
-    fontSize: 28,
+    fontSize: 43,
   },
   moodName: {
     color: '#fff',
     fontSize: 12,
     textAlign: 'center',
     marginTop: 4,
+  },
+  selectedMoodName: {
+    fontWeight: 'bold',
   },
   markerContainer: {
     width: 36,

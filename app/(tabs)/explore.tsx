@@ -1,109 +1,200 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity} from 'react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-
-export default function TabTwoScreen() {
+const TopMoodMapText = () => {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text style={styles.header}>MoodMap</Text>
+      <Text style={styles.greeting}>Hi Hammad</Text>
+      
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+      <View style={styles.featuresTitleContainer}>
+        <Text style={styles.featuresTitle}>✨ MoodMap App Features ✨</Text>
+        <TouchableOpacity style={styles.featureButton} onPress={() => console.log('Button pressed')}>
+          <Text style={styles.buttonText}>Explore Features</Text>
+        </TouchableOpacity>
+      </View>
+        
+        <View style={styles.bulletContainer}>
+          <View style={styles.featureItem}>
+            <View style={styles.emojiContainer}>
+              <Text style={styles.emoji}>😊</Text>
+            </View>
+            <Text style={styles.bulletText}>Select your current mood using emojis like <Text style={styles.highlightText}>Happy, Calm, Stressed, or Lonely</Text></Text>
+          </View>
+          
+          <View style={styles.featureItem}>
+            <View style={[styles.emojiContainer, {backgroundColor: '#9F7AEA'}]}>
+              <Text style={styles.emoji}>🗺️</Text>
+            </View>
+            <Text style={styles.bulletText}>View an <Text style={styles.boldText}>interactive map</Text> with places matched to your selected mood</Text>
+          </View>
+          
+          <View style={styles.featureItem}>
+            <View style={[styles.emojiContainer, {backgroundColor: '#F6AD55'}]}>
+              <Text style={styles.emoji}>📍</Text>
+            </View>
+            <Text style={styles.bulletText}><Text style={styles.boldText}>Add and save your own places</Text> based on how they make you feel</Text>
+          </View>
+          
+          <View style={styles.featureItem}>
+            <View style={[styles.emojiContainer, {backgroundColor: '#68D391'}]}>
+              <Text style={styles.emoji}>💡</Text>
+            </View>
+            <Text style={styles.bulletText}>Explore the <Text style={styles.boldText}>Suggested</Text> section for mood-based place recommendations</Text>
+          </View>
+          
+          <View style={styles.featureItem}>
+            <View style={[styles.emojiContainer, {backgroundColor: '#4299E1'}]}>
+              <Text style={styles.emoji}>💬</Text>
+            </View>
+            <Text style={styles.bulletText}>Chat with the built-in <Text style={styles.boldText}>mood chatbot</Text> for emotional support and personalized suggestions</Text>
+          </View>
+          
+          <View style={styles.featureItem}>
+            <View style={[styles.emojiContainer, {backgroundColor: '#FC8181'}]}>
+              <Text style={styles.emoji}>💖</Text>
+            </View>
+            <Text style={styles.bulletText}>Access helpful <Text style={styles.boldText}>self-care tips</Text> to improve your mental well-being</Text>
+          </View>
+          
+          <View style={styles.featureItem}>
+            <View style={[styles.emojiContainer, {backgroundColor: '#F6E05E'}]}>
+              <Text style={styles.emoji}>⭐</Text>
+            </View>
+            <Text style={styles.bulletText}>Save mood-tagged locations in your <Text style={styles.boldText}>Favorite Places</Text> for quick access later</Text>
+          </View>
+        </View>
+        
+        <View style={styles.taglineContainer}>
+          <Text style={styles.tagline}>Discover places that match your mood!</Text>
+        </View>
+      </ScrollView>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    backgroundColor: '#000',
+    flex: 1,
+    paddingHorizontal: 16
   },
-  titleContainer: {
+  header: {
+    marginTop: 51,
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+    color: '#fff',
+  },
+  greeting: {
+    fontSize: 38,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#ccc'
+  },
+  scrollContainer: {
+    flex: 1,
+  },
+  featuresTitleContainer: {
+    backgroundColor: '#222',
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 15,
+    marginBottom: 20,
+    borderLeftWidth: 3,
+    borderLeftColor: '#9F7AEA',
+    shadowColor: '#9F7AEA',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  featuresTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    textShadowColor: 'rgba(159, 122, 234, 0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 3,
+  },
+  // Add these to your existing styles
+featureButton: {
+  backgroundColor: '#5E72E4',
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 8,
+  marginTop: 10,
+  alignSelf: 'center',
+},
+buttonText: {
+  fontFamily: 'Poppins-Medium', // Make sure this font is available in your project
+  color: 'white',
+  fontSize: 16,
+  textAlign: 'center',
+},
+  bulletContainer: {
+    marginBottom: 20,
+  },
+  featureItem: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    backgroundColor: '#222',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
+  emojiContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FF6B6B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  emoji: {
+    fontSize: 24,
+  },
+  bulletText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#ddd',
+    flex: 1,
+  },
+  boldText: {
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  highlightText: {
+    color: '#9F7AEA',
+    fontWeight: 'bold',
+  },
+  taglineContainer: {
+    backgroundColor: 'rgba(159, 122, 234, 0.2)',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginBottom: 30,
+    alignItems: 'center',
+  },
+  tagline: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#9F7AEA',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  }
 });
+
+export default TopMoodMapText;
