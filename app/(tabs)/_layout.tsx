@@ -13,12 +13,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { View, Text } from 'react-native';
 
 
-const SettingsScreen = () => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>Settings Screen</Text>
-  </View>
-);
-
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
@@ -68,7 +62,15 @@ export default function TabLayout() {
             <Ionicons name="chatbubble" size={size} color={color} />
           ),
         }}
-      />
+      /><Tabs.Screen
+      name="other"
+      options={{
+        title: 'Other',
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="chatbubble" size={size} color={color} />
+        ),
+      }}
+    />
     </Tabs>
     
   );

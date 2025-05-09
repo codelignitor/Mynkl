@@ -1,109 +1,1325 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Alert, StatusBar } from 'react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+// Updated MoodEntryScreen component that will be shown after clicking Continue
+const MoodEntryScreen = ({ selectedMood, onBackPress }) => {
+  // Array of recommendation types based on mood
+  const getMoodRecommendations = (mood) => {
+    switch(mood) {
+      case 'happy':
+        return ['Parks nearby', 'Social events', 'Outdoor activities'];
+      case 'sad':
+        return ['Calming spaces', 'Support groups', 'Wellness centers'];
+      case 'neutral':
+        return ['Quiet cafes', 'Libraries', 'Walking paths'];
+      default:
+        return ['Select a mood to see recommendations'];
+    }
+  };
 
-export default function TabTwoScreen() {
+  const recommendations = selectedMood ? getMoodRecommendations(selectedMood) : [];
+  
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.moodEntryContainer}>
+      <Text style={styles.moodEntryTitle}>Mood Map</Text>
+      
+      {/* Replaced map with a simple container */}
+      <View style={styles.moodDisplayContainer}>
+        {selectedMood ? (
+          <View style={styles.selectedMoodContainer}>
+            <Text style={styles.selectedMoodText}>
+              Your current mood: {selectedMood === 'happy' ? '😊' : selectedMood === 'sad' ? '😢' : '😐'}
+            </Text>
+            <View style={styles.recommendationsContainer}>
+              <Text style={styles.recommendationsTitle}>Recommendations:</Text>
+              {recommendations.map((recommendation, index) => (
+                <Text key={index} style={styles.recommendationItem}>• {recommendation}</Text>
+              ))}
+            </View>
+          </View>
+        ) : (
+          <Text style={styles.placeholderText}>
+            No mood selected. Go back to select a mood.
+          </Text>
+        )}
+      </View>
+      
+      <Text style={styles.moodLocation}>Enable location</Text>
+      <Text style={styles.moodtextLocation}>Turn on location to discover mood-based activities and support near you.</Text>
+      
+      {/* Back button to return to mood selection */}
+      <TouchableOpacity 
+        style={styles.backButton}
+        onPress={onBackPress}
+      >
+        <Text style={styles.backButtonText}>Back to Mood Selection</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
-}
+};
+
+// Updated MoodMapScreen with mood selection functionality
+const MoodMapScreen = () => {
+  // Add state to track when to show the MoodEntryScreen
+  const [showMoodEntry, setShowMoodEntry] = useState(false);
+  const [selectedMood, setSelectedMood] = useState(null);
+  
+  // Handler for mood selection
+  const handleMoodSelect = (mood) => {
+    setSelectedMood(mood);
+  };
+  
+  // Handler for Continue button
+  const handleContinue = () => {
+    if (selectedMood) {
+      setShowMoodEntry(true);
+    } else {
+      Alert.alert('Please select a mood', 'Select an emoji that represents your current mood');
+    }
+  };
+  
+  // Handler for back button in MoodEntryScreen
+  const handleBackToMoodMap = () => {
+    setShowMoodEntry(false);
+  };
+  
+  // If showMoodEntry is true, show the MoodEntryScreen instead
+  if (showMoodEntry) {
+    return <MoodEntryScreen selectedMood={selectedMood} onBackPress={handleBackToMoodMap} />;
+  }
+  
+  
+  // Otherwise show the regular MoodMapScreen
+  return (
+    <SafeAreaView style={styles.moodMapContainer}>
+      <Text style={styles.moodMapTitle}>MoodMap</Text>
+      <Text style={styles.moodMapSubtitle}>How would you like to check in?</Text>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity 
+          style={[
+            styles.button, 
+            selectedMood === 'happy' && styles.selectedButton
+          ]}
+          onPress={() => handleMoodSelect('happy')}
+        >
+          <Text style={styles.buttonText}>😊</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[
+            styles.button, 
+            selectedMood === 'neutral' && styles.selectedButton
+          ]}
+          onPress={() => handleMoodSelect('neutral')}
+        >
+          <Text style={styles.buttonText}>😐</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[
+            styles.button, 
+            selectedMood === 'sad' && styles.selectedButton
+          ]}
+          onPress={() => handleMoodSelect('sad')}
+        >
+          <Text style={styles.buttonText}>😢</Text>
+        </TouchableOpacity>
+      </View>
+      
+      {selectedMood && (
+        <Text style={styles.selectedMoodIndicator}>
+          You selected: {selectedMood === 'happy' ? '😊' : selectedMood === 'sad' ? '😢' : '😐'}
+        </Text>
+      )}
+      
+      <View style={styles.bottomButtonContainer}>
+        <TouchableOpacity 
+          style={styles.bottomButton}
+          onPress={handleContinue}
+        >
+          <Text style={styles.bottomButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+};
+
+// Multi-step Guide Screen Component
+const GuideScreen = ({ onComplete }) => {
+  // Use a simpler state structure without step numbers
+  const [currentSection, setCurrentSection] = useState('suggestions');
+  const [preferences, setPreferences] = useState({
+    suggestionPreference: 'always',
+    notificationPreference: 'daily',
+    themePreference: 'light'
+  });
+  // Add state to track if welcome screen should be shown
+  const [showWelcomeScreen, setShowWelcomeScreen] = useState(false);
+
+  // First Step - Suggestion Preferences
+  const SuggestionStep = () => {
+    const [selectedOption, setSelectedOption] = useState(preferences.suggestionPreference);
+
+    const handleOptionSelect = (option) => {
+      setSelectedOption(option);
+    };
+
+    const handleContinue = () => {
+      // Save selection to preferences state
+      setPreferences({
+        ...preferences,
+        suggestionPreference: selectedOption
+      });
+      
+      // Move to next section
+      setCurrentSection('notifications');
+    };
+
+    return (
+      <View style={styles.stepContainer}>
+        {/* Centered Question Text */}
+        <View style={styles.centeredQuestionContainer}>
+          <Text style={styles.centeredQuestionText}>
+            Would you like to receive mood-based tips and nearby recommendations?
+          </Text>
+          <Text style={styles.centeredQuestionSubText}>
+            (like safe spaces, calming places, or happy events nearby)
+          </Text>
+        </View>
+        
+        {/* First Preference Section */}
+        <TouchableOpacity 
+          style={styles.preferencesContainer}
+          onPress={() => handleOptionSelect('always')}
+        >
+          <View style={styles.preferenceItem}>
+            <View style={styles.checkboxContainer}>
+              <View style={[
+                styles.roundCheckbox,
+                selectedOption === 'always' && styles.roundCheckboxSelected
+              ]}>
+                {selectedOption === 'always' && <View style={styles.roundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.preferenceTextContainer}>
+              <Text style={styles.preferenceTitle}>Yes, show me suggestions based on my mood</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Second Preference Section */}
+        <TouchableOpacity 
+          style={[styles.preferencesContainer, styles.middleSection]}
+          onPress={() => handleOptionSelect('onRequest')}
+        >
+          <View style={styles.preferenceItem}>
+            <View style={styles.checkboxContainer}>
+              <View style={[
+                styles.roundCheckbox,
+                selectedOption === 'onRequest' && styles.roundCheckboxSelected
+              ]}>
+                {selectedOption === 'onRequest' && <View style={styles.roundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.preferenceTextContainer}>
+              <Text style={styles.preferenceTitle}>Only when I ask</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Third Preference Section */}
+        <TouchableOpacity 
+          style={styles.preferencesContainer}
+          onPress={() => handleOptionSelect('never')}
+        >
+          <View style={styles.preferenceItem}>
+            <View style={styles.checkboxContainer}>
+              <View style={[
+                styles.roundCheckbox,
+                selectedOption === 'never' && styles.roundCheckboxSelected
+              ]}>
+                {selectedOption === 'never' && <View style={styles.roundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.preferenceTextContainer}>
+              <Text style={styles.preferenceTitle}>No suggestions, please</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Continue Button */}
+        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+          <Text style={styles.continueButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // Second Step - Notification Preferences
+  const NotificationStep = () => {
+    const [selectedOption, setSelectedOption] = useState(preferences.notificationPreference);
+
+    const handleOptionSelect = (option) => {
+      setSelectedOption(option);
+    };
+
+    const handleContinue = () => {
+      // Save selection to preferences state
+      setPreferences({
+        ...preferences,
+        notificationPreference: selectedOption
+      });
+      
+      // Move to next section
+      setCurrentSection('theme');
+    };
+
+    return (
+      <View style={styles.stepContainer}>
+        {/* Centered Question Text */}
+        <View style={styles.centeredQuestionContainer}>
+          <Text style={styles.centeredQuestionSecText}>
+            Would you like to connect with other feeling similarly nearby?
+          </Text>
+        </View>
+        
+        {/* First Preference Section */}
+        <TouchableOpacity 
+          style={styles.preferencesContainer}
+          onPress={() => handleOptionSelect('daily')}
+        >
+          <View style={styles.preferenceItem}>
+            <View style={styles.checkboxContainer}>
+              <View style={[
+                styles.roundCheckbox,
+                selectedOption === 'daily' && styles.roundCheckboxSelected
+              ]}>
+                {selectedOption === 'daily' && <View style={styles.roundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.preferenceTextContainer}>
+              <Text style={styles.preferenceTitle}>Yes, show mood-matching chat rooms</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Second Preference Section */}
+        <TouchableOpacity 
+          style={[styles.preferencesContainer, styles.middleSection]}
+          onPress={() => handleOptionSelect('weekly')}
+        >
+          <View style={styles.preferenceItem}>
+            <View style={styles.checkboxContainer}>
+              <View style={[
+                styles.roundCheckbox,
+                selectedOption === 'weekly' && styles.roundCheckboxSelected
+              ]}>
+                {selectedOption === 'weekly' && <View style={styles.roundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.preferenceTextContainer}>
+              <Text style={styles.preferenceTitle}>Only with people i follow</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Third Preference Section */}
+        <TouchableOpacity 
+          style={styles.preferencesContainer}
+          onPress={() => handleOptionSelect('none')}
+        >
+          <View style={styles.preferenceItem}>
+            <View style={styles.checkboxContainer}>
+              <View style={[
+                styles.roundCheckbox,
+                selectedOption === 'none' && styles.roundCheckboxSelected
+              ]}>
+                {selectedOption === 'none' && <View style={styles.roundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.preferenceTextContainer}>
+              <Text style={styles.preferenceTitle}>No just exploring on my own</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Continue Button */}
+        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+          <Text style={styles.continueButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // Third Step - Theme Preferences
+  const ThemeStep = () => {
+    const [selectedOption, setSelectedOption] = useState(preferences.themePreference);
+
+    const handleOptionSelect = (option) => {
+      setSelectedOption(option);
+    };
+
+    const handleComplete = () => {
+      // Save final preferences
+      const finalPreferences = {
+        ...preferences,
+        themePreference: selectedOption
+      };
+      
+      setPreferences(finalPreferences);
+      
+      // Switch to welcome screen
+      setShowWelcomeScreen(true);
+    };
+
+    return (
+      <View style={styles.stepContainer}>
+        {/* Centered Question Text */}
+        <View style={styles.centeredQuestionContainer}>
+          <Text style={styles.centeredQuestionThrText}>
+            Privacy Preference for MoodMap Participation
+          </Text>
+        </View>
+        
+        {/* First Preference Section */}
+        <TouchableOpacity 
+          style={styles.preferencesContainer}
+          onPress={() => handleOptionSelect('light')}
+        >
+          <View style={styles.preferenceItem}>
+            <View style={styles.checkboxContainer}>
+              <View style={[
+                styles.roundCheckbox,
+                selectedOption === 'light' && styles.roundCheckboxSelected
+              ]}>
+                {selectedOption === 'light' && <View style={styles.roundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.preferenceTextContainer}>
+              <Text style={styles.preferenceTitle}>I'm okay being a mood pin on the map (anonymously)</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Second Preference Section */}
+        <TouchableOpacity 
+          style={[styles.preferencesContainer, styles.middleSection]}
+          onPress={() => handleOptionSelect('dark')}
+        >
+          <View style={styles.preferenceItem}>
+            <View style={styles.checkboxContainer}>
+              <View style={[
+                styles.roundCheckbox,
+                selectedOption === 'dark' && styles.roundCheckboxSelected
+              ]}>
+                {selectedOption === 'dark' && <View style={styles.roundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.preferenceTextContainer}>
+              <Text style={styles.preferenceTitle}>Only visible to my selected circle</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Third Preference Section */}
+        <TouchableOpacity 
+          style={styles.preferencesContainer}
+          onPress={() => handleOptionSelect('system')}
+        >
+          <View style={styles.preferenceItem}>
+            <View style={styles.checkboxContainer}>
+              <View style={[
+                styles.roundCheckbox,
+                selectedOption === 'system' && styles.roundCheckboxSelected
+              ]}>
+                {selectedOption === 'system' && <View style={styles.roundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.preferenceTextContainer}>
+              <Text style={styles.preferenceTitle}>No mood visibility - private mode only</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Finish Button */}
+        <TouchableOpacity style={styles.continueButton} onPress={handleComplete}>
+          <Text style={styles.continueButtonText}>Finish Setup</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // WelcomeScreen Component
+  const WelcomeScreen = () => {
+    // Function to handle when user wants to continue to the app
+    const handleGetStarted = () => {
+      // Pass preferences to parent component
+      onComplete(preferences);
+    };
+
+    return (
+      <View style={styles.welcomeContainer}>
+        {/* App logo or welcome illustration */}
+        <View style={styles.welcomeImageContainer}>
+          {/* Welcome text */}
+        <Text style={styles.welcomeTitle}>Welcome to MoodMap App!</Text>
+          <View style={styles.logoPlaceholder}>
+            {/* Replace with your actual logo component or image */}
+            <Text style={styles.logoPlaceholderText}>😊</Text>
+          </View>
+        </View>
+        
+        
+        {/* Description */}
+        <Text style={styles.welcomeDescription}>
+          Your journey to better emotional wellbeing starts now. 
+          Track, share, and discover mood patterns in a supportive community.
+        </Text>
+        
+        {/* Features list */}
+        <View style={styles.featureList}>
+          <View style={styles.featureItem}>
+            <View style={styles.featureDot} />
+            <Text style={styles.featureText}>A space where your emotions matter</Text>
+          </View>
+        </View>
+        
+        {/* Get Started button */}
+        <TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted}>
+          <Text style={styles.getStartedButtonText}>Get Started </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // Render the current section or welcome screen
+  const renderCurrentSection = () => {
+    if (showWelcomeScreen) {
+      return <WelcomeScreen />;
+    }
+    
+    switch (currentSection) {
+      case 'suggestions':
+        return <SuggestionStep />;
+      case 'notifications':
+        return <NotificationStep />;
+      case 'theme':
+        return <ThemeStep />;
+      default:
+        return <SuggestionStep />;
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" />
+      {renderCurrentSection()}
+    </SafeAreaView>
+  );
+};
+
+const AuthScreen = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false); // Track if user is new
+  
+  // Add state for showing the MoodMap screen
+  const [showMoodMap, setShowMoodMap] = useState(false);
+
+  const handleChange = (name, value) => {
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const validateForm = () => {
+    // Basic validation
+    if (isLogin) {
+      if (!formData.email || !formData.password) {
+        Alert.alert('Error', 'Please fill in all fields');
+        return false;
+      }
+    } else {
+      if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+        Alert.alert('Error', 'Please fill in all fields');
+        return false;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        Alert.alert('Error', 'Passwords do not match');
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      let url = isLogin 
+        ? 'https://c1c9-110-39-39-254.ngrok-free.app/auth/login'
+        : 'https://c1c9-110-39-39-254.ngrok-free.app/users/register';
+      
+      // Prepare the request body based on login or register
+      const requestBody = isLogin 
+        ? { 
+            email: formData.email, 
+            password: formData.password 
+          }
+        : {
+            username: formData.username,
+            email: formData.email,
+            password: formData.password
+          };
+      
+      console.log(`Making ${isLogin ? 'login' : 'register'} request to: ${url}`);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+      
+      if (isLogin) {
+        // For login, check if the user has completed onboarding
+        const hasCompletedOnboarding = data.hasCompletedOnboarding || true; // Default to true for existing users
+        
+        if (!hasCompletedOnboarding) {
+          // If user hasn't completed onboarding (rare case for a returning user)
+          setShowGuide(true);
+        } else {
+          // Show MoodMap screen directly for existing users
+          setShowMoodMap(true);
+        }
+      } else {
+        // For registration, show the guide screen immediately
+        setIsNewUser(true);
+        setShowGuide(true);
+      }
+      
+      console.log('API response:', data);
+      
+    } catch (error) {
+      console.error('API Error:', error);
+      Alert.alert('Error', error.message || 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleForm = () => {
+    setIsLogin(!isLogin);
+    // Reset form data when switching between forms
+    setFormData({
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    });
+  };
+
+  const handleGuideComplete = async (allPreferences) => {
+    // Here you would save all the user preferences to your backend
+    console.log('All user preferences:', allPreferences);
+    
+    try {
+      // Example of saving preferences to your backend for a new user
+      if (isNewUser) {
+        const response = await fetch('https://4ae0-110-39-39-254.ngrok-free.app/users/preferences', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            // Include auth token from registration/login
+            // 'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            preferences: allPreferences,
+            hasCompletedOnboarding: true
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to save preferences');
+        }
+      }
+      
+      // Show the MoodMap screen instead of the alert
+      setShowMoodMap(true);
+      
+      // Reset other state variables
+      setShowGuide(false);
+      setIsNewUser(false);
+      
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      Alert.alert(
+        'Warning',
+        'Your preferences could not be saved. You can update them later in settings.',
+        [{ 
+          text: 'Continue Anyway',
+          onPress: () => {
+            // Show MoodMap screen despite the error
+            setShowMoodMap(true);
+            setShowGuide(false);
+            setIsNewUser(false);
+          }
+        }]
+      );
+    }
+  };
+
+  // If MoodMap screen should be shown, render it
+  if (showMoodMap) {
+    return <MoodMapScreen />;
+  }
+
+  // If guide should be shown, render the GuideScreen
+  if (showGuide) {
+    return <GuideScreen onComplete={handleGuideComplete} />;
+  }
+
+  // Otherwise show the regular auth screen
+  return (
+    <SafeAreaView style={styles.container}>
+      {Platform.OS === 'ios' ? (
+        <KeyboardAvoidingView
+          behavior="padding"
+          style={styles.keyboardAvoidingView}>
+          <ScrollView contentContainerStyle={styles.scrollView}>
+            <View style={styles.modalContainer}>
+              <View style={styles.titleContainer}>
+                <Text style={styles.title}>
+                  {isLogin ? 'Sign in to your account' : 'Create a new account'}
+                </Text>
+              </View>
+              
+              <View style={styles.formContainer}>
+                {!isLogin && (
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Username</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Username"
+                      placeholderTextColor="#777"
+                      value={formData.username}
+                      onChangeText={(text) => handleChange('username', text)}
+                    />
+                  </View>
+                )}
+                
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Email address</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email address"
+                    placeholderTextColor="#777"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    value={formData.email}
+                    onChangeText={(text) => handleChange('email', text)}
+                  />
+                </View>
+                
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Password</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Password"
+                    placeholderTextColor="#777"
+                    secureTextEntry
+                    value={formData.password}
+                    onChangeText={(text) => handleChange('password', text)}
+                  />
+                </View>
+                
+                {!isLogin && (
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Confirm Password</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Confirm password"
+                      placeholderTextColor="#777"
+                      secureTextEntry
+                      value={formData.confirmPassword}
+                      onChangeText={(text) => handleChange('confirmPassword', text)}
+                    />
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+                  onPress={handleSubmit}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.submitButtonText}>
+                    {isLoading ? 'Please wait...' : (isLogin ? 'Sign in' : 'Sign up')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.toggleContainer}>
+                <Text style={styles.toggleText}>
+                  {isLogin ? "Don't have an account? " : "Already have an account? "}
+                </Text>
+                <TouchableOpacity onPress={toggleForm}>
+                  <Text style={styles.toggleButtonText}>
+                    {isLogin ? 'Sign up' : 'Sign in'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      ) : (
+        // For Android, use a simpler approach without KeyboardAvoidingView
+        <ScrollView contentContainerStyle={styles.scrollView}>
+          <View style={styles.modalContainer}>
+            <View style={styles.titleContainer}>
+              <Text style={styles.title}>
+                {isLogin ? 'Sign in to your account' : 'Create a new account'}
+              </Text>
+            </View>
+            
+            <View style={styles.formContainer}>
+              {!isLogin && (
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Username</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Username"
+                    placeholderTextColor="#777"
+                    value={formData.username}
+                    onChangeText={(text) => handleChange('username', text)}
+                  />
+                </View>
+              )}
+              
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Email address</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email address"
+                  placeholderTextColor="#777"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={formData.email}
+                  onChangeText={(text) => handleChange('email', text)}
+                />
+              </View>
+              
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Password</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  placeholderTextColor="#777"
+                  secureTextEntry
+                  value={formData.password}
+                  onChangeText={(text) => handleChange('password', text)}
+                />
+              </View>
+              
+              {!isLogin && (
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Confirm Password</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Confirm password"
+                    placeholderTextColor="#777"
+                    secureTextEntry
+                    value={formData.confirmPassword}
+                    onChangeText={(text) => handleChange('confirmPassword', text)}
+                  />
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+                onPress={handleSubmit}
+                disabled={isLoading}
+              >
+                <Text style={styles.submitButtonText}>
+                  {isLoading ? 'Please wait...' : (isLogin ? 'Sign in' : 'Sign up')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.toggleContainer}>
+              <Text style={styles.toggleText}>
+                {isLogin ? "Don't have an account? " : "Already have an account? "}
+              </Text>
+              <TouchableOpacity onPress={toggleForm}>
+                <Text style={styles.toggleButtonText}>
+                  {isLogin ? 'Sign up' : 'Sign in'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      )}
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#000000', // Changed from #f5f5f5 to black
+  },
+  stepContainer: {
+    flex: 1,
+    backgroundColor: '#000000', // Added black background
+  },
+  centeredQuestionContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginTop: 40,
+    marginBottom: 20,
+  },
+  centeredQuestionText: {
+    marginTop: 30,
+    fontSize: 34.4,
+    fontWeight: 'bold',
+    color: '#ffffff', // Changed from #333 to white
+    textAlign: 'center',
+    lineHeight: 34,
+  },
+  centeredQuestionSecText:{
+    fontSize: 39,
+    marginTop: 30,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#ffffff', // Changed to white
+  },
+  centeredQuestionThrText:{
+    fontSize: 35,
+    marginTop: 60,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#ffffff', // Changed to white
+  },
+  centeredQuestionSubText: {
+    fontSize: 20,
+    padding: 20,
+    color: '#cccccc', // Changed to light gray
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+    backgroundColor: '#000000', // Added black background
+  },
+  scrollView: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#000000', // Added black background
+  },
+  modalContainer: {
+    backgroundColor: '#121212', // Changed from white to dark gray
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: '#fff', // Changed shadow color
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    borderColor: '#333333', // Added border color
+    borderWidth: 1, // Added border
   },
   titleContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff', // Changed from #333 to white
+  },
+  formContainer: {
+    marginBottom: 20,
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#cccccc', // Changed from #666 to light gray
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#1e1e1e', // Changed from #f9f9f9 to dark gray
+    borderWidth: 1,
+    borderColor: '#333333', // Changed from #ddd to dark gray
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    color: '#ffffff', // Added white text color
+  },
+  submitButton: {
+    backgroundColor: '#3498db', // Kept same blue
+    borderRadius: 8,
+    padding: 16,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  submitButtonDisabled: {
+    backgroundColor: '#1a4b6d', // Darker disabled state
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  toggleContainer: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  toggleText: {
+    fontSize: 14,
+    color: '#cccccc', // Changed from #666 to light gray
+  },
+  toggleButtonText: {
+    fontSize: 14,
+    color: '#3498db', // Kept same blue
+    fontWeight: '600',
+  },
+  // Guide Screen Styles
+  preferencesContainer: {
+    padding: 16,
+    backgroundColor: '#121212', // Changed from #FFFFFF to dark gray
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginBottom: 12, // Space between sections
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    borderColor: '#333333', // Added border
+    borderWidth: 1, // Added border
+  },
+  middleSection: {
+    marginVertical: 12, // Extra margin for middle section
+  },
+  preferenceItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  preferenceTextContainer: {
+    flex: 1,
+  },
+  preferenceTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff', // Changed from #333333 to white
+    marginBottom: 4,
+  },
+  checkboxContainer: {
+    marginRight: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  roundCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: '#3498db', // Kept same blue
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  roundCheckboxSelected: {
+    borderColor: '#3498db', // Kept same blue
+  },
+  roundCheckboxInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#3498db', // Kept same blue
+  },
+  continueButton: {
+    backgroundColor: '#3498db', // Kept same blue
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginTop: 32,
+  },
+  continueButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  // WelcomeScreen styles
+  welcomeContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+    padding: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  welcomeImageContainer: {
+    marginBottom: 40,
+    alignItems: 'center',
+  },
+  logoPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#121212',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#3498db',
+  },
+  logoPlaceholderText: {
+    fontSize: 60,
+  },
+  welcomeTitle: {
+    marginTop: 50,
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  welcomeDescription: {
+    fontSize: 18,
+    color: '#cccccc',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 26,
+  },
+  featureList: {
+    alignSelf: 'stretch',
+    marginBottom: 40,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  featureDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#3498db',
+    marginRight: 12,
+  },
+  featureText: {
+    fontSize: 18,
+    color: '#ffffff',
+  },
+  getStartedButton: {
+    backgroundColor: '#3498db',
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  getStartedButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  // MoodMap Screen styles
+  moodMapContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#000',
+    alignItems: 'center',
+  },
+  moodMapTitle: {
+    marginTop: 100,
+    fontSize: 30,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#fff',
+  },
+  moodMapSubtitle: {
+    marginTop: 20,
+    fontSize: 35,
+    marginBottom: 30,
+    textAlign: 'center',
+    color: '#fff',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginTop: 20,
+  },
+  button: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  buttonText: {
+    fontSize: 34,
+  },
+  bottomButtonContainer: {
+    width: '100%',
+    paddingBottom: 20,
+    marginTop: 'auto',
+  },
+  bottomButton: {
+    backgroundColor: '#4070F4',
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  bottomButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  // MoodEntry Screen styles (updated without map)
+  moodEntryContainer: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#000',
+    alignItems: 'center',
+  },
+  moodEntryTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 70,
+  },
+  moodLocation: {
+    fontSize: 35,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 50,
+  },
+  moodtextLocation: {
+    fontSize: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 40,
+  },
+  // Replaced map container with simple view
+  moodDisplayContainer: {
+    height: 300,
+    width: '100%',
+    borderRadius: 12,
+    marginVertical: 16,
+    backgroundColor: '#121212',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: '#333333',
+    borderWidth: 1,
+    padding: 16,
+  },
+  placeholderText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#cccccc',
+    padding: 20,
+  },
+  // New styles for enhanced mood display
+  selectedMoodContainer: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  selectedMoodText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
+  },
+  recommendationsContainer: {
+    width: '100%',
+    alignItems: 'flex-start',
+  },
+  recommendationsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#3498db',
+    marginBottom: 10,
+  },
+  recommendationItem: {
+    fontSize: 16,
+    color: '#cccccc',
+    marginBottom: 8,
+    textAlign: 'left',
+  },
+  backButton: {
+    backgroundColor: '#333',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  // MoodMapScreen enhanced styles
+  selectedButton: {
+    borderColor: '#3498db',
+    borderWidth: 3,
+    backgroundColor: '#1a1a1a',
+  },
+  selectedMoodIndicator: {
+    color: '#fff',
+    fontSize: 18,
+    marginTop: 20,
+    marginBottom: 10,
   },
 });
+
+export default AuthScreen;
