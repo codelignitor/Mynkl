@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Alert, StatusBar } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Alert, StatusBar, Linking } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
+import MoodMap from './index';
 
 // Updated MoodEntryScreen component that will be shown after clicking Continue
 const MoodEntryScreen = ({ selectedMood, onBackPress }) => {
+  // State for user location
+  const [userLocation, setUserLocation] = useState(null);
+  const mapRef = useRef(null);
+  
   // Array of recommendation types based on mood
   const getMoodRecommendations = (mood) => {
     switch(mood) {
       case 'happy':
         return ['Parks nearby', 'Social events', 'Outdoor activities'];
-      case 'sad':
+      case 'voice':  // Changed from 'sad' to 'voice'
         return ['Calming spaces', 'Support groups', 'Wellness centers'];
       case 'neutral':
         return ['Quiet cafes', 'Libraries', 'Walking paths'];
@@ -19,47 +26,147 @@ const MoodEntryScreen = ({ selectedMood, onBackPress }) => {
 
   const recommendations = selectedMood ? getMoodRecommendations(selectedMood) : [];
   
+  // Function to request location permissions
+  const requestLocationPermission = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      
+      if (status === 'granted') {
+        Alert.alert('Success', 'Location permission granted. You can now see your location on the map.');
+        getCurrentLocation();
+      } else {
+        Alert.alert(
+          'Permission Required', 
+          'To show your location on the map, please allow location access in your device settings.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Error requesting location permission:', error);
+      Alert.alert('Error', 'There was a problem requesting location permissions.');
+    }
+  };
+
+  // Function to get the user's current location
+  const getCurrentLocation = async () => {
+    try {
+      let { status } = await Location.getForegroundPermissionsAsync();
+      
+      if (status !== 'granted') {
+        requestLocationPermission();
+        return;
+      }
+      
+      let location = await Location.getCurrentPositionAsync({});
+      const currentLocation = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421
+      };
+      
+      setUserLocation(currentLocation);
+      
+      if (mapRef.current) {
+        mapRef.current.animateToRegion(currentLocation);
+      }
+    } catch (error) {
+      console.error('Error getting location:', error);
+      Alert.alert('Error', 'Could not retrieve your location.');
+    }
+  };
+
+  // Function to center the map on user's location
+  const goToUserLocation = () => {
+    if (userLocation && mapRef.current) {
+      mapRef.current.animateToRegion(userLocation);
+    }
+  };
+  
+  // Get location when component mounts
+  useEffect(() => {
+    // Check if we have permission before trying to get location
+    (async () => {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status === 'granted') {
+        getCurrentLocation();
+      }
+    })();
+  }, []);
+  
   return (
     <SafeAreaView style={styles.moodEntryContainer}>
       <Text style={styles.moodEntryTitle}>Mood Map</Text>
-      
-      {/* Replaced map with a simple container */}
-      <View style={styles.moodDisplayContainer}>
-        {selectedMood ? (
-          <View style={styles.selectedMoodContainer}>
-            <Text style={styles.selectedMoodText}>
-              Your current mood: {selectedMood === 'happy' ? '😊' : selectedMood === 'sad' ? '😢' : '😐'}
-            </Text>
-            <View style={styles.recommendationsContainer}>
-              <Text style={styles.recommendationsTitle}>Recommendations:</Text>
-              {recommendations.map((recommendation, index) => (
-                <Text key={index} style={styles.recommendationItem}>• {recommendation}</Text>
-              ))}
-            </View>
-          </View>
-        ) : (
-          <Text style={styles.placeholderText}>
-            No mood selected. Go back to select a mood.
-          </Text>
-        )}
-      </View>
-      
       <Text style={styles.moodLocation}>Enable location</Text>
       <Text style={styles.moodtextLocation}>Turn on location to discover mood-based activities and support near you.</Text>
       
-      {/* Back button to return to mood selection */}
-      <TouchableOpacity 
-        style={styles.backButton}
-        onPress={onBackPress}
-      >
-        <Text style={styles.backButtonText}>Back to Mood Selection</Text>
-      </TouchableOpacity>
+      {/* Map container replacing the mood display container */}
+      <View style={styles.moodDisplayContainer}>
+        <View style={styles.mapContainer}>
+          <Text style={styles.mapTitle}>Your Location</Text>
+          
+          {/* Map component */}
+          <View style={styles.mapWrapper}>
+            <MapView
+              ref={mapRef}
+              style={styles.map}
+              initialRegion={{
+                latitude: 37.78825,  // Default coordinates (will be replaced with user's location)
+                longitude: -122.4324,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              }}
+              showsUserLocation={true}
+              followsUserLocation={true}
+            >
+              {userLocation && (
+                <Marker
+                  coordinate={{
+                    latitude: userLocation.latitude,
+                    longitude: userLocation.longitude
+                  }}
+                  title="You are here"
+                  description="Your current location"
+                />
+              )}
+            </MapView>
+          </View>
+          
+          {/* Allow Location Access Button */}
+          <TouchableOpacity 
+            style={styles.allowLocationButton}
+            onPress={requestLocationPermission}
+          >
+            <Text style={styles.allowLocationButtonText}>Allow Location Access</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.locationButtonsContainer}>
+            <TouchableOpacity 
+              style={styles.locationButton}
+              onPress={getCurrentLocation}
+            >
+              <Text style={styles.locationButtonText}>Refresh Location</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.locationButton}
+              onPress={goToUserLocation}
+            >
+              <Text style={styles.locationButtonText}>Center Map</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+      
     </SafeAreaView>
   );
 };
 
 // Updated MoodMapScreen with mood selection functionality
-const MoodMapScreen = () => {
+const MoodMapScreen = ({ onNavigateToHome }) => {
   // Add state to track when to show the MoodEntryScreen
   const [showMoodEntry, setShowMoodEntry] = useState(false);
   const [selectedMood, setSelectedMood] = useState(null);
@@ -83,6 +190,14 @@ const MoodMapScreen = () => {
     setShowMoodEntry(false);
   };
   
+  // Handler for Go to Home button
+  const handleGoToHome = () => {
+    // Call the onNavigateToHome prop to navigate to the Home screen
+    if (onNavigateToHome) {
+      onNavigateToHome();
+    }
+  };
+  
   // If showMoodEntry is true, show the MoodEntryScreen instead
   if (showMoodEntry) {
     return <MoodEntryScreen selectedMood={selectedMood} onBackPress={handleBackToMoodMap} />;
@@ -92,58 +207,60 @@ const MoodMapScreen = () => {
   // Otherwise show the regular MoodMapScreen
   return (
     <SafeAreaView style={styles.moodMapContainer}>
-      <Text style={styles.moodMapTitle}>MoodMap</Text>
-      <Text style={styles.moodMapSubtitle}>How would you like to check in?</Text>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={[
-            styles.button, 
-            selectedMood === 'happy' && styles.selectedButton
-          ]}
-          onPress={() => handleMoodSelect('happy')}
-        >
-          <Text style={styles.buttonText}>😊</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[
-            styles.button, 
-            selectedMood === 'neutral' && styles.selectedButton
-          ]}
-          onPress={() => handleMoodSelect('neutral')}
-        >
-          <Text style={styles.buttonText}>😐</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[
-            styles.button, 
-            selectedMood === 'sad' && styles.selectedButton
-          ]}
-          onPress={() => handleMoodSelect('sad')}
-        >
-          <Text style={styles.buttonText}>😢</Text>
-        </TouchableOpacity>
-      </View>
-      
-      {selectedMood && (
-        <Text style={styles.selectedMoodIndicator}>
-          You selected: {selectedMood === 'happy' ? '😊' : selectedMood === 'sad' ? '😢' : '😐'}
-        </Text>
-      )}
-      
-      <View style={styles.bottomButtonContainer}>
-        <TouchableOpacity 
-          style={styles.bottomButton}
-          onPress={handleContinue}
-        >
-          <Text style={styles.bottomButtonText}>Continue</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.moodMapTitle}>Mood Map</Text>
+        <Text style={styles.moodMapSubtitle}>How would you like to check in?</Text>
+        <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+            style={[
+                styles.button, 
+                selectedMood === 'happy' && styles.selectedButton
+            ]}
+            onPress={() => handleMoodSelect('happy')}
+            >
+            <Text style={styles.buttonText}>😊</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+            style={[
+                styles.button, 
+                selectedMood === 'neutral' && styles.selectedButton
+            ]}
+            onPress={() => handleMoodSelect('neutral')}
+            >
+            {/* Circle with three dots in white color */}
+            <Text style={[styles.buttonText, {color: 'white'}]}>⋯</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+            style={[
+                styles.button, 
+                selectedMood === 'voice' && styles.selectedButton
+            ]}
+            onPress={() => handleMoodSelect('voice')}
+            >
+            {/* Microphone icon */}
+            <Text style={styles.buttonText}>🎤</Text>
+            </TouchableOpacity>
+        </View>
+        
+        {selectedMood && (
+            <Text style={styles.selectedMoodIndicator}>
+            You selected: {selectedMood === 'happy' ? '😊' : selectedMood === 'voice' ? '🎤' : '⋯'}
+            </Text>
+        )}
+        
+        <View style={styles.bottomButtonContainer}>
+            <TouchableOpacity 
+            style={styles.bottomButton}
+            onPress={handleContinue}
+            >
+            <Text style={styles.bottomButtonText}>Continue</Text>
+            </TouchableOpacity>
+        </View>
     </SafeAreaView>
   );
 };
 
 // Multi-step Guide Screen Component
-const GuideScreen = ({ onComplete }) => {
+const GuideScreen = ({ onComplete, onNavigateToHome }) => {
   // Use a simpler state structure without step numbers
   const [currentSection, setCurrentSection] = useState('suggestions');
   const [preferences, setPreferences] = useState({
@@ -178,10 +295,10 @@ const GuideScreen = ({ onComplete }) => {
         {/* Centered Question Text */}
         <View style={styles.centeredQuestionContainer}>
           <Text style={styles.centeredQuestionText}>
-            Would you like to receive mood-based tips and nearby recommendations?
+            How would you like to share your location on the MoodMap?
           </Text>
           <Text style={styles.centeredQuestionSubText}>
-            (like safe spaces, calming places, or happy events nearby)
+            Helps us show you meaningful emotional insights nearby.
           </Text>
         </View>
         
@@ -200,7 +317,7 @@ const GuideScreen = ({ onComplete }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>Yes, show me suggestions based on my mood</Text>
+              <Text style={styles.preferenceTitle}>Use my real-time location</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -220,7 +337,7 @@ const GuideScreen = ({ onComplete }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>Only when I ask</Text>
+              <Text style={styles.preferenceTitle}>I’ll update when I want </Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -240,7 +357,7 @@ const GuideScreen = ({ onComplete }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>No suggestions, please</Text>
+              <Text style={styles.preferenceTitle}>I’d rather explore anonymously</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -277,7 +394,7 @@ const GuideScreen = ({ onComplete }) => {
         {/* Centered Question Text */}
         <View style={styles.centeredQuestionContainer}>
           <Text style={styles.centeredQuestionSecText}>
-            Would you like to connect with other feeling similarly nearby?
+            Who can see your mood check-ins on the map? 
           </Text>
         </View>
         
@@ -296,7 +413,7 @@ const GuideScreen = ({ onComplete }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>Yes, show mood-matching chat rooms</Text>
+              <Text style={styles.preferenceTitle}>Everyone</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -316,7 +433,7 @@ const GuideScreen = ({ onComplete }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>Only with people i follow</Text>
+              <Text style={styles.preferenceTitle}>Friends & followers only</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -336,7 +453,7 @@ const GuideScreen = ({ onComplete }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>No just exploring on my own</Text>
+              <Text style={styles.preferenceTitle}>Only me</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -375,8 +492,9 @@ const GuideScreen = ({ onComplete }) => {
         {/* Centered Question Text */}
         <View style={styles.centeredQuestionContainer}>
           <Text style={styles.centeredQuestionThrText}>
-            Privacy Preference for MoodMap Participation
+            Would you like to receive mood-based tips and nearby recommendations?
           </Text>
+        <Text>(like safe spaces, calming places, or happy events nearby)</Text>
         </View>
         
         {/* First Preference Section */}
@@ -394,7 +512,7 @@ const GuideScreen = ({ onComplete }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>I'm okay being a mood pin on the map (anonymously)</Text>
+              <Text style={styles.preferenceTitle}>Yes, show me suggestions based on my mood</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -414,7 +532,7 @@ const GuideScreen = ({ onComplete }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>Only visible to my selected circle</Text>
+              <Text style={styles.preferenceTitle}>Only when I ask </Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -434,7 +552,7 @@ const GuideScreen = ({ onComplete }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>No mood visibility - private mode only</Text>
+              <Text style={styles.preferenceTitle}>No suggestions, please</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -454,6 +572,7 @@ const GuideScreen = ({ onComplete }) => {
       // Pass preferences to parent component
       onComplete(preferences);
     };
+    
 
     return (
       <View style={styles.welcomeContainer}>
@@ -482,10 +601,13 @@ const GuideScreen = ({ onComplete }) => {
           </View>
         </View>
         
-        {/* Get Started button */}
-        <TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted}>
-          <Text style={styles.getStartedButtonText}>Get Started </Text>
-        </TouchableOpacity>
+        {/* Button container with two options */}
+        <View style={styles.welcomeButtonsContainer}>
+          {/* Get Started button */}
+          <TouchableOpacity style={styles.getStartedButton} onPress={handleGetStarted}>
+            <Text style={styles.getStartedButtonText}>Get Started</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
@@ -516,7 +638,11 @@ const GuideScreen = ({ onComplete }) => {
   );
 };
 
+// Updated AuthScreen component with the new navigation functionality
+// Updated AuthScreen component with the new navigation functionality
+// Updated AuthScreen component with the new navigation functionality
 const AuthScreen = () => {
+  // Keep all your existing state variables
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
@@ -526,10 +652,16 @@ const AuthScreen = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false); // Track if user is new
-  
-  // Add state for showing the MoodMap screen
+  const [isNewUser, setIsNewUser] = useState(false);
   const [showMoodMap, setShowMoodMap] = useState(false);
+  
+  // Add this new state variable:
+  const [showHomeMoodMap, setShowHomeMoodMap] = useState(false);
+  
+  // Add this new function:
+  const handleNavigateToHome = () => {
+    setShowHomeMoodMap(true);
+  };
 
   const handleChange = (name, value) => {
     setFormData({
@@ -565,8 +697,8 @@ const AuthScreen = () => {
     
     try {
       let url = isLogin 
-        ? 'https://c1c9-110-39-39-254.ngrok-free.app/auth/login'
-        : 'https://c1c9-110-39-39-254.ngrok-free.app/users/register';
+        ? 'https://6f2a-110-39-39-254.ngrok-free.app/auth/login'
+        : 'https://6f2a-110-39-39-254.ngrok-free.app/users/register';
       
       // Prepare the request body based on login or register
       const requestBody = isLogin 
@@ -596,21 +728,18 @@ const AuthScreen = () => {
         throw new Error(data.message || 'Something went wrong');
       }
       
+      // *** MAIN CHANGE HERE ***
       if (isLogin) {
-        // For login, check if the user has completed onboarding
-        const hasCompletedOnboarding = data.hasCompletedOnboarding || true; // Default to true for existing users
-        
-        if (!hasCompletedOnboarding) {
-          // If user hasn't completed onboarding (rare case for a returning user)
-          setShowGuide(true);
-        } else {
-          // Show MoodMap screen directly for existing users
-          setShowMoodMap(true);
-        }
-      } else {
-        // For registration, show the guide screen immediately
-        setIsNewUser(true);
+        // For login users, show the guide
         setShowGuide(true);
+        setIsNewUser(false);
+      } else {
+        // For registration/signup, show a success message and return to login screen
+        Alert.alert(
+          'Registration Successful',
+          'Your account has been created. Please sign in with your credentials.',
+          [{ text: 'OK', onPress: () => setIsLogin(true) }]
+        );
       }
       
       console.log('API response:', data);
@@ -639,33 +768,32 @@ const AuthScreen = () => {
     console.log('All user preferences:', allPreferences);
     
     try {
-      // Example of saving preferences to your backend for a new user
-      if (isNewUser) {
-        const response = await fetch('https://4ae0-110-39-39-254.ngrok-free.app/users/preferences', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            // Include auth token from registration/login
-            // 'Authorization': `Bearer ${authToken}`
-          },
-          body: JSON.stringify({
-            preferences: allPreferences,
-            hasCompletedOnboarding: true
-          }),
-        });
-        
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to save preferences');
-        }
+      // Example of saving preferences to your backend
+      // We'll save preferences for both new and returning users
+      const response = await fetch('https://4ae0-110-39-39-254.ngrok-free.app/users/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Include auth token from registration/login
+          // 'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          preferences: allPreferences,
+          hasCompletedOnboarding: true,
+          isNewUser: isNewUser // Send whether this is a new user or not
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save preferences');
       }
       
-      // Show the MoodMap screen instead of the alert
+      // Show the MoodMap screen
       setShowMoodMap(true);
       
       // Reset other state variables
       setShowGuide(false);
-      setIsNewUser(false);
       
     } catch (error) {
       console.error('Error saving preferences:', error);
@@ -678,21 +806,25 @@ const AuthScreen = () => {
             // Show MoodMap screen despite the error
             setShowMoodMap(true);
             setShowGuide(false);
-            setIsNewUser(false);
           }
         }]
       );
     }
   };
 
-  // If MoodMap screen should be shown, render it
-  if (showMoodMap) {
-    return <MoodMapScreen />;
+  // New conditional for MoodMap
+  if (showHomeMoodMap) {
+    return <MoodMap />;
   }
 
-  // If guide should be shown, render the GuideScreen
+  // If MoodMap screen should be shown, render it with the navigate function
+  if (showMoodMap) {
+    return <MoodMapScreen onNavigateToHome={handleNavigateToHome} />;
+  }
+
+  // If guide should be shown, render the GuideScreen with the navigate function
   if (showGuide) {
-    return <GuideScreen onComplete={handleGuideComplete} />;
+    return <GuideScreen onComplete={handleGuideComplete} onNavigateToHome={handleNavigateToHome} />;
   }
 
   // Otherwise show the regular auth screen
@@ -883,6 +1015,37 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000000', // Changed from #f5f5f5 to black
   },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 10,
+    marginTop: 30,
+  },
+  homeButton: {
+    backgroundColor: '#333',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+  },
+  homeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  welcomeButtonsContainer: {
+    width: '100%',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 15,
+  },
+  secondaryButton: {
+    backgroundColor: '#333',
+    borderWidth: 1,
+    borderColor: '#3498db',
+  },
   stepContainer: {
     flex: 1,
     backgroundColor: '#000000', // Added black background
@@ -895,22 +1058,22 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   centeredQuestionText: {
-    marginTop: 30,
-    fontSize: 34.4,
+    marginTop: 60,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#ffffff', // Changed from #333 to white
     textAlign: 'center',
     lineHeight: 34,
   },
   centeredQuestionSecText:{
-    fontSize: 39,
-    marginTop: 30,
+    fontSize: 30,
+    marginTop: 100,
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#ffffff', // Changed to white
   },
   centeredQuestionThrText:{
-    fontSize: 35,
+    fontSize: 30,
     marginTop: 60,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -918,7 +1081,6 @@ const styles = StyleSheet.create({
   },
   centeredQuestionSubText: {
     fontSize: 20,
-    padding: 20,
     color: '#cccccc', // Changed to light gray
   },
   keyboardAvoidingView: {
@@ -1220,26 +1382,50 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  // MoodEntry Screen styles (updated without map)
+  // MoodEntry Screen styles with map
   moodEntryContainer: {
     flex: 1,
     padding: 20,
     backgroundColor: '#000',
     alignItems: 'center',
   },
+  allowLocationButton: {
+    backgroundColor: '#3498db',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 15,
+    marginBottom: 15,
+    width: '80%',
+    alignItems: 'center',
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  allowLocationButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   moodEntryTitle: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
-    marginTop: 70,
+    marginTop: 40,
   },
   moodLocation: {
     fontSize: 35,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
-    marginTop: 50,
+    marginTop: 15,
   },
   moodtextLocation: {
     fontSize: 20,
@@ -1250,9 +1436,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 40,
   },
-  // Replaced map container with simple view
+  // Map styles
   moodDisplayContainer: {
-    height: 300,
+    height: 350,
     width: '100%',
     borderRadius: 12,
     marginVertical: 16,
@@ -1262,6 +1448,47 @@ const styles = StyleSheet.create({
     borderColor: '#333333',
     borderWidth: 1,
     padding: 16,
+    overflow: 'hidden',
+  },
+  mapContainer: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#121212',
+  },
+  mapTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+    color: '#fff',
+  },
+  mapWrapper: {
+    width: '100%',
+    height: 220,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  locationButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 15,
+  },
+  locationButton: {
+    backgroundColor: '#3498db',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 5,
+  },
+  locationButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   placeholderText: {
     textAlign: 'center',
@@ -1269,7 +1496,7 @@ const styles = StyleSheet.create({
     color: '#cccccc',
     padding: 20,
   },
-  // New styles for enhanced mood display
+  // Mood selection styles
   selectedMoodContainer: {
     width: '100%',
     alignItems: 'center',
@@ -1295,18 +1522,6 @@ const styles = StyleSheet.create({
     color: '#cccccc',
     marginBottom: 8,
     textAlign: 'left',
-  },
-  backButton: {
-    backgroundColor: '#333',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginTop: 20,
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   // MoodMapScreen enhanced styles
   selectedButton: {
