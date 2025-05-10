@@ -1,0 +1,585 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  contentContainer: {
+    padding: 16,
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  halfSection: {
+    width: '48%',
+  },
+  emptyCard: {
+    backgroundColor: '#222',
+    borderRadius: 10,
+    padding: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 80,
+    borderLeftWidth: 3,
+    borderLeftColor: '#555',
+  },
+  emptyCardText: {
+    color: '#aaa',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  header: {
+    marginTop: 35,
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#fff',
+  },
+  // Toggle Styles for Pills Design
+  toggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 20,
+  },
+  toggleWrapper: {
+    flexDirection: 'row',
+    backgroundColor: '#272727',
+    borderRadius: 30,
+    height: 42,
+    position: 'relative',
+    width: '100%',
+    maxWidth: 280,
+  },
+  toggleBackground: {
+    position: 'absolute',
+    top: 3,
+    bottom: 3,
+    width: '50%',
+    borderRadius: 25,
+    backgroundColor: '#555',
+    zIndex: 1,
+  },
+  toggleLeftPosition: {
+    left: 3,
+  },
+  toggleRightPosition: {
+    left: '50%',
+    right: 3,
+    marginLeft: -3,
+  },
+  toggleButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  toggleButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  mapContainer: {
+    height: 300,
+    marginBottom: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  map: {
+    height: '100%',
+    width: '100%',
+  },
+  mapPlaceholder: {
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    right: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 10,
+    borderRadius: 10,
+  },
+  section: {
+    marginBottom: 16,
+  },
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#fff',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: '#fff',
+  },
+  // Updated Mood Selection UI with Emoji Circles
+  moodCirclesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+  },
+  moodCircleWrapper: {
+    alignItems: 'center',
+    width: 65,
+  },
+  moodCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  selectedMoodCircle: {
+    borderWidth: 2,
+    // borderColor: '#fff',
+  },
+  moodEmoji: {
+    fontSize: 43,
+  },
+  moodName: {
+    color: '#fff',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  selectedMoodName: {
+    fontWeight: 'bold',
+  },
+  markerContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  markerEmoji: {
+    fontSize: 20,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#444',
+    marginVertical: 20,
+  },
+  selfCareTips: {
+    backgroundColor: '#222',
+    borderRadius: 8,
+    padding: 12,
+  },
+  selfCareTip: {
+    fontSize: 14,
+    color: '#fff',
+    marginBottom: 8,
+  },
+  placeholderText: {
+    color: '#ccc',
+    textAlign: 'center',
+  },
+  suggestedPlaceCard: {
+    backgroundColor: '#222',
+    borderRadius: 10,
+    padding: 12,
+    height: 80,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FFD700',
+    justifyContent: 'center',
+  },
+  suggestedPlaceTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  suggestedPlaceDescription: {
+    color: '#ccc',
+    fontSize: 12,
+  },
+  chatConnectCard: {
+    backgroundColor: '#222',
+    borderRadius: 10,
+    padding: 12,
+    height: 80,
+    borderLeftWidth: 3,
+    borderLeftColor: '#4DA6FF',
+    justifyContent: 'center',
+  },
+  chatConnectContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  chatIconContainer: {
+    marginRight: 8,
+  },
+  chatTextContainer: {
+    flex: 1,
+  },
+  chatConnectTitle: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  chatConnectDescription: {
+    color: '#ccc',
+    fontSize: 12,
+  },
+  // New Map Card Styles
+  mapCard: {
+    backgroundColor: '#222',
+    borderRadius: 10,
+    height: 80,
+    borderLeftWidth: 3,
+    borderLeftColor: '#50C878', // Emerald green
+    overflow: 'hidden',
+  },
+  miniMapPreview: {
+    height: 60,
+    width: '100%',
+    backgroundColor: '#333', // Darker background for map preview
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mapCardText: {
+    color: '#fff',
+    fontSize: 12,
+    textAlign: 'center',
+    padding: 4,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  // Self-Care Tips Modal Styles
+selfCareIntro: {
+  fontSize: 15,
+  color: '#ccc',
+  marginBottom: 15,
+  lineHeight: 22,
+},
+selfCareTipsContainer: {
+  maxHeight: 400,
+},
+selfCareTipItem: {
+  flexDirection: 'row',
+  backgroundColor: '#222',
+  padding: 15,
+  borderRadius: 10,
+  marginBottom: 15,
+},
+selfCareTipIconContainer: {
+  width: 50,
+  height: 50,
+  borderRadius: 25,
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 15,
+},
+selfCareTipContent: {
+  flex: 1,
+},
+selfCareTipTitle: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+  marginBottom: 6,
+},
+selfCareTipDescription: {
+  color: '#ccc',
+  fontSize: 14,
+  lineHeight: 20,
+},
+selfCareDailyChallenge: {
+  backgroundColor: '#333',
+  padding: 20,
+  borderRadius: 15,
+  marginTop: 10,
+  marginBottom: 20,
+  borderLeftWidth: 3,
+  borderLeftColor: '#9F7AEA',
+},
+selfCareChallengeTitle: {
+  color: '#9F7AEA',
+  fontSize: 18,
+  fontWeight: '600',
+  marginBottom: 10,
+},
+selfCareChallengeText: {
+  color: '#fff',
+  fontSize: 15,
+  lineHeight: 22,
+  marginBottom: 15,
+},
+selfCareChallengeButton: {
+  backgroundColor: '#9F7AEA',
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 25,
+  alignSelf: 'flex-start',
+},
+selfCareChallengeButtonText: {
+  color: '#fff',
+  fontWeight: '600',
+  fontSize: 14,
+},
+  addButtonContainer: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#50C878',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  // Self-Care Card Styles
+  selfCareCard: {
+    backgroundColor: '#222',
+    borderRadius: 10,
+    padding: 12,
+    height: 80,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FF6B6B', // Light red
+    justifyContent: 'center',
+  },
+  selfCareIconContainer: {
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  selfCareTextContainer: {
+    flex: 1,
+  },
+  selfCareItem: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  selfCareSeeMore: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  // Favorites Map Modal Styles
+  favoritesMapContainer: {
+    height: 200,
+    borderRadius: 12,
+    overflow: 'hidden',
+    position: 'relative',
+    marginBottom: 10,
+  },
+  favoritesMap: {
+    height: '100%',
+    width: '100%',
+  },
+  addFavoriteButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#50C878',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  favoriteMarkerContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFD700',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  favoriteLocationsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  favoriteLocationsContainer: {
+    maxHeight: 200,
+  },
+  favoriteLocationItem: {
+    backgroundColor: '#222',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FFD700',
+  },
+  favoriteLocationTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  favoriteLocationDescription: {
+    color: '#ccc',
+    fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#181818',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  chatModalContainer: {
+    backgroundColor: '#181818',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    height: '50%', // Takes half of the screen
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    flex: 1,
+  },
+  closeButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalDescription: {
+    fontSize: 16,
+    color: '#ccc',
+    marginBottom: 20,
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: '#333',
+    marginVertical: 15,
+  },
+  otherSuggestionsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 12,
+  },
+  otherSuggestionsContainer: {
+    maxHeight: 200,
+  },
+  otherSuggestionItem: {
+    backgroundColor: '#222',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FFD700',
+  },
+  otherSuggestionTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  otherSuggestionDescription: {
+    color: '#ccc',
+    fontSize: 14,
+  },
+  chatMessagesContainer: {
+    flex: 1,
+    marginBottom: 10,
+  },
+  chatMessagesContent: {
+    paddingVertical: 10,
+  },
+  messageContainer: {
+    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  userMessageContainer: {
+    alignItems: 'flex-end',
+  },
+  botMessageContainer: {
+    alignItems: 'flex-start',
+  },
+  messageBubble: {
+    padding: 12,
+    borderRadius: 18,
+    maxWidth: '80%',
+  },
+  userMessageBubble: {
+    backgroundColor: '#4DA6FF',
+  },
+  botMessageBubble: {
+    backgroundColor: '#333',
+  },
+  messageText: {
+    color: '#fff',
+    fontSize: 14,
+  },
+  chatInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+    paddingTop: 10,
+  },
+  chatInput: {
+    flex: 1,
+    backgroundColor: '#333',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    color: '#fff',
+    marginRight: 10,
+  },
+  sendButton: {
+    backgroundColor: '#4DA6FF',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  }
+});
