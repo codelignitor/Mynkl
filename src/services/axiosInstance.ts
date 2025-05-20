@@ -36,9 +36,8 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    
     const status = error.response?.status;
-    const message = error.response?.data?.message ;
+    const message = error.response?.data?.message || 'Something went wrong';
 
     if (status === 401) {
       // Token expired or unauthorized
