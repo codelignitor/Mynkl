@@ -678,7 +678,6 @@ greenDot: {
   borderRadius: 7,
   backgroundColor: '#8eda99', // Bright green dot
 },
-
 darkStatusCard: {
   flex: 1,
   height: 80, // Shorter height to match image
