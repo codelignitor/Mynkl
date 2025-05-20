@@ -19,17 +19,19 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: BlurTabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
+        tabBarActiveTintColor: '#46596a',
+        tabBarInactiveTintColor: '#fff',
+        headerShown: false,    
+        tabBarStyle: {
+          backgroundColor: '#8c9bac',
+      position: 'absolute',          
+      borderTopWidth: 0,    
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20, 
+              
+      elevation: 0,
+         
+         }
       }}>
       <Tabs.Screen
         name="index"
@@ -39,10 +41,10 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="moodMap/index"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'MoodMap',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="mappin.and.ellipse" color={color} />,
         }}
       />
       <Tabs.Screen
