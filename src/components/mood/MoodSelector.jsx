@@ -6,7 +6,6 @@ import SectionHeader from '../common/SectionHeader';
 const MoodSelector = ({ moods, selectedMood, handleMoodSelection }) => {
   return (
     <View style={styles.section}>
-      <SectionHeader title="How are you feeling?" />
       <View style={styles.moodCirclesContainer}>
         {moods.map((mood) => (
           <TouchableOpacity
