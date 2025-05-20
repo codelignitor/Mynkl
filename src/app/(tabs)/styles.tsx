@@ -3,16 +3,12 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#435665',
   },
   contentContainer: {
     padding: 16,
   },
-  rowContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
+ 
   halfSection: {
     width: '48%',
   },
@@ -31,12 +27,38 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
   },
-  header: {
-    marginTop: 35,
-    fontSize: 28,
+ // Updated styles for header and bell icon alignment
+headerContainer: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  width: '100%',
+  paddingTop: 30,
+  marginTop: 30,
+  marginBottom: 20,
+},
+headerTextContainer: {
+  flex: 1,
+},
+header: {
+  fontSize: 28,
+  fontWeight: 'bold',
+  color: '#fff',
+},
+bellIconContainer: {
+  padding: 5,
+  marginLeft: 10,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+bellIcon: {
+  // No additional styling needed here
+},
+  headerSection:{
+    paddingTop:20,
+    fontSize: 29,
     fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center',
     color: '#fff',
   },
   // Toggle Styles for Pills Design
@@ -581,5 +603,213 @@ selfCareChallengeButtonText: {
   sendButtonText: {
     color: '#fff',
     fontWeight: '600',
-  }
+  },
+  // check in
+  checkInLink: {
+  color: '#5271ff',
+  fontSize: 16,
+  fontWeight: 'bold',
+  textDecorationLine: 'underline',
+  marginVertical: 10,
+  textAlign: 'center',
+},
+checkedInLink: {
+  color: '#4CAF50',
+  textDecorationLine: 'none',
+},
+disabledLink: {
+  color: '#a0a0a0',
+  textDecorationLine: 'none',
+},
+// Check In
+rowContainer: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  marginTop: 40,
+  paddingHorizontal: 16,
+  gap: 12,
+  alignItems: 'flex-start', // Align items to the top to accommodate different heights
+},
+rectangularCard: {
+  width: '60%', // Take up more width for the rectangular card
+  height: 80,
+  backgroundColor: '#4e6274',
+  borderRadius: 12,
+  padding: 16,
+  justifyContent: 'space-between',
+},
+squareCard: {
+  width: '35%', // Take up less width to make it square
+  aspectRatio: 1, // Make it a perfect square
+  backgroundColor: '#4e6274',
+  borderRadius: 12,
+  padding: 16,
+  justifyContent: 'space-between',
+},
+statusCardTitle: {
+  fontSize: 16,
+  fontWeight: 'bold',
+  color: 'white',
+},
+dotsContainer: {
+  flexDirection: 'row',
+  marginTop: 6,
+  gap: 8,
+},
+lightDot: {
+  width: 14,
+  height: 14,
+  borderRadius: 7,
+  backgroundColor: '#a6b2bd', // Light gray dot
+},
+darkDot: {
+  width: 14,
+  height: 14,
+  borderRadius: 7,
+  backgroundColor: '#2f3e4a', // Dark blue dot
+},
+singleDotContainer: {
+  marginTop: 'auto', // Push to the bottom of the square
+  alignItems: 'flex-start',
+},
+greenDot: {
+  width: 14,
+  height: 14,
+  borderRadius: 7,
+  backgroundColor: '#8eda99', // Bright green dot
+},
+darkStatusCard: {
+  flex: 1,
+  height: 80, // Shorter height to match image
+  backgroundColor: '#4e6274', // Dark blue-gray background
+  borderRadius: 12,
+  padding: 16,
+  justifyContent: 'space-between',
+},
+// Add these to your styles.js file
+blueDot: {
+  width: 12,
+  height: 12,
+  borderRadius: 6,
+  backgroundColor: '#4287f5', // Blue color, adjust as needed
+},
+purpleDot: {
+  width: 12,
+  height: 12,
+  borderRadius: 6,
+  backgroundColor: '#8a4af3', // Purple color, adjust as needed
+},
+// Add these to your styles.js file
+appIconCard: {
+  flex: 1,
+  height: 100, // You can adjust this value
+  margin: 5,
+  borderRadius: 12,
+  backgroundColor: '#4e6274', // Light gray background similar to the image
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 10,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.2,
+  shadowRadius: 1.5,
+  elevation: 2,
+},
+iconContainer: {
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  backgroundColor: '#e0e0e0', // Slightly darker background for icon
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginBottom: 8,
+},
+appIconText: {
+  fontSize: 14,
+  fontWeight: '500',
+  color: '#333',
+  textAlign: 'center',
+},
+// Activity
+// Add these to your styles.js file
+menuSectionContainer: {
+  paddingTop:10,
+  marginTop: 20,
+  paddingHorizontal: 5,
+  width: '100%',
+},
+menuCard: {
+  width: '100%',
+  height: 56,
+  borderRadius: 12,
+  backgroundColor: '#2a3543', // Dark blue background similar to the image
+  justifyContent: 'center',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.2,
+  shadowRadius: 1.5,
+  elevation: 2,
+},
+menuCardContent: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: 16,
+},
+menuIconContainer: {
+  width: 32,
+  height: 32,
+  borderRadius: 16,
+  backgroundColor: '#4A89DC', // Light blue for icon background
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 12,
+},
+menuCardText: {
+  fontSize: 16,
+  fontWeight: '500',
+  color: '#ffffff', // White text
+  flex: 1,
+},
+chevronIcon: {
+  marginLeft: 'auto',
+},
+// Add these styles for the larger Activities section
+largeMenuCard: {
+  width: '100%',
+  height: 80, // Increased height
+  borderRadius: 12,
+  backgroundColor: '#2a3543', // Dark blue background
+  justifyContent: 'center',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.2,
+  shadowRadius: 1.5,
+  elevation: 2,
+  marginBottom: 10,
+},
+largeMenuCardContent: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingHorizontal: 16,
+  height: '100%',
+},
+largeMenuIconContainer: {
+  width: 40, // Larger icon container
+  height: 40, // Larger icon container
+  borderRadius: 20,
+  backgroundColor: '#4A89DC', // Light blue for icon background
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 15,
+},
+menuTextContainer: {
+  flex: 1,
+  justifyContent: 'center',
+},
+largeMenuCardTitle: {
+  fontSize: 18, // Larger font size
+  fontWeight: '500',
+  color: '#ffffff', // White text
+},
+
 });

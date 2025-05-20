@@ -1,23 +1,13 @@
-import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, Text, View } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, Image } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
+// You'll need to import icons
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Components
-import MoodToggle from '@/src/components/mood/MoodToggle';
-import MoodMapView from '@/src/components/map/MoodMapView';
 import MoodSelector from '@/src/components/mood/MoodSelector';
-import SuggestedPlaces from '@/src/components/recommendations/SuggestedPlaces';
-import ChatAndConnect from '@/src/components/recommendations/ChatAndConnect';
-import SelfCareCard from '@/src/components/self-care/SelfCareCard';
-import FavoritePlacesCard from '@/src/components/favorites/FavoritePlacesCard';
-import SuggestedPlaceModal from '@/src/components/modals/SuggestedPlaceModal';
-import ChatModal from '@/src/components/modals/ChatModal';
-import SelfCareModal from '@/src/components/modals/SelfCareModal';
-import FavoritesModal from '@/src/components/modals/FavoritesModal';
-
 // Data
 import { moodsData } from './moodsData';
-import { favoriteLocationsData } from './locationsData';
 import { selfCareTipsData } from './selfCareData';
 
 // Styles
@@ -26,124 +16,103 @@ import { styles } from './styles';
 const MoodMapScreen = () => {
   // State
   const [selectedMood, setSelectedMood] = useState(null);
-  const [mapRegion, setMapRegion] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
+  const [checkedIn, setCheckedIn] = useState(false);
+  const [squareWidth, setSquareWidth] = useState(0);
+  const squareRef = useRef(null);
+  // State to track selected sections
+  const [selectedSections, setSelectedSections] = useState({
+    moodMap: false,
+    hugs: false,
+    activities: false
   });
-  const [showSuggestedModal, setShowSuggestedModal] = useState(false);
-  const [selectedSuggestedPlace, setSelectedSuggestedPlace] = useState(null);
-  const [showChatModal, setShowChatModal] = useState(false);
-  const [chatMessage, setChatMessage] = useState('');
-  const [chatMessages, setChatMessages] = useState([
-    { id: 1, text: "Hi there! How are you feeling today?", sender: "bot" },
-  ]);
-  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
-  const [favoriteLocations, setFavoriteLocations] = useState(favoriteLocationsData);
-  const [showSelfCareModal, setShowSelfCareModal] = useState(false);
+
+  // Effect to measure the square's width after layout
+  useEffect(() => {
+    const measureSquare = () => {
+      if (squareRef.current) {
+        try {
+          squareRef.current.measure((x, y, width, height, pageX, pageY) => {
+            if (width > 0) {
+              setSquareWidth(width);
+            }
+          });
+        } catch (error) {
+          console.log('Error measuring square:', error);
+        }
+      }
+    };
+
+    // Delay the measurement to ensure the component is rendered
+    const timer = setTimeout(measureSquare, 300);
+    
+    return () => clearTimeout(timer); // Cleanup on unmount
+  }, []);
 
   // Handlers
   const handleMoodSelection = (id) => {
-    const selectedMoodObj = moodsData.find((mood) => mood.id === id);
     setSelectedMood(id);
-    
-    if (selectedMoodObj?.locations?.length) {
-      const firstLocation = selectedMoodObj.locations[0];
-      
-      setMapRegion({
-        latitude: firstLocation.latitude,
-        longitude: firstLocation.longitude,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      });
-      
-      setSelectedSuggestedPlace({
-        id: firstLocation.id,
-        name: firstLocation.name,
-        description: firstLocation.description,
-        latitude: firstLocation.latitude,
-        longitude: firstLocation.longitude,
-        emoji: selectedMoodObj.emoji
-      });
-    }
   };
 
-  const handleSendMessage = () => {
-    if (chatMessage.trim() === '') return;
-
-    // Add user message
-    const newUserMessage = {
-      id: chatMessages.length + 1,
-      text: chatMessage,
-      sender: 'user',
-    };
-    
-    setChatMessages([...chatMessages, newUserMessage]);
-    setChatMessage('');
-
-    // Simulate bot response after a short delay
-    setTimeout(() => {
-      let botResponse;
-      const lowercaseMsg = chatMessage.toLowerCase();
-      
-      if (lowercaseMsg.includes('sad') || lowercaseMsg.includes('lonely')) {
-        botResponse = "I'm sorry to hear that. Would you like to see some places that might help when you're feeling lonely?";
-      } else if (lowercaseMsg.includes('stress') || lowercaseMsg.includes('anxious')) {
-        botResponse = "Stress can be challenging. Have you tried visiting any of our stress-relief recommendations?";
-      } else if (lowercaseMsg.includes('happy') || lowercaseMsg.includes('good')) {
-        botResponse = "That's wonderful! Would you like to explore more happy places to maintain your mood?";
-      } else if (lowercaseMsg.includes('hello') || lowercaseMsg.includes('hi')) {
-        botResponse = "Hello there! How are you feeling today? I can suggest places based on your mood.";
-      } else {
-        botResponse = "Thanks for sharing! Is there a specific mood you're experiencing that I can help with?";
-      }
-      
-      const newBotMessage = {
-        id: chatMessages.length + 2,
-        text: botResponse,
-        sender: 'bot',
-      };
-      
-      setChatMessages(prevMessages => [...prevMessages, newBotMessage]);
-    }, 1000);
+  const handleCheckIn = () => {
+    setCheckedIn(true);
+    // You could add more functionality here, like saving the check-in data
   };
 
-  // Function to add a new favorite location
-  const addFavoriteLocation = (newLocation) => {
-    setFavoriteLocations([...favoriteLocations, {
-      id: favoriteLocations.length + 1,
-      ...newLocation,
-      isSelected: true
-    }]);
+  // Handler for section selection
+  const handleSectionSelect = (section) => {
+    setSelectedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  // Notifications handler
+  const handleNotificationsPress = () => {
+    // Add your notifications logic here
+    console.log('Notifications pressed');
+    // You can navigate to notifications screen or show a modal here
   };
 
   // Computed values
-  const currentLocations = selectedMood
-    ? moodsData.find((mood) => mood.id === selectedMood)?.locations || []
-    : [];
   const currentEmoji = selectedMood
     ? moodsData.find((mood) => mood.id === selectedMood)?.emoji
     : null;
 
+  // Handle layout change for the square
+  const handleSquareLayout = () => {
+    // Wait a bit to ensure the component is fully rendered
+    setTimeout(() => {
+      if (squareRef.current) {
+        try {
+          squareRef.current.measure((x, y, width, height, pageX, pageY) => {
+            if (width > 0) {
+              setSquareWidth(width);
+            }
+          });
+        } catch (error) {
+          console.log('Error in onLayout measurement:', error);
+        }
+      }
+    }, 200);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={[styles.contentContainer, { flexGrow: 1 }]}>
-        <Text style={styles.header}>MoodMap</Text>
+        {/* Header with notification bell */}
+        <View style={styles.headerContainer}>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.header}>Hello, Hammad</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.bellIconContainer} 
+            onPress={handleNotificationsPress}
+          >
+            <Icon name="bell-outline" size={25} color="#ffffff" style={styles.bellIcon} />
+          </TouchableOpacity>
+        </View>
 
-        {/* Toggle Container */}
-        <MoodToggle 
-          selectedMood={selectedMood} 
-          setSelectedMood={setSelectedMood} 
-          handleMoodSelection={handleMoodSelection} 
-        />
-
-        {/* Map */}
-        <MoodMapView
-          mapRegion={mapRegion}
-          selectedMood={selectedMood}
-          currentLocations={currentLocations}
-          currentEmoji={currentEmoji} backgroundColor={undefined}        />
+        <Text style={styles.headerSection}>How are you feeling?</Text>
 
         {/* Mood Selection */}
         <MoodSelector 
@@ -152,69 +121,90 @@ const MoodMapScreen = () => {
           handleMoodSelection={handleMoodSelection} 
         />
         
-        <View style={styles.divider} />
-
-        {/* Recommendations Section */}
-        <Text style={styles.sectionTitle}>Recommendations</Text>
-        
+        {/* Row for sections with related dimensions */}
         <View style={styles.rowContainer}>
-          {/* Suggested Places */}
-          <SuggestedPlaces 
-            selectedSuggestedPlace={selectedSuggestedPlace} 
-            currentEmoji={currentEmoji} 
-            setShowSuggestedModal={setShowSuggestedModal} 
-          />
-
-          {/* Chat & Connect */}
-          <ChatAndConnect setShowChatModal={setShowChatModal} />
+          {/* Check-in Section - Height will match square width */}
+          <TouchableOpacity 
+            style={[
+              styles.rectangularCard, 
+              squareWidth > 0 && { height: squareWidth }
+            ]} 
+            onPress={handleCheckIn}
+          >
+            <Text style={styles.statusCardTitle}>Check-in</Text>
+            <View style={styles.dotsContainer}>
+              <View style={styles.lightDot} />
+              <View style={styles.lightDot} />
+              <View style={styles.darkDot} />
+              <View style={styles.darkDot} />
+            </View>
+          </TouchableOpacity>
+          
+          {/* Open to Talk Section - Square */}
+          <TouchableOpacity 
+            style={styles.squareCard}
+            ref={squareRef}
+            onLayout={handleSquareLayout}
+          >
+            <Text style={styles.statusCardTitle}>Open to Talk</Text>
+            <View style={styles.singleDotContainer}>
+              <View style={styles.greenDot} />
+            </View>
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.divider} />
-
-        {/* Self-Care & Favorites Row */}
+        
+        {/* Second Row - App Icon Style Sections with color change on click */}
         <View style={styles.rowContainer}>
-          {/* Self-Care Tips */}
-          <SelfCareCard setShowSelfCareModal={setShowSelfCareModal} />
-
-          {/* Favorite Places */}
-          <FavoritePlacesCard setShowFavoritesModal={setShowFavoritesModal} />
+          {/* MoodMap Icon Style Section */}
+          <TouchableOpacity 
+            style={[
+              styles.appIconCard, 
+              selectedSections.moodMap && { backgroundColor: '#b7c2cc' }
+            ]}
+            onPress={() => handleSectionSelect('moodMap')}
+          >
+            <View style={styles.iconContainer}>
+              <Icon name="map-marker" size={24} color="#4287f5" />
+            </View>
+            <Text style={styles.appIconText}>MoodMap</Text>
+          </TouchableOpacity>
+          
+          {/* Hugs Icon Style Section */}
+          <TouchableOpacity 
+            style={[
+              styles.appIconCard, 
+              selectedSections.hugs && { backgroundColor: '#b7c2cc' }
+            ]}
+            onPress={() => handleSectionSelect('hugs')}
+          >
+            <View style={styles.iconContainer}>
+              <Icon name="heart" size={24} color="#ff4f8b" />
+            </View>
+            <Text style={styles.appIconText}>Hugs</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {/* Activities Section - Menu style with larger size */}
+        <View style={styles.menuSectionContainer}>
+          <TouchableOpacity 
+            style={[
+              styles.largeMenuCard,
+              selectedSections.activities && { backgroundColor: '#b7c2cc' }
+            ]}
+            onPress={() => handleSectionSelect('activities')}
+          >
+            <View style={styles.largeMenuCardContent}>
+              <View style={styles.largeMenuIconContainer}>
+                <Icon name="run" size={28} color="#ffffff" />
+              </View>
+              <View style={styles.menuTextContainer}>
+                <Text style={styles.largeMenuCardTitle}>Activities</Text>
+              </View>
+              <Icon name="chevron-right" size={24} color="#8c8c8c" style={styles.chevronIcon} />
+            </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
-
-      {/* Modals */}
-      <SuggestedPlaceModal 
-        visible={showSuggestedModal}
-        onClose={() => setShowSuggestedModal(false)}
-        selectedSuggestedPlace={selectedSuggestedPlace}
-        currentEmoji={currentEmoji}
-        currentLocations={currentLocations}
-        setSelectedSuggestedPlace={setSelectedSuggestedPlace}
-        setMapRegion={setMapRegion}
-      />
-
-      <ChatModal 
-        visible={showChatModal}
-        onClose={() => setShowChatModal(false)}
-        chatMessages={chatMessages}
-        chatMessage={chatMessage}
-        setChatMessage={setChatMessage}
-        handleSendMessage={handleSendMessage}
-      />
-
-      <SelfCareModal 
-        visible={showSelfCareModal}
-        onClose={() => setShowSelfCareModal(false)}
-        selfCareTips={selfCareTipsData}
-      />
-
-      <FavoritesModal 
-        visible={showFavoritesModal}
-        onClose={() => setShowFavoritesModal(false)}
-        mapRegion={mapRegion}
-        favoriteLocations={favoriteLocations}
-        addFavoriteLocation={addFavoriteLocation}
-        setMapRegion={setMapRegion}
-      />
     </SafeAreaView>
   );
 };
