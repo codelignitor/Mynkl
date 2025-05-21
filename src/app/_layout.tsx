@@ -9,8 +9,18 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Provider, useSelector } from 'react-redux';
 import { store } from '@/src/store';
 import { RootState } from '@/src/store';
+import CustomToast from '../components/common/customToast';
+import Toast , { BaseToast, ErrorToast } from 'react-native-toast-message';
+
 
 SplashScreen.preventAutoHideAsync();
+
+
+
+const toastConfig = {
+  success: (props: any) => <CustomToast {...props} />,
+  error: (props: any) => <CustomToast {...props} />,
+};
 
 function MainLayout() {
   const colorScheme = useColorScheme();
@@ -29,11 +39,13 @@ function MainLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+     
       {/* 🔁 Redirect at the layout level */}
       {isUserLoggedIn === null ? null : (
-        isUserLoggedIn ? <Redirect href="/(tabs)" /> : <Redirect href="/(auth)" />
+        isUserLoggedIn ? <Redirect href="/(tabs)/home" /> : <Redirect href="/(auth)" />
       )}
       <Slot />
+      <Toast config={toastConfig} />
       <StatusBar style="auto" />
     </ThemeProvider>
   );
@@ -42,6 +54,7 @@ function MainLayout() {
 export default function RootLayout() {
   return (
     <Provider store={store}>
+       
       <MainLayout />
     </Provider>
   );

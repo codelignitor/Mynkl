@@ -13,7 +13,7 @@ const persistConfig: PersistConfig<RootState> = {
   key: 'root',
   storage: AsyncStorage,
   whitelist: [
-    // 'counter'
+    'auth'
 ],
 };
 
