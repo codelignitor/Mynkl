@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Alert, StatusBar, Linking } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import MoodMap from '../(tabs)/index';
+import MoodMap from '../(tabs)/home/index';
 import { setToken } from '@/src/store/slices/authSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/src/store';
@@ -655,6 +655,7 @@ const AuthScreen = () => {
  
   // Keep all your existing state variables
   const [isLogin, setIsLogin] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -705,58 +706,61 @@ const AuthScreen = () => {
     if (!validateForm()) return;
     
     setIsLoading(true);
-     setShowGuide(true);
-        setIsNewUser(false);
+    //  setShowGuide(true);
+    //     setIsNewUser(false);
 
 
     
     try {
-      // let url = isLogin 
-      //   ? 'https://6f2a-110-39-39-254.ngrok-free.app/auth/login'
-      //   : 'https://6f2a-110-39-39-254.ngrok-free.app/users/register';
+      let url = isLogin 
+        ? 'http://13.50.228.222:8000/auth/login'
+        : 'http://13.50.228.222:8000/users/register';
       
-      // // Prepare the request body based on login or register
-      // const requestBody = isLogin 
-      //   ? { 
-      //       email: formData.email, 
-      //       password: formData.password 
-      //     }
-      //   : {
-      //       username: formData.username,
-      //       email: formData.email,
-      //       password: formData.password
-      //     };
+      // Prepare the request body based on login or register
+      const requestBody = isLogin 
+        ? { 
+            email: formData.email, 
+            password: formData.password 
+          }
+        : {
+            username: formData.username,
+            email: formData.email,
+            password: formData.password
+          };
       
-      // console.log(`Making ${isLogin ? 'login' : 'register'} request to: ${url}`);
-       setShowGuide(true);
-        setIsNewUser(false);
-      // const response = await fetch(url, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(requestBody),
-      // });
+      console.log(`Making ${isLogin ? 'login' : 'register'} request to: ${url}`);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
 
-      // const data = await response.json();
+      const data = await response.json();
       
-      // if (!response.ok) {
-      //   throw new Error(data.message || 'Something went wrong');
-      // }
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
       
-      // *** MAIN CHANGE HERE ***
-      // if (!isLogin) {
-      //   // For login users, show the guide
-      //   setShowGuide(true);
-      //   setIsNewUser(false);
-      // } else {
-      //   // For registration/signup, show a success message and return to login screen
-      //   Alert.alert(
-      //     'Registration Successful',
-      //     'Your account has been created. Please sign in with your credentials.',
-      //     [{ text: 'OK', onPress: () => setIsLogin(true) }]
-      //   );
-      // }
+     
+      if (!isLogin) {
+        // For login users, show the guide
+         Alert.alert(
+          'Registration Successful',
+          'Your account has been created. Please sign in with your credentials.',
+          [{ text: 'OK', onPress: () => setIsLogin(true) }]
+        );
+        setShowGuide(true);
+        setIsNewUser(false);
+
+      } else {
+
+        dispatch(setToken(data?.access_token));
+        // For registration/signup, show a success message and return to login screen
+       
+      }
       
       // console.log('API response:', data);
       

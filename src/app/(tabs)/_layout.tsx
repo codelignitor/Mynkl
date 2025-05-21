@@ -34,7 +34,7 @@ export default function TabLayout() {
          }
       }}>
       <Tabs.Screen
-        name="index"
+        name="home/index"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
@@ -48,23 +48,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="Setting"
+        name="profile/index"
         options={{
-          title: 'Setting',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings" size={size} color={color} />
-          ),
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill.checkmark" color={color} />,
         }}
       />
-       <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'Chat',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble" size={size} color={color} />
-          ),
-        }}
-      />
+     
+      
     </Tabs>
     
   );

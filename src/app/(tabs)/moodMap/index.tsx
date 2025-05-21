@@ -11,12 +11,12 @@ import { IconSymbol } from '@/src/components/ui/IconSymbol';
 
 const MoodMapScreen: React.FC = () => {
 
-    const {hugs} = useMoodMap();
+    const {hugs, searchInput , setSearchInput , moodData} = useMoodMap();
 
-    const [searchInput , setSearchInput] = React.useState('');
+   
       const [mapRegion, setMapRegion] = React.useState({
-        latitude: 37.78825,
-        longitude: -122.4324,
+        latitude: 31.5833,
+        longitude: 74.3000,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
       });
@@ -33,12 +33,16 @@ const MoodMapScreen: React.FC = () => {
      
     return (
        <SafeAreaView style={styles.container}>
-        <SearchInput value={searchInput} onChangeText={setSearchInput} placeholder={"Mood Map"}/>
+        <SearchInput 
+  onChangeText={(text) => {
+    
+    setSearchInput(text);
+  }} value={searchInput}  placeholder={"Mood Map"}/>
       <MoodMapView
       mapContainerStyle={styles.mapContainerStyle}
           mapRegion={mapRegion}
           selectedMood={selectedMood}
-          currentLocations={currentLocations}
+          currentLocations={moodData}
           currentEmoji={currentEmoji} backgroundColor={undefined}        /> 
           <View style={styles.activitiesContainer}>
             <View style={styles.rowContiner}>

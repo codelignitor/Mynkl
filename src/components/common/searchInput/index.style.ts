@@ -24,6 +24,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 16,
-    
+    flex:1
   },
 });

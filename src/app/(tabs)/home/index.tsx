@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, Image } from 'react-native';
+import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 // You'll need to import icons
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -7,13 +7,17 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 // Components
 import MoodSelector from '@/src/components/mood/MoodSelector';
 // Data
-import { moodsData } from './moodsData';
-import { selfCareTipsData } from './selfCareData';
+import { moodsData } from '../moodsData';
+import { selfCareTipsData } from '../selfCareData';
 
 // Styles
-import { styles } from './styles';
+import { styles } from '../styles';
+import { useHome } from './useHome';
+import { useRouter } from 'expo-router';
 
 const MoodMapScreen = () => {
+  const router = useRouter();
+  const {openToTalk ,isLoading ,  updateOpenToTalkHandler , moveToScreen } = useHome();
   // State
   const [selectedMood, setSelectedMood] = useState(null);
   const [checkedIn, setCheckedIn] = useState(false);
@@ -51,12 +55,16 @@ const MoodMapScreen = () => {
   // Handlers
   const handleMoodSelection = (id) => {
     setSelectedMood(id);
+     router.push('/addCheckIn')
+
   };
 
   const handleCheckIn = () => {
     setCheckedIn(true);
-    // You could add more functionality here, like saving the check-in data
+    router.push('/checkIns')
   };
+
+
 
   // Handler for section selection
   const handleSectionSelect = (section) => {
@@ -72,6 +80,8 @@ const MoodMapScreen = () => {
     console.log('Notifications pressed');
     // You can navigate to notifications screen or show a modal here
   };
+
+
 
   // Computed values
   const currentEmoji = selectedMood
@@ -98,6 +108,7 @@ const MoodMapScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+       {isLoading &&<ActivityIndicator/>}
       <ScrollView contentContainerStyle={[styles.contentContainer, { flexGrow: 1 }]}>
         {/* Header with notification bell */}
         <View style={styles.headerContainer}>
@@ -145,10 +156,11 @@ const MoodMapScreen = () => {
             style={styles.squareCard}
             ref={squareRef}
             onLayout={handleSquareLayout}
+            onPress={updateOpenToTalkHandler}
           >
             <Text style={styles.statusCardTitle}>Open to Talk</Text>
             <View style={styles.singleDotContainer}>
-              <View style={styles.greenDot} />
+              <View style={[openToTalk ?styles.greenDot : styles.lightDot]} />
             </View>
           </TouchableOpacity>
         </View>
@@ -161,7 +173,7 @@ const MoodMapScreen = () => {
               styles.appIconCard, 
               selectedSections.moodMap && { backgroundColor: '#b7c2cc' }
             ]}
-            onPress={() => handleSectionSelect('moodMap')}
+            onPress={()=> moveToScreen('/moodMap')}
           >
             <View style={styles.iconContainer}>
               <Icon name="map-marker" size={24} color="#4287f5" />

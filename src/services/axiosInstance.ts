@@ -4,9 +4,10 @@ import { store } from '../store';
 
 import { Alert, Platform, ToastAndroid } from 'react-native';
 import { logout } from '../store/slices/authSlice';
+import Toast from 'react-native-toast-message';
 
 const axiosInstance = axios.create({
-  baseURL: 'https://your-api-url.com/api', 
+  baseURL: 'http://13.50.228.222:8000', 
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -16,6 +17,7 @@ const axiosInstance = axios.create({
 // 🔐 Request Interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
+   
     const state = store.getState();
     const token = state.auth.token;
 
@@ -34,8 +36,9 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    
     const status = error.response?.status;
-    const message = error.response?.data?.message || 'Something went wrong';
+    const message = error.response?.data?.message ;
 
     if (status === 401) {
       // Token expired or unauthorized
@@ -44,10 +47,16 @@ axiosInstance.interceptors.response.use(
       showMessage('Session expired. Please login again.');
     }
 
-    if (status === 400) {
+    // if (status === 404) {
+        
       // Bad request
-      showMessage(message); // Display error message returned from backend
-    }
+      console.log('Error 404:', error.response.data.detail[0].msg);
+     Toast.show({
+  type: 'error', 
+  text1: 'Error',
+  text2:error.response.data.detail[0].msg || 'Something went wrong',
+});
+    
 
     return Promise.reject(error);
   }
