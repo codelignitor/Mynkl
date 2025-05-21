@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TextInput, TouchableOpacity, SafeAreaView, Keyb
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import MoodMap from '../(tabs)/home/index';
-import { setToken } from '@/src/store/slices/authSlice';
+import { isUserLoggedIn, setToken, setTokenOnly } from '@/src/store/slices/authSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/src/store';
 
@@ -147,7 +147,7 @@ const MoodEntryScreen = ({ selectedMood, onBackPress }) => {
             style={styles.allowLocationButton}
             onPress={async() => 
               {await requestLocationPermission()
-                 dispatch(setToken('your-token'))
+                 dispatch(isUserLoggedIn())
               }}
           >
             <Text style={styles.allowLocationButtonText}>Allow Location Access</Text>
@@ -752,6 +752,8 @@ const AuthScreen = () => {
           'Your account has been created. Please sign in with your credentials.',
           [{ text: 'OK', onPress: () => setIsLogin(true) }]
         );
+         console.log('API response:', data);
+         dispatch(setTokenOnly(data?.access_token));
         setShowGuide(true);
         setIsNewUser(false);
 
