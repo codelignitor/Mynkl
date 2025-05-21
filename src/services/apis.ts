@@ -33,7 +33,7 @@ export const getMapSearchResults = async (params: MapSearchParams) => {
 
   console.log('MapSearchParams:', params);
 
-  let url = '';
+  let url = ''
   let queryParams = {};
 
   if (query && query.trim() !== '') {
