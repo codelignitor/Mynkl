@@ -7,6 +7,7 @@ import { isUserLoggedIn, setToken, setTokenOnly } from '@/src/store/slices/authS
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/src/store';
 
+
 // Updated MoodEntryScreen component that will be shown after clicking Continue
 const MoodEntryScreen = ({ selectedMood, onBackPress }) => {
    const dispatch = useDispatch<AppDispatch>();
@@ -153,24 +154,17 @@ const MoodEntryScreen = ({ selectedMood, onBackPress }) => {
             <Text style={styles.allowLocationButtonText}>Allow Location Access</Text>
           </TouchableOpacity>
           
-          <View style={styles.locationButtonsContainer}>
-            <TouchableOpacity 
-              style={styles.locationButton}
-              onPress={getCurrentLocation}
-            >
-              <Text style={styles.locationButtonText}>Refresh Location</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.locationButton}
-              onPress={goToUserLocation}
-            >
-              <Text style={styles.locationButtonText}>Center Map</Text>
-            </TouchableOpacity>
-          </View>
+          
         </View>
       </View>
-      
+      {/* Skip Link */}
+          <TouchableOpacity 
+            onPress={() => {
+              dispatch(isUserLoggedIn())
+            }}
+          >
+            <Text style={styles.skipLinkText}>Skip</Text>
+          </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -269,13 +263,14 @@ const MoodMapScreen = ({ onNavigateToHome }) => {
   );
 };
 
-// Multi-step Guide Screen Component
 const GuideScreen = ({ onComplete, onNavigateToHome }) => {
   // Use a simpler state structure without step numbers
   const [currentSection, setCurrentSection] = useState('suggestions');
   const [preferences, setPreferences] = useState({
     suggestionPreference: 'always',
     notificationPreference: 'daily',
+    privacyPreference: 'moderate', // New preference for privacy screen
+    communityPreference: 'active', // New preference for community screen
     themePreference: 'light'
   });
   // Add state to track if welcome screen should be shown
@@ -347,7 +342,7 @@ const GuideScreen = ({ onComplete, onNavigateToHome }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>I’ll update when I want </Text>
+              <Text style={styles.preferenceTitle}>I'll update when I want </Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -367,7 +362,7 @@ const GuideScreen = ({ onComplete, onNavigateToHome }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>I’d rather explore anonymously</Text>
+              <Text style={styles.preferenceTitle}>I'd rather explore anonymously</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -395,8 +390,8 @@ const GuideScreen = ({ onComplete, onNavigateToHome }) => {
         notificationPreference: selectedOption
       });
       
-      // Move to next section
-      setCurrentSection('theme');
+      // Move to privacy screen (NEW)
+      setCurrentSection('privacy');
     };
 
     return (
@@ -476,7 +471,202 @@ const GuideScreen = ({ onComplete, onNavigateToHome }) => {
     );
   };
 
-  // Third Step - Theme Preferences
+  // NEW THIRD Step - Privacy Preferences
+  const PrivacyStep = () => {
+    const [selectedOption, setSelectedOption] = useState(preferences.privacyPreference);
+
+    const handleOptionSelect = (option) => {
+      setSelectedOption(option);
+    };
+
+    const handleContinue = () => {
+      // Save selection to preferences state
+      setPreferences({
+        ...preferences,
+        privacyPreference: selectedOption
+      });
+      
+      // Move to community screen
+      setCurrentSection('community');
+    };
+
+    return (
+      <View style={styles.privacyStepContainer}>
+        {/* Centered Question Text */}
+        <View style={styles.privacyQuestionContainer}>
+          <Text style={styles.privacyQuestionText}>
+            Would you like to receive mood-based tips and nearby recommendations?
+          </Text>
+          <Text style={styles.privacyQuestionSubText}>
+            (like safe spaces, calming places, or happy events nearby)
+          </Text>
+        </View>
+        
+        {/* First Preference Section */}
+        <TouchableOpacity 
+          style={styles.privacyPreferencesContainer}
+          onPress={() => handleOptionSelect('strict')}
+        >
+          <View style={styles.privacyPreferenceItem}>
+            <View style={styles.privacyCheckboxContainer}>
+              <View style={[
+                styles.privacyRoundCheckbox,
+                selectedOption === 'strict' && styles.privacyRoundCheckboxSelected
+              ]}>
+                {selectedOption === 'strict' && <View style={styles.privacyRoundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.privacyPreferenceTextContainer}>
+              <Text style={styles.privacyPreferenceTitle}>Yes, show me suggestions based on my mood</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Second Preference Section */}
+        <TouchableOpacity 
+          style={[styles.privacyPreferencesContainer, styles.privacyMiddleSection]}
+          onPress={() => handleOptionSelect('moderate')}
+        >
+          <View style={styles.privacyPreferenceItem}>
+            <View style={styles.privacyCheckboxContainer}>
+              <View style={[
+                styles.privacyRoundCheckbox,
+                selectedOption === 'moderate' && styles.privacyRoundCheckboxSelected
+              ]}>
+                {selectedOption === 'moderate' && <View style={styles.privacyRoundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.privacyPreferenceTextContainer}>
+              <Text style={styles.privacyPreferenceTitle}>Only when I ask </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Third Preference Section */}
+        <TouchableOpacity 
+          style={styles.privacyPreferencesContainer}
+          onPress={() => handleOptionSelect('open')}
+        >
+          <View style={styles.privacyPreferenceItem}>
+            <View style={styles.privacyCheckboxContainer}>
+              <View style={[
+                styles.privacyRoundCheckbox,
+                selectedOption === 'open' && styles.privacyRoundCheckboxSelected
+              ]}>
+                {selectedOption === 'open' && <View style={styles.privacyRoundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.privacyPreferenceTextContainer}>
+              <Text style={styles.privacyPreferenceTitle}>No suggestions, please</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Continue Button */}
+        <TouchableOpacity style={styles.privacyContinueButton} onPress={handleContinue}>
+          <Text style={styles.privacyContinueButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // NEW FOURTH Step - Community Preferences
+  const CommunityStep = () => {
+    const [selectedOption, setSelectedOption] = useState(preferences.communityPreference);
+
+    const handleOptionSelect = (option) => {
+      setSelectedOption(option);
+    };
+
+    const handleContinue = () => {
+      // Save selection to preferences state
+      setPreferences({
+        ...preferences,
+        communityPreference: selectedOption
+      });
+      
+      // Move to theme screen
+      setCurrentSection('theme');
+    };
+
+    return (
+      <View style={styles.communityStepContainer}>
+        {/* Centered Question Text */}
+        <View style={styles.communityQuestionContainer}>
+          <Text style={styles.communityQuestionText}>
+            Would you like to connect with others feeling similarly nearby?
+          </Text>
+        </View>
+        
+        {/* First Preference Section */}
+        <TouchableOpacity 
+          style={styles.communityPreferencesContainer}
+          onPress={() => handleOptionSelect('active')}
+        >
+          <View style={styles.communityPreferenceItem}>
+            <View style={styles.communityCheckboxContainer}>
+              <View style={[
+                styles.communityRoundCheckbox,
+                selectedOption === 'active' && styles.communityRoundCheckboxSelected
+              ]}>
+                {selectedOption === 'active' && <View style={styles.communityRoundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.communityPreferenceTextContainer}>
+              <Text style={styles.communityPreferenceTitle}>Yes, show mood-matching chat rooms</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Second Preference Section */}
+        <TouchableOpacity 
+          style={[styles.communityPreferencesContainer, styles.communityMiddleSection]}
+          onPress={() => handleOptionSelect('observer')}
+        >
+          <View style={styles.communityPreferenceItem}>
+            <View style={styles.communityCheckboxContainer}>
+              <View style={[
+                styles.communityRoundCheckbox,
+                selectedOption === 'observer' && styles.communityRoundCheckboxSelected
+              ]}>
+                {selectedOption === 'observer' && <View style={styles.communityRoundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.communityPreferenceTextContainer}>
+              <Text style={styles.communityPreferenceTitle}>Only with people I follow</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Third Preference Section */}
+        <TouchableOpacity 
+          style={styles.communityPreferencesContainer}
+          onPress={() => handleOptionSelect('minimal')}
+        >
+          <View style={styles.communityPreferenceItem}>
+            <View style={styles.communityCheckboxContainer}>
+              <View style={[
+                styles.communityRoundCheckbox,
+                selectedOption === 'minimal' && styles.communityRoundCheckboxSelected
+              ]}>
+                {selectedOption === 'minimal' && <View style={styles.communityRoundCheckboxInner} />}
+              </View>
+            </View>
+            <View style={styles.communityPreferenceTextContainer}>
+              <Text style={styles.communityPreferenceTitle}>No, just exploring on my own</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Continue Button */}
+        <TouchableOpacity style={styles.communityContinueButton} onPress={handleContinue}>
+          <Text style={styles.communityContinueButtonText}>Continue</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  // Fifth Step - Theme Preferences (Updated navigation)
   const ThemeStep = () => {
     const [selectedOption, setSelectedOption] = useState(preferences.themePreference);
 
@@ -502,9 +692,8 @@ const GuideScreen = ({ onComplete, onNavigateToHome }) => {
         {/* Centered Question Text */}
         <View style={styles.centeredQuestionContainer}>
           <Text style={styles.centeredQuestionThrText}>
-            Would you like to receive mood-based tips and nearby recommendations?
+            Privacy Preference for MoodMap Participation
           </Text>
-        <Text>(like safe spaces, calming places, or happy events nearby)</Text>
         </View>
         
         {/* First Preference Section */}
@@ -522,7 +711,7 @@ const GuideScreen = ({ onComplete, onNavigateToHome }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>Yes, show me suggestions based on my mood</Text>
+              <Text style={styles.preferenceTitle}>I’m okay being a mood pin on the map (anonymously)</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -542,7 +731,7 @@ const GuideScreen = ({ onComplete, onNavigateToHome }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>Only when I ask </Text>
+              <Text style={styles.preferenceTitle}>Only visible to my selected circle </Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -562,7 +751,7 @@ const GuideScreen = ({ onComplete, onNavigateToHome }) => {
               </View>
             </View>
             <View style={styles.preferenceTextContainer}>
-              <Text style={styles.preferenceTitle}>No suggestions, please</Text>
+              <Text style={styles.preferenceTitle}>No mood visibility – private mode only</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -633,6 +822,10 @@ const GuideScreen = ({ onComplete, onNavigateToHome }) => {
         return <SuggestionStep />;
       case 'notifications':
         return <NotificationStep />;
+      case 'privacy':
+        return <PrivacyStep />;
+      case 'community':
+        return <CommunityStep />;
       case 'theme':
         return <ThemeStep />;
       default:
@@ -648,8 +841,7 @@ const GuideScreen = ({ onComplete, onNavigateToHome }) => {
   );
 };
 
-// Updated AuthScreen component with the new navigation functionality
-// Updated AuthScreen component with the new navigation functionality
+
 // Updated AuthScreen component with the new navigation functionality
 const AuthScreen = () => {
  
@@ -850,14 +1042,11 @@ const AuthScreen = () => {
   }
 
   // Otherwise show the regular auth screen
+  //gradient color
   return (
-
-    <SafeAreaView style={styles.container}>
-    
+    <SafeAreaView style={{ flex: 1 }}>
       {Platform.OS === 'ios' ? (
-        <KeyboardAvoidingView
-          behavior="padding"
-          style={styles.keyboardAvoidingView}>
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={styles.scrollView}>
             <View style={styles.modalContainer}>
               <View style={styles.titleContainer}>
@@ -865,7 +1054,7 @@ const AuthScreen = () => {
                   {isLogin ? 'Sign in to your account' : 'Create a new account'}
                 </Text>
               </View>
-              
+
               <View style={styles.formContainer}>
                 {!isLogin && (
                   <View style={styles.inputContainer}>
@@ -879,7 +1068,7 @@ const AuthScreen = () => {
                     />
                   </View>
                 )}
-                
+
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Email address</Text>
                   <TextInput
@@ -892,7 +1081,7 @@ const AuthScreen = () => {
                     onChangeText={(text) => handleChange('email', text)}
                   />
                 </View>
-                
+
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Password</Text>
                   <TextInput
@@ -904,7 +1093,7 @@ const AuthScreen = () => {
                     onChangeText={(text) => handleChange('password', text)}
                   />
                 </View>
-                
+
                 {!isLogin && (
                   <View style={styles.inputContainer}>
                     <Text style={styles.label}>Confirm Password</Text>
@@ -944,7 +1133,6 @@ const AuthScreen = () => {
           </ScrollView>
         </KeyboardAvoidingView>
       ) : (
-        // For Android, use a simpler approach without KeyboardAvoidingView
         <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.modalContainer}>
             <View style={styles.titleContainer}>
@@ -952,7 +1140,7 @@ const AuthScreen = () => {
                 {isLogin ? 'Sign in to your account' : 'Create a new account'}
               </Text>
             </View>
-            
+
             <View style={styles.formContainer}>
               {!isLogin && (
                 <View style={styles.inputContainer}>
@@ -966,7 +1154,7 @@ const AuthScreen = () => {
                   />
                 </View>
               )}
-              
+
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Email address</Text>
                 <TextInput
@@ -979,7 +1167,7 @@ const AuthScreen = () => {
                   onChangeText={(text) => handleChange('email', text)}
                 />
               </View>
-              
+
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>Password</Text>
                 <TextInput
@@ -991,7 +1179,7 @@ const AuthScreen = () => {
                   onChangeText={(text) => handleChange('password', text)}
                 />
               </View>
-              
+
               {!isLogin && (
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Confirm Password</Text>
@@ -1031,7 +1219,7 @@ const AuthScreen = () => {
         </ScrollView>
       )}
     </SafeAreaView>
-  );
+);
 };
 
 const styles = StyleSheet.create({
@@ -1559,6 +1747,200 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
   },
+ skipLinkText: {
+    fontSize: 16,
+    color: '#007AFF', // Blue link color
+    textAlign: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  // Privacy Step Styles (Updated to match image design)
+privacyStepContainer: {
+  flex: 1,
+  paddingHorizontal: 24,
+  paddingVertical: 32,
+  backgroundColor: '#000000',
+  justifyContent: 'center', // Center content vertically
+},
+privacyQuestionContainer: {
+  alignItems: 'center',
+  marginBottom: 60, // Increased spacing
+  paddingHorizontal: 16,
+},
+privacyQuestionText: {
+  fontSize: 28, // Larger font size
+  fontWeight: '600',
+  color: '#ffffff',
+  textAlign: 'center',
+  marginBottom: 16,
+  lineHeight: 36,
+},
+privacyQuestionSubText: {
+  fontSize: 16,
+  color: '#ffffff',
+  textAlign: 'center',
+  lineHeight: 22,
+  opacity: 0.8, // Slightly muted
+},
+privacyPreferencesContainer: {
+  backgroundColor: '#1a1a1a', // Darker background for contrast
+  borderRadius: 16,
+  marginBottom: 16,
+  paddingVertical: 20,
+  paddingHorizontal: 24,
+  borderWidth: 1,
+  borderColor: '#333333',
+},
+privacyMiddleSection: {
+  marginVertical: 8,
+},
+privacyPreferenceItem: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'flex-start', // Align to start
+},
+privacyCheckboxContainer: {
+  marginRight: 20, // Increased spacing
+},
+privacyRoundCheckbox: {
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+  borderWidth: 2,
+  borderColor: '#007AFF',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+privacyRoundCheckboxSelected: {
+  borderColor: '#007AFF',
+},
+privacyRoundCheckboxInner: {
+  width: 12,
+  height: 12,
+  borderRadius: 6,
+  backgroundColor: '#007AFF',
+},
+privacyPreferenceTextContainer: {
+  flex: 1,
+},
+privacyPreferenceTitle: {
+  fontSize: 18, // Slightly larger
+  fontWeight: '500',
+  color: '#ffffff',
+  lineHeight: 24,
+},
+privacyContinueButton: {
+  backgroundColor: '#007AFF',
+  borderRadius: 16, // More rounded
+  paddingVertical: 18, // Increased padding
+  alignItems: 'center',
+  marginTop: 40, // More spacing
+  marginHorizontal: 0, // Full width
+  shadowColor: '#007AFF',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.3,
+  shadowRadius: 8,
+  elevation: 5,
+},
+privacyContinueButtonText: {
+  color: '#ffffff',
+  fontSize: 18, // Larger text
+  fontWeight: '600',
+},
+
+// Community Step Styles (Updated to match image design)
+communityStepContainer: {
+  flex: 1,
+  paddingHorizontal: 24,
+  paddingVertical: 32,
+  backgroundColor: '#000000',
+  justifyContent: 'center', // Center content vertically
+},
+communityQuestionContainer: {
+  alignItems: 'center',
+  marginBottom: 60, // Increased spacing
+  paddingHorizontal: 16,
+},
+communityQuestionText: {
+  fontSize: 28, // Larger font size
+  fontWeight: '600',
+  color: '#ffffff',
+  textAlign: 'center',
+  marginBottom: 16,
+  lineHeight: 36,
+},
+communityQuestionSubText: {
+  fontSize: 16,
+  color: '#ffffff',
+  textAlign: 'center',
+  lineHeight: 22,
+  opacity: 0.8, // Slightly muted
+},
+communityPreferencesContainer: {
+  backgroundColor: '#1a1a1a', // Darker background for contrast
+  borderRadius: 16,
+  marginBottom: 16,
+  paddingVertical: 20,
+  paddingHorizontal: 24,
+  borderWidth: 1,
+  borderColor: '#333333',
+},
+communityMiddleSection: {
+  marginVertical: 8,
+},
+communityPreferenceItem: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'flex-start', // Align to start
+},
+communityCheckboxContainer: {
+  marginRight: 20, // Increased spacing
+},
+communityRoundCheckbox: {
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+  borderWidth: 2,
+  borderColor: '#007AFF',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+communityRoundCheckboxSelected: {
+  borderColor: '#007AFF',
+},
+communityRoundCheckboxInner: {
+  width: 12,
+  height: 12,
+  borderRadius: 6,
+  backgroundColor: '#007AFF',
+},
+communityPreferenceTextContainer: {
+  flex: 1,
+},
+communityPreferenceTitle: {
+  fontSize: 18, // Slightly larger
+  fontWeight: '500',
+  color: '#ffffff',
+  lineHeight: 24,
+},
+communityContinueButton: {
+  backgroundColor: '#007AFF',
+  borderRadius: 16, // More rounded
+  paddingVertical: 18, // Increased padding
+  alignItems: 'center',
+  marginTop: 40, // More spacing
+  marginHorizontal: 0, // Full width
+  shadowColor: '#007AFF',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.3,
+  shadowRadius: 8,
+  elevation: 5,
+},
+communityContinueButtonText: {
+  color: '#ffffff',
+  fontSize: 18, // Larger text
+  fontWeight: '600',
+},
 });
 
 export default AuthScreen;
