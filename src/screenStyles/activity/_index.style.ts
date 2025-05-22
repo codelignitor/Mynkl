@@ -47,11 +47,12 @@ export const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 1,
     borderRadius: 20,
-    overflow: 'hidden',
+    
     backgroundColor: '#1E1E1E',
     borderWidth: 1,
     borderColor: '#333',
     marginBottom: 15,
+    height: 400,
   },
   emptyImageSpace: {
     height: '70%',
@@ -116,7 +117,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#1E1E1E',
     borderWidth: 1,
     borderColor: '#333',
-    padding: 15,
+  
     justifyContent: 'center',
   },
   secondSectionTitle: {
@@ -161,7 +162,7 @@ export const styles = StyleSheet.create({
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 10,
+    
     marginLeft: 8,
     borderWidth: 1,
     borderColor: '#333',
@@ -176,4 +177,28 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  eventImage:{
+    width: '100%',
+    height: 280,
+    borderRadius: 20,
+   
+  },
+  secondEventImage:{
+    width: '100%',
+    height: 80,
+    borderRadius: 20,
+  },
+  thirdEventImage:{
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+    position: 'absolute',
+    top: 0,
+
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });

@@ -17,12 +17,23 @@ export function useMoodMap() {
      
 
 
-     const debouncedSearch = useMemo(() =>
-    debounce((query: string) => {
-      // Replace this with your actual API call
-      console.log('Debounced API call:', query);
-    }, 500)
-  , []);
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(async (query: string) => {
+        const response = await getMapSearchResults({
+          query: query,
+          lat: 31.5833,
+          lng: 74.3000,
+          radius: 5000,
+          limit: 10,
+        });
+        setMoodData(response);
+        // Replace this with your actual API call
+  
+        // console.log('Debounced API call:', query);
+      }, 500),
+    []
+  );
 
   useEffect(() => {
     debouncedSearch(searchInput);
@@ -34,8 +45,7 @@ export function useMoodMap() {
     const fetchHugs = async () => {
       try {
         setLoading(true);
-        // Simulate an API call
-        // const response =  await getMapSearchResults({ query: 'cheezious near me' });
+        
      const response =   await getMapSearchResults({
   query: '',
   lat: 31.5833,
@@ -44,7 +54,7 @@ export function useMoodMap() {
   limit: 10,
 });
 setMoodData(response)
-console.log('Response:', response);
+
 
       } catch (error) {
         console.error('Error fetching maps data:', error);

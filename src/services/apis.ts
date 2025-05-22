@@ -38,8 +38,8 @@ export const getMapSearchResults = async (params: MapSearchParams) => {
 
   if (query && query.trim() !== '') {
     // Use text-based search endpoint
-    url = '/home/map/search';
-    queryParams = { query };
+    url = '/home/map';
+    queryParams = { query , lat, lng, radius, limit };
   } else {
     // Use coordinate-based search endpoint
     if (lat == null || lng == null || radius == null || limit == null) {

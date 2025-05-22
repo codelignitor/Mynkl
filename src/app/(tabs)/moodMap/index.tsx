@@ -1,12 +1,14 @@
 import * as React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Image, ImageBackground } from 'react-native';
-import {styles} from './index.style';
-import { useMoodMap } from './useMoodMap';
-import { moodsData } from '../moodsData';
+import {styles} from '../../../screenStyles/moodMap/_index.style';
+import { useMoodMap } from '../../../screenHooks/_useMoodMap';
+import { moodsData } from '../../../utils/moodsData';
 import MoodMapView from '@/src/components/map/MoodMapView';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import SearchInput from '@/src/components/common/searchInput';
 import { IconSymbol } from '@/src/components/ui/IconSymbol';
+import Ionicons from '@expo/vector-icons/Ionicons';
+
 
 
 const MoodMapScreen: React.FC = () => {
@@ -56,7 +58,8 @@ const MoodMapScreen: React.FC = () => {
                     <Text style={styles.activityLabel}>Live Music Mestup</Text>
                      <Text style={styles.timeLabel}>10:00 PM . Sodal</Text>
                 </View>
-                <IconSymbol size={28} name="arrow.forward" color={'#000'} />
+                <Ionicons name="arrow-forward-sharp" size={24} color={'#000'} />
+                
             </View>
 
           </View>

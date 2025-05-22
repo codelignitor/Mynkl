@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapMarker from './MapMarker';
-import { styles } from '../../../src/app/(tabs)/styles';
+import { styles } from '../../screenStyles/styles';
 
 const MoodMapView = ({
   mapRegion,

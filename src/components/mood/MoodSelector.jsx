@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { styles } from '../../../src/app/(tabs)/styles';
+import { styles } from '../../screenStyles/styles';
 import SectionHeader from '../common/SectionHeader';
 
 const MoodSelector = ({ moods, selectedMood, handleMoodSelection }) => {

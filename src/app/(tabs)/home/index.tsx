@@ -7,12 +7,12 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 // Components
 import MoodSelector from '@/src/components/mood/MoodSelector';
 // Data
-import { moodsData } from '../moodsData';
-import { selfCareTipsData } from '../selfCareData';
+import { moodsData } from '../../../utils/moodsData';
+import { selfCareTipsData } from '../../../utils/selfCareData';
 
 // Styles
-import { styles } from '../styles';
-import { useHome } from './useHome';
+import { styles } from '../../../screenStyles/styles';
+import { useHome } from '../../../screenHooks/_useHome';
 import { useRouter } from 'expo-router';
 
 const MoodMapScreen = () => {
@@ -187,7 +187,7 @@ const MoodMapScreen = () => {
               styles.appIconCard, 
               selectedSections.hugs && { backgroundColor: '#b7c2cc' }
             ]}
-            onPress={() => handleSectionSelect('hugs')}
+            onPress={()=> moveToScreen('/hugs')}
           >
             <View style={styles.iconContainer}>
               <Icon name="heart" size={24} color="#ff4f8b" />
@@ -203,7 +203,7 @@ const MoodMapScreen = () => {
               styles.largeMenuCard,
               selectedSections.activities && { backgroundColor: '#b7c2cc' }
             ]}
-            onPress={() => handleSectionSelect('activities')}
+           onPress={()=> moveToScreen('/activity')}
           >
             <View style={styles.largeMenuCardContent}>
               <View style={styles.largeMenuIconContainer}>
