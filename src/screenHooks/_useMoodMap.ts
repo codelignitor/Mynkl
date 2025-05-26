@@ -14,18 +14,27 @@ export function useMoodMap() {
     const [loading, setLoading] = useState<boolean>(true);
      const [searchInput , setSearchInput] = useState('');
      const [moodData , setMoodData] = useState<any>(null);
+       const [mapRegion, setMapRegion] = useState({
+             latitude: 31.5833,
+             longitude: 74.3000,
+             latitudeDelta: 0.0922,
+             longitudeDelta: 0.0421,
+           });
      
 
 
   const debouncedSearch = useMemo(
     () =>
       debounce(async (query: string) => {
+        if(query.trim() === '') 
+          return
         const response = await getMapSearchResults({
           query: query,
-          lat: 31.5833,
-          lng: 74.3000,
-          radius: 5000,
-          limit: 10,
+            lat: mapRegion?.latitude,
+  lng: mapRegion?.longitude,
+          // radius: 5000,
+          // limit: 10,
+          mood:'happy'
         });
         setMoodData(response);
         // Replace this with your actual API call
@@ -48,10 +57,11 @@ export function useMoodMap() {
         
      const response =   await getMapSearchResults({
   query: '',
-  lat: 31.5833,
-  lng: 74.3000,
-  radius: 5000,
-  limit: 10,
+  lat: mapRegion?.latitude,
+  lng: mapRegion?.longitude,
+    mood:'happy'
+  // radius: 5000,
+  // limit: 10,
 });
 setMoodData(response)
 
@@ -66,5 +76,5 @@ setMoodData(response)
     }, []);
 
 
-    return { hugs, loading,searchInput , setSearchInput , moodData  };
+    return { hugs, loading,searchInput , setSearchInput , moodData  ,mapRegion, setMapRegion };
 }

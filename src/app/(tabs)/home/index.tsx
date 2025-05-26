@@ -14,6 +14,10 @@ import { selfCareTipsData } from '../../../utils/selfCareData';
 import { styles } from '../../../screenStyles/styles';
 import { useHome } from '../../../screenHooks/_useHome';
 import { useRouter } from 'expo-router';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/src/store';
+
+
 
 const MoodMapScreen = () => {
   const router = useRouter();
@@ -23,6 +27,8 @@ const MoodMapScreen = () => {
   const [checkedIn, setCheckedIn] = useState(false);
   const [squareWidth, setSquareWidth] = useState(0);
   const squareRef = useRef(null);
+      const username  = useSelector((state: RootState) => state.auth.username);
+
   // State to track selected sections
   const [selectedSections, setSelectedSections] = useState({
     moodMap: false,
@@ -113,7 +119,7 @@ const MoodMapScreen = () => {
         {/* Header with notification bell */}
         <View style={styles.headerContainer}>
           <View style={styles.headerTextContainer}>
-            <Text style={styles.header}>Hello, Hammad</Text>
+            <Text style={styles.header}>Hello, {username}</Text>
           </View>
           <TouchableOpacity 
             style={styles.bellIconContainer} 

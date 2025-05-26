@@ -30,6 +30,7 @@ export const styles = StyleSheet.create({
             fontSize: 16, fontWeight: 'bold', color: '#fff'
         },
         activityContainer:{
+           
             borderRadius:32,
             marginHorizontal:16
             ,backgroundColor: '#fff',
@@ -37,7 +38,9 @@ export const styles = StyleSheet.create({
             alignItems: 'center',
         },
         activityDetailsContainer:{
-            paddingLeft:4,
+            paddingLeft:14,
+            
+           
             
         },
         timeLabel:{

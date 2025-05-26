@@ -14,11 +14,10 @@ import { useAddCheckIn } from "./useAddCheckIn";
 import Header from "@/src/components/common/header";
 
 const moods = [
-  { emoji: "😃", label: "Happy" },
-  { emoji: "😟", label: "Anxious" },
-  { emoji: "😢", label: "Sad" },
-  { emoji: "😐", label: "Neutral" },
-  { emoji: "😡", label: "Angry" },
+  { emoji: '😊', label: "Happy" },
+  { emoji: '🙂', label: 'Calm' },
+  { emoji: '😔', label: 'Lonely' },
+  { emoji: "😐", label:'Stressed' },
 ];
 export const unstable_settings = {
   initialRouteName: 'index',

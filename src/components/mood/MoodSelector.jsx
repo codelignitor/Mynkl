@@ -33,13 +33,13 @@ const MoodSelector = ({ moods, selectedMood, handleMoodSelection }) => {
         ))}
         
         {/* Voice Input Button */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.moodCircleWrapper}
         >
           <View style={styles.moodCircle}>
             <Text style={styles.moodEmoji}>🎤</Text>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );
