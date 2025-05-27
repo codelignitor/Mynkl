@@ -5,11 +5,13 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator
+  ActivityIndicator,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './index.style';
-import { useActivity } from './useActivity';
+import { styles } from '../../../screenStyles/activity/_index.style';
+import { useActivity } from '../../../screenHooks/_useActivity';
+import { router } from 'expo-router';
 
 // Remove route parameter - this is causing the error
 export default function PostScreen() {
@@ -42,8 +44,7 @@ export default function PostScreen() {
   
   // Handle back button press
   const handleBackPress = () => {
-    // Navigation logic would go here
-    console.log('Back button pressed');
+    router.back();
   };
   
   // Show loading state
@@ -71,7 +72,7 @@ export default function PostScreen() {
 
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
+            <Ionicons name="arrow-back"  size={24} color="#fff" />
           </TouchableOpacity>
           <View style={styles.titleContainer}>
             <Text style={styles.username}>{username}</Text>
@@ -83,7 +84,11 @@ export default function PostScreen() {
           <Text style={styles.postText}>{statusText}</Text>
 
           <View style={styles.eventContainer}>
-            <View style={styles.emptyImageSpace}></View>
+            <Image
+              source={require('../../../assets/images/party_pic.jpg')}
+              style={styles.eventImage}
+              resizeMode="cover"
+            />
             <View style={styles.eventDetails}>
               <Text style={styles.eventTitle}>{eventTitle}</Text>
               <Text style={styles.eventTime}>{eventTime}</Text>
@@ -93,7 +98,11 @@ export default function PostScreen() {
           {/* First row: Guided Meditation + Mindfulness */}
           <View style={styles.horizontalSectionsContainer}>
             <View style={styles.firstSectionWrapper}>
-              <View style={styles.firstHorizontalSection}></View>
+            <Image
+              source={require('../../../assets/images/party_pic.jpg')}
+              style={styles.secondEventImage}
+              resizeMode="cover"
+            />
               <View style={styles.firstSectionTextBox}>
                 <Text style={styles.firstSectionTitle}>{guidedTitle}</Text>
                 <Text style={styles.firstSectionSubtext}>{guidedText}</Text>
@@ -101,6 +110,11 @@ export default function PostScreen() {
             </View>
 
             <View style={styles.secondHorizontalSection}>
+                <Image
+              source={require('../../../assets/images/party_pic.jpg')}
+              style={styles.thirdEventImage}
+              resizeMode="cover"
+            />
               <Text style={styles.secondSectionTitle}>{mindfulnessTitle}</Text>
               <Text style={styles.secondSectionSubtext}>{mindfulnessText}</Text>
             </View>
@@ -109,11 +123,21 @@ export default function PostScreen() {
           {/* Second row: Exercise + Create Art */}
           <View style={styles.horizontalSectionsContainer}>
             <View style={styles.thirdSectionBox}>
+               <Image
+              source={require('../../../assets/images/party_pic.jpg')}
+              style={styles.thirdEventImage}
+              resizeMode="cover"
+            />
               <Text style={styles.thirdSectionTitle}>{exerciseTitle}</Text>
               <Text style={styles.thirdSectionSubtitle}>{exerciseSubtitle}</Text>
             </View>
 
             <View style={styles.fourthSectionBox}>
+               <Image
+              source={require('../../../assets/images/party_pic.jpg')}
+              style={styles.thirdEventImage}
+              resizeMode="cover"
+            />
               <Text style={styles.fourthSectionTitle}>{createTitle}</Text>
               <Text style={styles.fourthSectionSubtitle}>{createSubtitle}</Text>
             </View>

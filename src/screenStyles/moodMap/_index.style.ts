@@ -1,8 +1,8 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
     container: {
-       
+       paddingTop: Platform.OS === 'android' ? 44 : 0,
        backgroundColor:'#768898'
     },
     mapContainerStyle:{
@@ -30,6 +30,7 @@ export const styles = StyleSheet.create({
             fontSize: 16, fontWeight: 'bold', color: '#fff'
         },
         activityContainer:{
+           
             borderRadius:32,
             marginHorizontal:16
             ,backgroundColor: '#fff',
@@ -37,11 +38,13 @@ export const styles = StyleSheet.create({
             alignItems: 'center',
         },
         activityDetailsContainer:{
-            paddingLeft:4,
+            paddingLeft:14,
+            
+           
             
         },
         timeLabel:{
 fontSize: 16, color: 'gray' 
         },
-        activityLabel:{fontSize: 24, fontWeight: 'bold', color: '#000' , width:'70%'},
+        activityLabel:{fontSize: 24, fontWeight: 'bold', color: '#000' , width:'65%'},
 });

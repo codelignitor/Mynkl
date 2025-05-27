@@ -4,8 +4,9 @@ import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 import MoodMap from '../(tabs)/home/index';
 import { isUserLoggedIn, setToken, setTokenOnly } from '@/src/store/slices/authSlice';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/src/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '@/src/store';
+import { router } from 'expo-router';
 
 
 // Updated MoodEntryScreen component that will be shown after clicking Continue
@@ -149,6 +150,7 @@ const MoodEntryScreen = ({ selectedMood, onBackPress }) => {
             onPress={async() => 
               {await requestLocationPermission()
                  dispatch(isUserLoggedIn())
+                 router.push('/(tabs)/home');
               }}
           >
             <Text style={styles.allowLocationButtonText}>Allow Location Access</Text>
@@ -158,13 +160,13 @@ const MoodEntryScreen = ({ selectedMood, onBackPress }) => {
         </View>
       </View>
       {/* Skip Link */}
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             onPress={() => {
               dispatch(isUserLoggedIn())
             }}
           >
             <Text style={styles.skipLinkText}>Skip</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
     </SafeAreaView>
   );
 };
@@ -848,6 +850,7 @@ const AuthScreen = () => {
   // Keep all your existing state variables
   const [isLogin, setIsLogin] = useState(true);
   const dispatch = useDispatch<AppDispatch>();
+  const isUserLoggedIn = useSelector((state: RootState) => state.auth.isUserLoggedIn);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -945,18 +948,19 @@ const AuthScreen = () => {
           [{ text: 'OK', onPress: () => setIsLogin(true) }]
         );
          console.log('API response:', data);
-         dispatch(setTokenOnly(data?.access_token));
+         dispatch(setTokenOnly(data));
         setShowGuide(true);
         setIsNewUser(false);
 
       } else {
 
-        dispatch(setToken(data?.access_token));
+        dispatch(setToken(data));
+        router.push('/(tabs)/home');
         // For registration/signup, show a success message and return to login screen
        
       }
       
-      // console.log('API response:', data);
+      console.log('API response:', data);
       
     } catch (error) {
       console.error('API Error:', error);

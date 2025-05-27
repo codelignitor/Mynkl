@@ -1,38 +1,46 @@
 {
   "expo": {
     "name": "NewApp",
-    "slug": "NewApp",
+    "slug": "mynkl",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-     "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mynkl"
     },
     "android": {
-  "config": {
-    "googleMaps": {
-      "apiKey": "AIzaSyAY5mXeCxUbxaP2nbP6QwsEOgJ6qIDAzK44"
-    }
-  }
-},
-"build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAY5mXeCxUbxaP2nbP6QwsEOgJ6qIDAzK44"
+        }
+      },
+      "package": "com.mynkl"
     },
-    "preview": {
-      "distribution": "internal"
-    },
-    "production": {
-      "android": {
+    "build": {
+      "development": {
+        "developmentClient": true,
+        "distribution": "internal"
+      },
+      "preview": {
+        "distribution": "internal",
+        "android": {
         "buildType": "apk"
       }
-    }
-  },
+      },
+      "production": {
+        "android": {
+          "buildType": "apk"
+        }
+      }
+    },
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -52,6 +60,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a7c307cb-d26e-4645-9a1f-6231ee6834be"
+      }
+    },
+    "owner": "abdullahsheikh"
   }
 }

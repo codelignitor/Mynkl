@@ -9,8 +9,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 import { View, Text } from 'react-native';
 import { HapticTab } from '@/src/components/HapticTab';
-import { IconSymbol } from '@/src/components/ui/IconSymbol.ios';
 import BlurTabBarBackground from '@/src/components/ui/TabBarBackground.ios';
+import { IconSymbol } from '@/src/components/ui/IconSymbol';
+
 
 
 export default function TabLayout() {
@@ -44,14 +45,28 @@ export default function TabLayout() {
         name="moodMap/index"
         options={{
           title: 'MoodMap',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="mappin.and.ellipse" color={color} />,
+          tabBarIcon: ({ color }) =>  <Ionicons name="map-sharp" size={24} color={color} />,
+        }}
+      />
+       <Tabs.Screen
+        name="hugs/index"
+        options={{
+          title: 'Hugs',
+          tabBarIcon: ({ color }) => <Ionicons name="chatbox" size={24} color={color} />,
+        }}
+      />
+       <Tabs.Screen
+        name="activity/index"
+        options={{
+          title: 'Activity',
+          tabBarIcon: ({ color }) => <Ionicons name="grid-outline" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile/index"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill.checkmark" color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
       />
      

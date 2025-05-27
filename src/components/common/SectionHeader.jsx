@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { styles } from '../../../src/app/(tabs)/styles';
+import { styles } from '../../screenStyles/styles';
 
 const SectionHeader = ({ title }) => {
   return (

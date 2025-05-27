@@ -13,6 +13,24 @@ export function useAddCheckIn() {
        const router = useRouter();
     
       const handleSubmit = () => {try {
+        if (!selectedMood) {
+          Toast.show({
+            type: "error",
+            text1: "Error",
+            text2: "Please select a mood.",
+          });
+          return;
+        }
+        if (text.trim() === "") {
+          Toast.show({
+            type: "error",
+            text1: "Error",
+            text2: "Please enter a message.",
+          });
+          return;
+        }
+      
+       
          const payload = {
           mood: selectedMood?.emoji,
           text: text,
