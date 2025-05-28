@@ -28,6 +28,17 @@ export const getOpenToTalkStatus = async (userId: string) => {
 };
 
 
+export const getEventDetails = async (eventId: string) => {
+  const response = await axiosInstance.get(`/events/${eventId}`);
+  return response.data;
+};
+
+export const getEvents = async () => {
+  const response = await axiosInstance.get(`/events/events`);
+  return response.data;
+};
+
+
 export const getMapSearchResults = async (params: MapSearchParams) => {
   const { query, lat, lng, radius, limit ,mood } = params;
 

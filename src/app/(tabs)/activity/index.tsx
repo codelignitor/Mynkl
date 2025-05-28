@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Image
+  Image,
+  FlatList
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../../../screenStyles/activity/_index.style';
@@ -23,7 +24,9 @@ export default function PostScreen() {
     activityData, 
     isLoading, 
     error, 
-    handleActivityAction 
+    acitivitiesList,
+    handleActivityAction ,
+    goToDetailsHandler
   } = useActivity(activityId);
   
   // Destructure the activity data for easier access
@@ -83,20 +86,40 @@ export default function PostScreen() {
         <View style={styles.postContainer}>
           <Text style={styles.postText}>{statusText}</Text>
 
-          <View style={styles.eventContainer}>
+          <TouchableOpacity onPress={()=>goToDetailsHandler(acitivitiesList[0]?.event_id)}  style={styles.eventContainer}>
             <Image
               source={require('../../../assets/images/party_pic.jpg')}
               style={styles.eventImage}
               resizeMode="cover"
             />
             <View style={styles.eventDetails}>
-              <Text style={styles.eventTitle}>{eventTitle}</Text>
-              <Text style={styles.eventTime}>{eventTime}</Text>
+              <Text style={styles.eventTitle}>{acitivitiesList[0]?.event_name}</Text>
+              {/* <Text style={styles.eventTime}>{eventTime}</Text> */}
             </View>
-          </View>
+          </TouchableOpacity>
+          <FlatList
+      data={acitivitiesList?.slice(1)} 
+      renderItem={({ item }) => (
+          <TouchableOpacity onPress={()=>goToDetailsHandler(item?.event_id)} style={styles.eventContainerItem}>
+            <Image
+              source={require('../../../assets/images/party_pic.jpg')}
+              style={styles.eventImageItem}
+              resizeMode="cover"
+            />
+            <View style={styles.eventDetails}>
+              <Text style={styles.eventTitle}>{item?.event_name}</Text>
+              {/* <Text style={styles.eventTime}>{eventTime}</Text> */}
+            </View>
+            </TouchableOpacity>
+      )}
+        
+      keyExtractor={(item) => item?.event_id}
+      numColumns={2} 
+      columnWrapperStyle={styles.columnRow} 
+    />
 
           {/* First row: Guided Meditation + Mindfulness */}
-          <View style={styles.horizontalSectionsContainer}>
+          {/* <View style={styles.horizontalSectionsContainer}>
             <View style={styles.firstSectionWrapper}>
             <Image
               source={require('../../../assets/images/party_pic.jpg')}
@@ -118,10 +141,10 @@ export default function PostScreen() {
               <Text style={styles.secondSectionTitle}>{mindfulnessTitle}</Text>
               <Text style={styles.secondSectionSubtext}>{mindfulnessText}</Text>
             </View>
-          </View>
+          </View> */}
 
           {/* Second row: Exercise + Create Art */}
-          <View style={styles.horizontalSectionsContainer}>
+          {/* <View style={styles.horizontalSectionsContainer}>
             <View style={styles.thirdSectionBox}>
                <Image
               source={require('../../../assets/images/party_pic.jpg')}
@@ -141,7 +164,7 @@ export default function PostScreen() {
               <Text style={styles.fourthSectionTitle}>{createTitle}</Text>
               <Text style={styles.fourthSectionSubtitle}>{createSubtitle}</Text>
             </View>
-          </View>
+          </View> */}
         </View>
       </ScrollView>
     </SafeAreaView>

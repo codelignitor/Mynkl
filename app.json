@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "NewApp",
+    "name": "Mynkl",
     "slug": "mynkl",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -13,10 +13,14 @@
     ],
     "newArchEnabled": true,
     "ios": {
+       "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to show nearby moods."
+      },
       "supportsTablet": true,
       "bundleIdentifier": "com.mynkl"
     },
     "android": {
+      "permissions": ["ACCESS_FINE_LOCATION"],
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyAY5mXeCxUbxaP2nbP6QwsEOgJ6qIDAzK44"
