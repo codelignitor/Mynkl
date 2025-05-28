@@ -54,6 +54,19 @@ export const styles = StyleSheet.create({
     marginBottom: 15,
     height: 400,
   },
+
+   eventContainerItem: {
+    width: '100%',
+     marginHorizontal: 5, 
+  flex: 1,
+    borderRadius: 20,
+    
+    backgroundColor: '#1E1E1E',
+    borderWidth: 1,
+    borderColor: '#333',
+    marginBottom: 15,
+    height: 200,
+  },
   emptyImageSpace: {
     height: '70%',
     backgroundColor: '#2C2C2C',
@@ -183,6 +196,12 @@ export const styles = StyleSheet.create({
     borderRadius: 20,
    
   },
+   eventImageItem:{
+    width: '100%',
+    height: 120,
+    borderRadius: 20,
+   
+  },
   secondEventImage:{
     width: '100%',
     height: 80,
@@ -190,7 +209,7 @@ export const styles = StyleSheet.create({
   },
   thirdEventImage:{
     width: '100%',
-    height: '100%',
+    height: 180,
     borderRadius: 20,
     position: 'absolute',
     top: 0,
@@ -200,5 +219,11 @@ export const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  columnRow:{
+     
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  
   }
 });

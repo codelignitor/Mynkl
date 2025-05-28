@@ -1,4 +1,7 @@
 import { useState, useEffect } from 'react';
+import { getEvents } from '../services/apis';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import { router } from 'expo-router';
 
 /**
  * Custom hook for managing activity data and related functionality
@@ -6,7 +9,8 @@ import { useState, useEffect } from 'react';
  * @returns {Object} Activity data and related functions
  */
 export const useActivity = (activityId = null) => {
-  // State for activity data - fixed naming from postText to statusText
+
+  const [acitivitiesList , setActivitiesList] = useState([]);
   const [activityData, setActivityData] = useState({
     // User info
     username: "mynkl",
@@ -119,6 +123,32 @@ export const useActivity = (activityId = null) => {
       statusText: newStatus
     }));
   };
+
+
+  const getActivities = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getEvents();
+       setActivitiesList(response);
+
+      
+     
+      
+    } catch (err) {
+     
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const goToDetailsHandler = (activityId) => {
+     router.push(`/activities/${activityId}`);
+
+  }
+
+  useEffect(() => {
+    getActivities();
+  }, []);
   
   // Return all the data and functions needed by components
   return {
@@ -126,10 +156,11 @@ export const useActivity = (activityId = null) => {
     activityData,
     isLoading,
     error,
-    
+    acitivitiesList,
     // Functions
     formatEventTime,
     handleActivityAction,
-    updateActivityStatus
+    updateActivityStatus,
+    goToDetailsHandler
   };
 };

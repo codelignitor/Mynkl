@@ -12,23 +12,23 @@ const MoodMapScreen: React.FC = () => {
   const { hugs, searchInput, setSearchInput, moodData, mapRegion, setMapRegion } = useMoodMap();
   const [selectedMood, setSelectedMood] = React.useState(moodsData[3]?.id);
 
-  // React.useEffect(() => {
-  //   (async () => {
-  //     const { status } = await Location.requestForegroundPermissionsAsync();
-  //     if (status !== 'granted') {
-  //       console.warn('Permission to access location was denied');
-  //       return;
-  //     }
+  React.useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.warn('Permission to access location was denied');
+        return;
+      }
 
-  //     const location = await Location.getCurrentPositionAsync({});
-  //     console.log('Location:', location);
-  //     setMapRegion((prev) => ({
-  //       ...prev,
-  //       latitude: location.coords.latitude,
-  //       longitude: location.coords.longitude,
-  //     }));
-  //   })();
-  // }, []);
+      const location = await Location.getCurrentPositionAsync({});
+      console.log('Location:', location);
+      setMapRegion((prev) => ({
+        ...prev,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      }));
+    })();
+  }, []);
 
   const currentLocations = selectedMood
     ? moodsData.find((mood) => mood.id === selectedMood)?.locations || []
