@@ -2,6 +2,8 @@ import { getOpenToTalkStatus, updateOpenToTalk } from '@/src/services/apis';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import Toast from 'react-native-toast-message';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 
 
 
@@ -9,6 +11,9 @@ export function useHome() {
 
     const [openToTalk , setOpenToTalk] = useState<boolean>(false);
     const [isLoading , setIsLoading] = useState<boolean>(false);
+        const open_to_talk_status = useSelector((state: any) => state.auth.open_to_talk_status);
+         const user_id  = useSelector((state: RootState) => state.auth.user_id);
+
 
 
      const fetchOpenToTalk = async () => {
@@ -40,7 +45,11 @@ export function useHome() {
             const payload ={
                 "open_to_talk": !openToTalk
             }
-            const response = await updateOpenToTalk("2544ce6f-c214-491f-a15a-076e1fb88fb3" , payload);
+            
+            if (!user_id) {
+                throw new Error("User ID is null or undefined.");
+            }
+            const response = await updateOpenToTalk(user_id, payload);
             setOpenToTalk(response.open_to_talk);
             Toast.show({
                 type: "success",
@@ -59,9 +68,10 @@ export function useHome() {
 
 
     useEffect(() => {
-     fetchOpenToTalk()
+    //  fetchOpenToTalk()
+    setOpenToTalk(open_to_talk_status);
     }
-    , []);
+    , [open_to_talk_status]);
 
 
 

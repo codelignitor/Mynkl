@@ -1,18 +1,12 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import { styles } from '../../../src/app/(tabs)/styles';
+import { View, Text, Platform } from 'react-native';
+import { styles } from '../../screenStyles/styles';
 
 const MapMarker = ({ emoji, backgroundColor , markerStyle ,emojiStyle }) => {
   return (
-    <View
-      style={[
-        styles.markerContainer,
-        backgroundColor ? { backgroundColor } : null,
-markerStyle
-      ]}
-    >
-      <Text style={[styles.markerEmoji , emojiStyle]}>{emoji}</Text>
-    </View>
+
+      <Text style={[styles.markerEmoji , Platform.OS ==="ios" && emojiStyle]}>{emoji}</Text>
+   
   );
 };
 

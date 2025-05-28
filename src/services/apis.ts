@@ -29,7 +29,7 @@ export const getOpenToTalkStatus = async (userId: string) => {
 
 
 export const getMapSearchResults = async (params: MapSearchParams) => {
-  const { query, lat, lng, radius, limit } = params;
+  const { query, lat, lng, radius, limit ,mood } = params;
 
   console.log('MapSearchParams:', params);
 
@@ -38,15 +38,15 @@ export const getMapSearchResults = async (params: MapSearchParams) => {
 
   if (query && query.trim() !== '') {
     // Use text-based search endpoint
-    url = '/home/map/search';
-    queryParams = { query };
+    url = '/home/map';
+    queryParams = { query , lat, lng, mood };
   } else {
     // Use coordinate-based search endpoint
-    if (lat == null || lng == null || radius == null || limit == null) {
+    if (lat == null || lng == null ) {
       throw new Error('lat, lng, radius, and limit must be provided when query is empty.');
     }
     url = '/home/map';
-    queryParams = { lat, lng, radius, limit };
+    queryParams = { lat, lng, mood };
   }
 
   console.log('URL:', url);

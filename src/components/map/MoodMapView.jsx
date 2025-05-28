@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapMarker from './MapMarker';
-import { styles } from '../../../src/app/(tabs)/styles';
+import { styles } from '../../screenStyles/styles';
 
 const MoodMapView = ({
   mapRegion,
@@ -16,7 +16,7 @@ const MoodMapView = ({
 
   // Memoized MapView key to force rerender when locations change
   const mapKey = useMemo(() => JSON.stringify(currentLocations), [currentLocations]);
-
+console.log("MapKey",currentLocations)
   return (
     <View style={[styles.mapContainer, mapContainerStyle]}>
       {selectedMood && !currentLocations?.length && (
@@ -48,7 +48,7 @@ const MoodMapView = ({
                 onPress={() => setSelectedMarkerId(location.id)}
               >
                 <MapMarker
-                  emoji={currentEmoji}
+                  emoji={location.emoji }
                   backgroundColor={backgroundColor}
                   markerStyle={{
                     width: isSelected ? 70 : 50,
