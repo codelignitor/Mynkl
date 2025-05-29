@@ -22,9 +22,9 @@ import { RootState } from '@/src/store';
 
 const MoodMapScreen = () => {
   const router = useRouter();
-  const {openToTalk ,isLoading ,  updateOpenToTalkHandler , moveToScreen } = useHome();
+  const {openToTalk ,isLoading ,  updateOpenToTalkHandler , moveToScreen ,selectedMood, setSelectedMood } = useHome();
   // State
-  const [selectedMood, setSelectedMood] = useState(null);
+  
   const [checkedIn, setCheckedIn] = useState(false);
   const [squareWidth, setSquareWidth] = useState(0);
   const squareRef = useRef(null);
@@ -61,7 +61,7 @@ const MoodMapScreen = () => {
 
   // Handlers
   const handleMoodSelection = (id) => {
-    setSelectedMood(id);
+    // setSelectedMood(id);
      router.push('/addCheckIn')
 
   };
@@ -122,7 +122,7 @@ const MoodMapScreen = () => {
           <View style={styles.headerTextContainer}>
             <Text style={styles.header}>Hello, {username}</Text>
           </View>
-          <SearchIcon/>
+         
           <TouchableOpacity 
             style={styles.bellIconContainer} 
             onPress={handleNotificationsPress}
@@ -130,6 +130,10 @@ const MoodMapScreen = () => {
             <Icon name="bell-outline" size={25} color="#ffffff" style={styles.bellIcon} />
           </TouchableOpacity>
         </View>
+
+       { !selectedMood ?
+      <>
+     
 
         <Text style={styles.headerSection}>How are you feeling?</Text>
 
@@ -139,6 +143,10 @@ const MoodMapScreen = () => {
           selectedMood={selectedMood} 
           handleMoodSelection={handleMoodSelection} 
         />
+
+         </> :
+          <Text style={styles.headerSection}>I am feeling {selectedMood}</Text>
+}
         
         {/* Row for sections with related dimensions */}
         <View style={styles.rowContainer}>

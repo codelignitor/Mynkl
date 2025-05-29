@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../../../screenStyles/activity/_index.style';
 import { useActivity } from '../../../screenHooks/_useActivity';
 import { router } from 'expo-router';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/src/store';
 
 // Remove route parameter - this is causing the error
 export default function PostScreen() {
@@ -49,6 +51,8 @@ export default function PostScreen() {
   const handleBackPress = () => {
     router.back();
   };
+
+    const mode = useSelector((state: RootState) => state.auth.mode);
 
   const handleCreateEvent = () => {
 
@@ -94,7 +98,7 @@ export default function PostScreen() {
         </View>
 
         <View style={styles.postContainer}>
-          <Text style={styles.postText}>{statusText}</Text>
+          <Text style={styles.postText}>I am feeling {mode}</Text>
 
           <TouchableOpacity onPress={()=>goToDetailsHandler(acitivitiesList[0]?.event_id)}  style={styles.eventContainer}>
             <Image

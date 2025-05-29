@@ -23,24 +23,35 @@ export const createEvent = async ( payload ) => {
 
 
 export const getCheckIns = async (userId: string) => {
-  const response = await axiosInstance.get(`/home/check-ins/${userId}`);
+  const response = await axiosInstance.get(`/home/check-ins`);
   return response.data;
 };
 
 export const updateOpenToTalk = async (userId: string, payload: OpenToTalkPayload) => {
-  const response = await axiosInstance.put(`/home/open-to-talk/${userId}`, payload);
+  const response = await axiosInstance.put(`/home/open-to-talk`, payload);
   return response.data;
 };
 
 
 export const getOpenToTalkStatus = async (userId: string) => {
-  const response = await axiosInstance.get(`/home/open-to-talk/${userId}`);
+  const response = await axiosInstance.get(`/home/open-to-talk`);
   return response.data;
 };
 
 
 export const getEventDetails = async (eventId: string) => {
   const response = await axiosInstance.get(`/events/${eventId}`);
+  return response.data;
+};
+
+export const joinEvent = async (eventId: string) => {
+  const response = await axiosInstance.post(`/events/join/${eventId}`);
+  return response.data;
+};
+
+export const getHomeDetails = async () => {
+  console.log('Fetching home details...');
+  const response = await axiosInstance.get('/home');
   return response.data;
 };
 

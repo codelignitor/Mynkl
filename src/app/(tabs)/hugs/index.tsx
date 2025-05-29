@@ -52,6 +52,7 @@ const HugReceivedScreen = () => {
     // Replace '/your-send-hug-path' with the actual path of your screen
     router.push('/sendHugs')
     
+    
     // If you need to pass state to the next screen, you can do:
     // history.push('/your-send-hug-path', { 
     //   hugStats: hugStats,

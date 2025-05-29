@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 const EventDetail: React.FC = () => {
-  const { loading , eventDetails  } = useEventDetail();
+  const { loading , eventDetails  , joinEventHandler } = useEventDetail();
 
   const Item =({icon , label})=>{
     return( <View style={styles.itemContainer}>
@@ -103,7 +103,7 @@ const EventDetail: React.FC = () => {
 
         </ScrollView>
 
-          <TouchableOpacity disabled={eventDetails?.joined_event} style={[styles.buttonStyle , eventDetails?.joined_event && {backgroundColor:'gray'}] }>
+          <TouchableOpacity disabled={eventDetails?.joined_event} onPress={joinEventHandler} style={[styles.buttonStyle , eventDetails?.joined_event && {backgroundColor:'gray'}] }>
             <Text style={styles.buttonText}>{eventDetails?.joined_event ? 'Already Joined' : 'Join Event'  }</Text>
           </TouchableOpacity>
     </View>

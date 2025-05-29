@@ -5,7 +5,8 @@ interface AuthState {
   isUserLoggedIn: boolean;
   open_to_talk_status:boolean,
   user_id:string | null,
-  username:string | null
+  username:string | null,
+  mode:string | null;
 }
 
 const initialState: AuthState = {
@@ -13,7 +14,8 @@ const initialState: AuthState = {
   isUserLoggedIn: false,
   open_to_talk_status:false,
   user_id:null,
-  username:null
+  username:null,
+  mode:null
 
 
 };
@@ -28,6 +30,7 @@ const authSlice = createSlice({
       state.open_to_talk_status = action.payload.open_to_talk_status;
       state.user_id = action.payload.user_id;
       state.username = action.payload.username;
+      
     },
     isUserLoggedIn: (state) => {
       
@@ -41,6 +44,8 @@ const authSlice = createSlice({
       
       
     },
+    
+    
     logout: (state) => {
       state.token = null;
       state.isUserLoggedIn = false;
@@ -48,9 +53,15 @@ const authSlice = createSlice({
       state.user_id = null;
       state.username = null;
     },
+    getHomeDetail: (state, action: PayloadAction<{open_to_talk_status:boolean, user_id:string, username:string, mode:string}>) => {
+      state.open_to_talk_status = action.payload.open_to_talk_status;
+      state.user_id = action.payload.user_id;
+      state.username = action.payload.username;
+      state.mode = action.payload.mode;
+    }
 
   },
 });
 
-export const { setToken, logout , isUserLoggedIn , setTokenOnly } = authSlice.actions;
+export const { setToken, logout , isUserLoggedIn , setTokenOnly , getHomeDetail } = authSlice.actions;
 export default authSlice.reducer;

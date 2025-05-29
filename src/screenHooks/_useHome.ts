@@ -1,18 +1,29 @@
-import { getOpenToTalkStatus, updateOpenToTalk } from '@/src/services/apis';
+import { getHomeDetails, getOpenToTalkStatus, updateOpenToTalk } from '@/src/services/apis';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import Toast from 'react-native-toast-message';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { moodsData } from '../utils/moodsData';
+import { getHomeDetail } from '../store/slices/authSlice';
 
 
 
 export function useHome() {
 
+    const dispatch = useDispatch();
+
+    const [selectedMood, setSelectedMood] = useState(null);
+    
     const [openToTalk , setOpenToTalk] = useState<boolean>(false);
     const [isLoading , setIsLoading] = useState<boolean>(false);
         const open_to_talk_status = useSelector((state: any) => state.auth.open_to_talk_status);
-         const user_id  = useSelector((state: RootState) => state.auth.user_id);
+        const user_id  = useSelector((state: RootState) => state.auth.user_id);
+        const mode = useSelector((state: RootState) => state.auth.mode);
+
+
+        console.log("Mode is :", mode );
+        
 
 
 
@@ -32,6 +43,9 @@ export function useHome() {
             }
           
         };
+
+
+        
 
 
     const moveToScreen = (screen:any) => {
@@ -66,10 +80,37 @@ export function useHome() {
         }
     }
 
+    const getHomeDetailsHandler =async () => {
+       try {
+        // const response  = await getHomeDetails();
+        const response = {
+    "open_to_talk_status": true,
+    "user_id": "925a3d70-1108-4806-a5e2-7f1540d44094",
+    "username": "John doe",
+    "mode": "😊"
+}
+        if(response)
+        {
+
+            console.log("Home details response:", moodsData?.find(item => item?.emoji === response?.mode)?.id );
+            dispatch(getHomeDetail(response));
+            setSelectedMood(moodsData?.find(item => item?.emoji === response?.mode)?.emoji || null);
+        }
+       
+
+       } catch (error) {
+        console.error("Error fetching home details:", error);
+
+        
+       }
+    }
+
 
     useEffect(() => {
     //  fetchOpenToTalk()
+    getHomeDetailsHandler()
     setOpenToTalk(open_to_talk_status);
+    
     }
     , [open_to_talk_status]);
 
@@ -78,5 +119,5 @@ export function useHome() {
 
    
 
-    return {isLoading , openToTalk ,  updateOpenToTalkHandler , moveToScreen  };
+    return {isLoading , openToTalk ,  updateOpenToTalkHandler , moveToScreen , selectedMood, setSelectedMood  };
 }
