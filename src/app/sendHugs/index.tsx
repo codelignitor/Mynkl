@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useSelection } from './useSelection';
 import { styles } from './index-style';
 
@@ -16,6 +17,26 @@ const UseSelectionScreen = () => {
     handleAnonymousSend,
     handleNormalSend,
   } = useSelection();
+
+  // Handle Anonymous Send with routing
+  const handleAnonymousRoute = () => {
+    // Call your existing handler if needed
+    handleAnonymousSend();
+    
+    // Route to anonymous send screen
+    // Replace '/anonymous-send' with your actual path
+    router.push('/sendHugs/Hugs');
+  };
+
+  // Handle Normal Send with routing
+  const handleNormalRoute = () => {
+    // Call your existing handler if needed
+    handleNormalSend();
+    
+    // Route to normal send screen
+    // Replace '/normal-send' with your actual path
+    router.push('/sendHugs/Hugs');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -38,7 +59,7 @@ const UseSelectionScreen = () => {
           {/* Send Anonymously Card */}
           <TouchableOpacity
             style={styles.anonymousCard}
-            onPress={handleAnonymousSend}
+            onPress={handleAnonymousRoute}
             activeOpacity={0.8}
           >
             <View style={styles.cardContent}>
@@ -56,7 +77,7 @@ const UseSelectionScreen = () => {
           {/* Send Normally Card */}
           <TouchableOpacity
             style={styles.normalCard}
-            onPress={handleNormalSend}
+            onPress={handleNormalRoute}
             activeOpacity={0.8}
           >
             <LinearGradient
