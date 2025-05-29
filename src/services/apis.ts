@@ -11,6 +11,17 @@ export const checkIn = async (userId: string, payload: CheckInPayload) => {
   return response.data;
 };
 
+export const createEvent = async ( payload ) => {
+  const response = await axiosInstance.post(`/events/create_event`, payload, {
+   
+  });
+
+  return response.data;
+};
+
+
+
+
 export const getCheckIns = async (userId: string) => {
   const response = await axiosInstance.get(`/home/check-ins/${userId}`);
   return response.data;
@@ -41,6 +52,8 @@ export const getEvents = async () => {
 
 export const getMapSearchResults = async (params: MapSearchParams) => {
   const { query, lat, lng, radius, limit ,mood } = params;
+
+  
 
   console.log('MapSearchParams:', params);
 

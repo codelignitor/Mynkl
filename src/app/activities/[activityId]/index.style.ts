@@ -29,7 +29,7 @@ export const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: 'semibold',
     color: '#000',
-   width: '80%',
+   width: '95%',
   },
   badgeContainer:{
     paddingHorizontal:12,

@@ -14,18 +14,20 @@ const MoodMapView = ({
 }) => {
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
 
+  console.log("MoodMapView Props", mapRegion); 
+
   // Memoized MapView key to force rerender when locations change
   const mapKey = useMemo(() => JSON.stringify(currentLocations), [currentLocations]);
-console.log("MapKey",currentLocations)
+// console.log("MapKey",currentLocations)
   return (
     <View style={[styles.mapContainer, mapContainerStyle]}>
-      {selectedMood && !currentLocations?.length && (
+      {selectedMood && !currentLocations?.length   && (
   <View style={styles.loadingOverlay}>
     <ActivityIndicator size="large" color="#000" />
   </View>
 )}
 
-      {selectedMood && currentLocations?.length > 0 ? (
+      {selectedMood && currentLocations?.length > 0   ? (
         <MapView
           key={mapKey} 
           

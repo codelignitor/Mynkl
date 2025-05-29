@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import SearchIcon from '../../../assets/svgs/SerachIcon'
 import * as SplashScreen from 'expo-splash-screen';
 // You'll need to import icons
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -121,6 +122,7 @@ const MoodMapScreen = () => {
           <View style={styles.headerTextContainer}>
             <Text style={styles.header}>Hello, {username}</Text>
           </View>
+          <SearchIcon/>
           <TouchableOpacity 
             style={styles.bellIconContainer} 
             onPress={handleNotificationsPress}

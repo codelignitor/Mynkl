@@ -1,19 +1,79 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Platform } from 'react-native';
 import { styles } from './index-style';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect } from 'react';
+import { createEvent } from '@/src/services/apis';
+import Toast from 'react-native-toast-message';
 
 export const useEventCreationLogic = () => {
   // State variables
   const [selectedEventType, setSelectedEventType] = useState('journaling');
   const [selectedMood, setSelectedMood] = useState('Calm');
-  const [eventTitle, setEventTitle] = useState('Calm Minds Journaling');
+  const [eventTitle, setEventTitle] = useState('');
   const [virtualHug, setVirtualHug] = useState(true);
   const [journalingPrompts, setJournalingPrompts] = useState(true);
   const [musicPlaylist, setMusicPlaylist] = useState(true);
   const [anonymousCheckins, setAnonymousCheckins] = useState(true);
   const [invitationMessage, setInvitationMessage] = useState(
-    "Let's create a space to breathe, reflect, and share calmly."
+    ""
   );
+
+  const [eventData , setEventData] = useState(null);
+
+  
+  const params = useLocalSearchParams();
+  useEffect(() => {
+    let data = null;
+    try {
+      data = JSON.parse(params.data as string);
+      setEventData(data);
+      setEventTitle(data?.name || '');
+      // setSelectedEventType(data?.eventType || '');
+      setSelectedMood(data?.mood_tag || '');
+      setInvitationMessage(data?.description || '');
+
+    } catch {
+      data = null;
+    }
+    console.log('Event Creation Data:', data);
+  }, [params.data]);
+
+
+  const createEventHandler =()=>{
+    try {
+
+    const payload = {
+      ...(typeof eventData === 'object' && eventData !== null ? eventData : {}),
+      journaling_prompts: journalingPrompts,
+      music_playlist: musicPlaylist,
+      virtual_hug: virtualHug,
+      type: selectedEventType,
+       eventType: selectedEventType,
+      mood: selectedMood,
+      description: invitationMessage.trim(),
+       name: eventTitle.trim(),
+      mood_tag: selectedMood,
+    }
+
+       console.log('Payload for event creation:', payload);
+
+
+    
+    const response =    createEvent(payload)
+    console.log('Event created successfully:', response);
+    Toast.show({
+      type: 'success',
+      text1: 'Event Created',
+      text2: 'Your event has been created successfully!',
+    });
+    router.push('/activity');
+    } catch (error) {
+      
+    }
+  }
+
+  
 
   // Event types data
   const eventTypes = [
@@ -82,8 +142,14 @@ export const useEventCreationLogic = () => {
     },
   ];
 
+  const handleBackPress = () => {
+     
+      router.back();
+     
+    };
+
   // Moods data
-  const moods = ['Calm', 'Energetic', 'Reflective', 'Social'];
+  const moods = ['Happy' , 'Calm', 'Stressed', 'Lonely'];
 
   // Style functions
   const getEventTypeStyle = (type) => {
@@ -158,6 +224,7 @@ export const useEventCreationLogic = () => {
     setAnonymousCheckins,
     invitationMessage,
     setInvitationMessage,
+    createEventHandler,
     
     // Data
     eventTypes,
@@ -167,5 +234,6 @@ export const useEventCreationLogic = () => {
     getEventTypeStyle,
     getEventTypeTextStyle,
     handlePublish,
+    handleBackPress
   };
 };

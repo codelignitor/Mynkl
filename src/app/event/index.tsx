@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import MapView from 'react-native-maps';
 import { styles } from './index.style';
 import { useCreateEventLogic } from './CreateEventLogic';
+import DateTimePickerModal from '@/src/components/common/dateTimePickerModal';
 
 const CreateEventScreen = () => {
   const {
@@ -36,6 +37,7 @@ const CreateEventScreen = () => {
     
     // Handlers
     setEventName,
+    handleDateTimePress,
     setMaxAttendees,
     setDescription,
     setPrivacyEnabled,
@@ -49,7 +51,17 @@ const CreateEventScreen = () => {
     handleGalleryPress,
     handleUploadPress,
     handleBackPress,
+    setSelectedMood,
+    selectedDate,
+     setSelectedDate
   } = useCreateEventLogic();
+
+  
+  const [pickerVisible, setPickerVisible] = useState<boolean>(false);
+
+   const handleConfirm = (date: Date) => {
+    setSelectedDate(date);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -78,25 +90,43 @@ const CreateEventScreen = () => {
           />
         </View>
 
-        {/* Mood Tag */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Mood Tag</Text>
-          <View style={styles.moodContainer}>
-            <TouchableOpacity
-              style={[styles.moodTag, styles.selectedMoodTag]}
-            >
-              <Text style={[styles.moodTagText, styles.selectedMoodTagText]}>
-                {selectedMood}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      <View style={styles.section}>
+                 <Text style={styles.sectionTitle}>Mood Tag</Text>
+                 <View style={styles.moodScrollContainer}>
+                   <ScrollView 
+                     horizontal 
+                     showsHorizontalScrollIndicator={false}
+                     contentContainerStyle={styles.moodScrollContent}
+                   >
+                     {moodTags.map((mood) => (
+                       <TouchableOpacity
+                         key={mood}
+                         style={[
+                           styles.moodTag,
+                           selectedMood === mood && styles.selectedMoodTag,
+                         ]}
+                         onPress={() => setSelectedMood(mood)}
+                         activeOpacity={0.7}
+                       >
+                         <Text
+                           style={[
+                             styles.moodTagText,
+                             selectedMood === mood && styles.selectedMoodTagText,
+                           ]}
+                         >
+                           {mood}
+                         </Text>
+                       </TouchableOpacity>
+                     ))}
+                   </ScrollView>
+                 </View>
+               </View>
 
         {/* Date and Time */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Date and Time</Text>
-          <TouchableOpacity style={styles.dateTimeInput}>
-            <Text style={styles.dateTimeText}>{dateTime}</Text>
+          <TouchableOpacity onPress={()=>setPickerVisible(true)} style={styles.dateTimeInput}>
+            <Text style={styles.dateTimeText}>{selectedDate.toLocaleString()}</Text>
           </TouchableOpacity>
         </View>
 
@@ -203,7 +233,7 @@ const CreateEventScreen = () => {
               ))}
               
               {/* Add Image Placeholder */}
-              {selectedImages.length < 3 && (
+              {selectedImages.length < 1 && (
                 <View style={styles.addImagePlaceholder}>
                   <Ionicons name="image-outline" size={32} color="#999" />
                   <Text style={styles.addImagePlaceholderText}>Add Photos</Text>
@@ -212,6 +242,7 @@ const CreateEventScreen = () => {
             </View>
             
             {/* Gallery and Upload Buttons */}
+             {selectedImages.length < 1 && (
             <View style={styles.imageActionButtons}>
               <TouchableOpacity 
                 style={styles.imageActionButton}
@@ -221,19 +252,20 @@ const CreateEventScreen = () => {
                 <Text style={styles.imageActionButtonText}>Gallery</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={styles.imageActionButton}
                 onPress={handleUploadPress}
               >
                 <Ionicons name="cloud-upload-outline" size={20} color="#333" />
                 <Text style={styles.imageActionButtonText}>Upload</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
+             )}
             
             {/* Image Guidelines */}
-            <Text style={styles.imageGuidelines}>
+            {/* <Text style={styles.imageGuidelines}>
               Add up to 3 photos to showcase your event (Optional)
-            </Text>
+            </Text> */}
           </View>
         </View>
 
@@ -271,6 +303,7 @@ const CreateEventScreen = () => {
             <MapView
               style={styles.map}
               region={mapRegion}
+              provider='google'
               onRegionChangeComplete={handleMapRegionChange}
               showsUserLocation={true}
               showsMyLocationButton={true}
@@ -282,13 +315,13 @@ const CreateEventScreen = () => {
             </View>
 
             {/* Location Name Display */}
-            {currentLocationName ? (
+            {/* {currentLocationName ? (
               <View style={styles.locationNameContainer}>
                 <Text style={styles.locationNameText} numberOfLines={2}>
                   {currentLocationName}
                 </Text>
               </View>
-            ) : null}
+            ) : null} */}
           </View>
 
           {/* Confirm Button */}
@@ -302,6 +335,13 @@ const CreateEventScreen = () => {
           </View>
         </SafeAreaView>
       </Modal>
+
+       <DateTimePickerModal
+        value={selectedDate}
+        visible={pickerVisible}
+        onClose={() => setPickerVisible(false)}
+        onConfirm={handleConfirm}
+      />
     </SafeAreaView>
   );
 };

@@ -103,8 +103,8 @@ const EventDetail: React.FC = () => {
 
         </ScrollView>
 
-          <TouchableOpacity style={styles.buttonStyle}>
-            <Text style={styles.buttonText}>Join Event</Text>
+          <TouchableOpacity disabled={eventDetails?.joined_event} style={[styles.buttonStyle , eventDetails?.joined_event && {backgroundColor:'gray'}] }>
+            <Text style={styles.buttonText}>{eventDetails?.joined_event ? 'Already Joined' : 'Join Event'  }</Text>
           </TouchableOpacity>
     </View>
   );

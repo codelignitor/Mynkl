@@ -49,6 +49,12 @@ export default function PostScreen() {
   const handleBackPress = () => {
     router.back();
   };
+
+  const handleCreateEvent = () => {
+
+    // Navigate to the create event screen
+    router.push('/event');
+  }
   
   // Show loading state
   if (isLoading) {
@@ -80,7 +86,11 @@ export default function PostScreen() {
           <View style={styles.titleContainer}>
             <Text style={styles.username}>{username}</Text>
           </View>
-          <View style={styles.placeholderWidth} />
+        
+            <TouchableOpacity onPress={handleCreateEvent} style={{paddingVertical:8 , paddingHorizontal:12 , backgroundColor:'white' , borderRadius:8}} >
+             <Text>Create Event</Text>
+            </TouchableOpacity>
+         
         </View>
 
         <View style={styles.postContainer}>

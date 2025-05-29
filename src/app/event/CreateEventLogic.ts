@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Dimensions, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { router } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
 export const useCreateEventLogic = () => {
   // State Management
   const [eventName, setEventName] = useState('Calm Minds Journaling');
-  const [selectedMood, setSelectedMood] = useState('Calm');
-  const [dateTime, setDateTime] = useState('Dec 4, 2024 • 5:00 PM');
+  const [selectedMood, setSelectedMood] = useState('Happy');
+  const [dateTime, setDateTime] = useState<Date>(new Date());
   const [location, setLocation] = useState('');
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [currentLocationName, setCurrentLocationName] = useState('');
@@ -17,6 +19,7 @@ export const useCreateEventLogic = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [privacyEnabled, setPrivacyEnabled] = useState(false);
   const [showVisibilityDropdown, setShowVisibilityDropdown] = useState(false);
+ const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [mapRegion, setMapRegion] = useState({
     latitude: 31.5204,
@@ -25,8 +28,9 @@ export const useCreateEventLogic = () => {
     longitudeDelta: 0.01,
   });
 
+
   // Constants
-  const moodTags = ['Calm', 'Energetic', 'Focused', 'Creative', 'Social'];
+  const moodTags = ['Happy', 'Calm', 'Stressed', 'Lonely'];
   const visibilityOptions = ['Public', 'Private', 'Friends Only'];
 
   // Validation Functions
@@ -55,21 +59,19 @@ export const useCreateEventLogic = () => {
   // Location Related Functions
   const reverseGeocode = async (latitude, longitude) => {
     try {
-      // Note: Replace YOUR_MAPBOX_ACCESS_TOKEN with your actual Mapbox token
-      // For development, you might want to use a different geocoding service
-      // or handle this differently based on your setup
-      
+      // Note: Replace YOUR_GOOGLE_MAPS_API_KEY with your actual Google Maps API key
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=YOUR_MAPBOX_ACCESS_TOKEN&types=place,locality,neighborhood,address`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyDnoc6XxrzYXuCC2Tg-QKcoIs3RLcHmuS0`
       );
       const data = await response.json();
-      
-      if (data.features && data.features.length > 0) {
-        const placeName = data.features[0].place_name;
+      console.log('Geocoding response:', data);
+
+      if (data.status === 'OK' && data.results && data.results.length > 0) {
+        const placeName = data.results[0].formatted_address;
         setCurrentLocationName(placeName);
         return placeName;
       } else {
-        const fallbackName = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+        const fallbackName = ``;
         setCurrentLocationName(fallbackName);
         return fallbackName;
       }
@@ -82,39 +84,69 @@ export const useCreateEventLogic = () => {
     }
   };
 
-  const handleMapRegionChange = (region) => {
+  const handleMapRegionChange = async (region) => {
+   
     setMapRegion(region);
     setSelectedLocation({
       latitude: region.latitude,
       longitude: region.longitude,
     });
+
+    // Get place name for the new location and set location name state
     
-    // Get place name for the new location
-    reverseGeocode(region.latitude, region.longitude);
   };
 
-  const confirmLocation = () => {
-    if (selectedLocation && currentLocationName) {
-      setLocation(currentLocationName);
-    }
+  const confirmLocation = async () => {
+ const placeName = await reverseGeocode(selectedLocation?.latitude, selectedLocation?.longitude);
+    console.log('Selected place name:', placeName);
+    setCurrentLocationName(placeName);
+    setLocation(placeName);
+
+     setSelectedLocation({
+      latitude:  selectedLocation?.latitude, 
+      longitude: selectedLocation?.longitude,
+      name: placeName,
+    })
+    
+    // if (selectedLocation && currentLocationName) {
+    //   setLocation(currentLocationName);
+    // }
     setShowLocationModal(false);
   };
 
   // Image Related Functions
+  
+
+  const uploadImage = async (image) => {
+  const formData = new FormData();
+
+  // Convert image to File format
+  formData?.append('image', image?.assets[0]?.uri ? {
+    uri: image.assets[0].uri,
+    type: image.assets[0].type || 'image/jpeg',
+    name: image.assets[0].fileName || `image_${Date.now()}.jpg`,
+  } : image.assets[0]);
+  console.log('Uploading image:', formData);
+
+  try {
+    const response = await fetch('https://f80f-110-39-39-254.ngrok-free.app/events/upload_image', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+    console.log('Uploaded image URL:', data.url);
+  } catch (error) {
+    console.error('Upload failed:', error);
+  }
+};
+
+
   const pickImageFromGallery = async () => {
     try {
-      // This is where you would implement actual image picker
-      // You'll need to install expo-image-picker: expo install expo-image-picker
-      // Then uncomment and modify the code below:
-      
-      console.log('Gallery picker - implement with expo-image-picker');
-      Alert.alert('Info', 'Image picker functionality needs to be implemented with expo-image-picker');
-      
-      /* 
-      // Uncomment this when you have expo-image-picker installed:
-      
-      import * as ImagePicker from 'expo-image-picker';
-      
       // Request permission
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
@@ -127,14 +159,16 @@ export const useCreateEventLogic = () => {
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
+        selectionLimit: 3 - selectedImages.length, // Limit to 3 images total
       });
+
+      // uploadImage(result);
+      // console.log('Image picker result:', result);
 
       if (!result.canceled && result.assets) {
         const newImages = result.assets.map(asset => asset.uri);
         setSelectedImages(prev => [...prev, ...newImages].slice(0, 3));
       }
-      */
-      
     } catch (error) {
       console.error('Error picking image:', error);
       Alert.alert('Error', 'Error selecting image. Please try again.');
@@ -158,6 +192,7 @@ export const useCreateEventLogic = () => {
 
   const handleBackPress = () => {
     // Implement navigation back logic
+    router.back();
     console.log('Back pressed - implement navigation');
     // Example: navigation.goBack();
   };
@@ -172,21 +207,37 @@ export const useCreateEventLogic = () => {
 
     // Prepare event data
     const eventData = {
+     
       name: eventName.trim(),
-      mood: selectedMood,
-      dateTime: dateTime,
-      location: location.trim(),
-      coordinates: selectedLocation,
-      maxAttendees: parseInt(maxAttendees),
-      visibility: visibility,
       description: description.trim(),
-      images: selectedImages,
-      privacyEnabled: privacyEnabled,
-      createdAt: new Date().toISOString(),
+      mood_tag: selectedMood,
+      event_datetime:selectedDate.toISOString(),
+      // event_datetime : new Date().toISOString(),
+      max_attendees: parseInt(maxAttendees),
+      visibility: visibility ? visibility === 'Public' : false,
+   
+      event_image: selectedImages[0],
+      privacy_settings: privacyEnabled,
+      location: {
+     lat: selectedLocation?.latitude || 0,
+     lng: selectedLocation?.longitude || 0,
+     name: selectedLocation?.name || 'Unknown Location',
+  },
     };
 
+    {
+  
+  
+
+}
+
     console.log('Creating event with data:', eventData);
-    Alert.alert('Success', 'Event data prepared successfully!\nCheck console for event data.');
+    router.push({ pathname: '/event/publishevent', 
+       params: { data: JSON.stringify(eventData)  }}
+      
+    )
+
+    // Alert.alert('Success', 'Event data prepared successfully!\nCheck console for event data.');
     
     // Here you would implement your API call:
     /*
@@ -204,11 +255,45 @@ export const useCreateEventLogic = () => {
   };
 
   // Date/Time Functions
-  const handleDateTimePress = () => {
-    // Implement date/time picker logic
-    console.log('Date/Time picker - implement date/time selection');
-    Alert.alert('Info', 'Date/Time picker needs to be implemented');
+  const handleDateTimePress = async () => {
+    // Use Expo's DateTimePicker or a custom modal to select both date and time
+    try {
+      // Show date picker first
+      const { action: dateAction, year, month, day } = await new Promise((resolve) => {
+        // Use a library like @react-native-community/datetimepicker in your UI
+        // Here, just simulate with a placeholder
+        Alert.alert('Date Picker', 'Show date picker here');
+        resolve({ action: 'set', year: 2024, month: 11, day: 4 }); // Example: Dec 4, 2024
+      });
+
+      if (dateAction !== 'set') return;
+
+      // Show time picker next
+      const { action: timeAction, hour, minute } = await new Promise((resolve) => {
+        Alert.alert('Time Picker', 'Show time picker here');
+        resolve({ action: 'set', hour: 17, minute: 0 }); // Example: 5:00 PM
+      });
+
+      if (timeAction !== 'set') return;
+
+      // Format date and time
+      const selectedDate = new Date(year, month, day, hour, minute);
+      const formatted = selectedDate.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+      setDateTime(formatted);
+    } catch (error) {
+      console.error('Date/Time picker error:', error);
+      Alert.alert('Error', 'Failed to select date/time');
+    }
   };
+
+  
 
   // Mood Selection Functions
   const handleMoodSelection = (mood) => {
@@ -218,8 +303,8 @@ export const useCreateEventLogic = () => {
   // Utility Functions
   const resetForm = () => {
     setEventName('');
-    setSelectedMood('Calm');
-    setDateTime('');
+    setSelectedMood('Happy');
+   setSelectedDate(new Date());
     setLocation('');
     setSelectedLocation(null);
     setCurrentLocationName('');
@@ -307,6 +392,7 @@ export const useCreateEventLogic = () => {
     handleMoodSelection,
     removeImage,
     
+    
     // Utility functions
     validateEventForm,
     resetForm,
@@ -314,5 +400,7 @@ export const useCreateEventLogic = () => {
     calculateCompletionPercentage,
     getRequiredFieldsStatus,
     reverseGeocode,
+    selectedDate, 
+    setSelectedDate
   };
 };

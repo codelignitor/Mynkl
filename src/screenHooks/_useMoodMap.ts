@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import debounce from 'lodash.debounce';
 import { getMapSearchResults } from '@/src/services/apis';
+import * as Location from 'expo-location';
 
 export interface Hug {
     id: string;
@@ -15,8 +16,8 @@ export function useMoodMap() {
      const [searchInput , setSearchInput] = useState('');
      const [moodData , setMoodData] = useState<any>(null);
        const [mapRegion, setMapRegion] = useState({
-             latitude: 31.5833,
-             longitude: 74.3000,
+             latitude: 0,
+             longitude: 0,
              latitudeDelta: 0.0922,
              longitudeDelta: 0.0421,
            });
@@ -26,12 +27,22 @@ export function useMoodMap() {
   const debouncedSearch = useMemo(
     () =>
       debounce(async (query: string) => {
+         let location  =null
         if(query.trim() === '') 
           return
+        if(mapRegion?.latitude === 0 || mapRegion?.longitude === 0) { 
+          console.warn('Map region is not set, skipping search hello ' ,mapRegion?.latitude , mapRegion?.longitude);
+         location = await Location.getCurrentPositionAsync({});
+            
+        }
+
+         
+     
+
         const response = await getMapSearchResults({
           query: query,
-            lat: mapRegion?.latitude,
-  lng: mapRegion?.longitude,
+            lat: location.coords?.latitude,
+  lng: location.coords?.longitude,
           // radius: 5000,
           // limit: 10,
           mood:'happy'
@@ -47,14 +58,20 @@ export function useMoodMap() {
   useEffect(() => {
     debouncedSearch(searchInput);
     return () => debouncedSearch.cancel();
-  }, [searchInput]);
+  }, [searchInput , mapRegion]);
 
 
   useEffect(() => { 
     const fetchHugs = async () => {
+     
+       
+    
       try {
         setLoading(true);
-        
+         if(mapRegion?.latitude === 0 || mapRegion?.longitude === 0) { 
+          console.warn('Map region is not set, skipping search');
+          return;
+        }
      const response =   await getMapSearchResults({
   query: '',
   lat: mapRegion?.latitude,
@@ -73,7 +90,7 @@ setMoodData(response)
       }
     };
     fetchHugs();
-    }, []);
+    }, [mapRegion]);
 
 
     return { hugs, loading,searchInput , setSearchInput , moodData  ,mapRegion, setMapRegion };

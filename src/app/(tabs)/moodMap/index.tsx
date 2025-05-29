@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Image, ActivityIndicator } from 'react-native';
 import { styles } from '../../../screenStyles/moodMap/_index.style';
 import { useMoodMap } from '../../../screenHooks/_useMoodMap';
 import { moodsData } from '../../../utils/moodsData';
@@ -9,7 +9,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Location from 'expo-location';
 
 const MoodMapScreen: React.FC = () => {
-  const { hugs, searchInput, setSearchInput, moodData, mapRegion, setMapRegion } = useMoodMap();
+  const { hugs, searchInput, setSearchInput, moodData, mapRegion, setMapRegion , loading } = useMoodMap();
   const [selectedMood, setSelectedMood] = React.useState(moodsData[3]?.id);
 
   React.useEffect(() => {
@@ -27,8 +27,14 @@ const MoodMapScreen: React.FC = () => {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       }));
+
+      
+
+      
     })();
   }, []);
+
+  console.log('Map Region:', mapRegion);
 
   const currentLocations = selectedMood
     ? moodsData.find((mood) => mood.id === selectedMood)?.locations || []
@@ -45,7 +51,8 @@ const MoodMapScreen: React.FC = () => {
         value={searchInput}
         placeholder={"Mood Map"}
       />
-
+    {loading &&
+      <ActivityIndicator/>}
       <MoodMapView
         mapContainerStyle={styles.mapContainerStyle}
         mapRegion={mapRegion}
