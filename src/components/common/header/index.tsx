@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     
     borderBottomColor: '#eee',
-    backgroundColor: '#fff',
+    backgroundColor: '#A7E2E0',
     marginBottom:18
   },
   backButton: {
@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   title: {
+    marginTop:30,
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
