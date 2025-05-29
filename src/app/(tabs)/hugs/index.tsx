@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity, Image, Animated, ScrollView } from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
+import { router } from 'expo-router';
 // import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis } from 'victory-native';
-
 
 const HugReceivedScreen = () => {
   // State to track hug count and progress
@@ -33,10 +33,13 @@ const HugReceivedScreen = () => {
     }).start();
   }, [hugStats.received]);
 
-  const simulateNewHug = () => {
+
+
+  const handleSendHugBack = () => {
+    // Update stats first
     setHugStats(prev => ({
       ...prev,
-      received: prev.received + 1,
+      sent: prev.sent + 1,
       total: prev.total + 1
     }));
 
@@ -44,6 +47,16 @@ const HugReceivedScreen = () => {
       ...prev,
       { x: prev.length + 1, y: hugStats.received + 1 }
     ]);
+
+    // Route to your send hug screen
+    // Replace '/your-send-hug-path' with the actual path of your screen
+    router.push('/sendHugs')
+    
+    // If you need to pass state to the next screen, you can do:
+    // history.push('/your-send-hug-path', { 
+    //   hugStats: hugStats,
+    //   someOtherData: 'value'
+    // });
   };
 
   return (
@@ -67,7 +80,7 @@ const HugReceivedScreen = () => {
             </Text>
           </View>
 
-          <TouchableOpacity style={styles.hugBackButton} onPress={simulateNewHug}>
+          <TouchableOpacity style={styles.hugBackButton} onPress={handleSendHugBack}>
             <View style={styles.arrowContainer}>
               <Feather name="chevron-right" size={20} color="white" />
             </View>
