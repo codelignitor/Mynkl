@@ -25,52 +25,81 @@ const DateTimePickerModal: React.FC<DateTimePickerModalProps> = ({
   const [mode, setMode] = useState<'date' | 'time'>('date');
   const [tempDate, setTempDate] = useState<Date>(value);
   const [showPicker, setShowPicker] = useState<boolean>(false);
+  const [androidStep, setAndroidStep] = useState<'date' | 'time' | null>(null);
 
   useEffect(() => {
     if (visible) {
-      setMode('date');
       setTempDate(value);
-      setShowPicker(true);
+      if (Platform.OS === 'android') {
+        setAndroidStep('date');
+        setMode('date');
+        setShowPicker(true);
+      } else {
+        setMode('date');
+        setShowPicker(true);
+      }
     }
   }, [visible]);
 
-  const handleConfirm = () => {
-    if (mode === 'date') {
-      setMode('time');
-    } else {
-      // Final confirmation with valid datetime
-      onConfirm(tempDate); // Caller can use tempDate.toISOString() in payload
-      handleClose();
-    }
-  };
-
   const handleClose = () => {
     setShowPicker(false);
+    setAndroidStep(null);
     onClose();
   };
 
-  const onChange = (_: any, selectedDate?: Date) => {
+  const handleChange = (_: any, selectedDate?: Date) => {
     if (selectedDate) {
       const updatedDate = new Date(tempDate);
+
       if (mode === 'date') {
         updatedDate.setFullYear(
           selectedDate.getFullYear(),
           selectedDate.getMonth(),
           selectedDate.getDate()
         );
+        setTempDate(updatedDate);
+        if (Platform.OS === 'android') {
+          setShowPicker(false); // Close date picker first
+          setTimeout(() => {
+            setMode('time');
+            setShowPicker(true); // Then open time picker
+          }, 200); // slight delay is crucial on Android
+        }
       } else {
         updatedDate.setHours(selectedDate.getHours());
         updatedDate.setMinutes(selectedDate.getMinutes());
         updatedDate.setSeconds(0);
         updatedDate.setMilliseconds(0);
+        setTempDate(updatedDate);
+        onConfirm(updatedDate);
+        handleClose();
       }
-      setTempDate(updatedDate);
+    } else {
+      // User canceled
+      handleClose();
+    }
+
+    if (Platform.OS === 'ios') return;
+    // On Android, always hide picker after selection
+    if (mode === 'date') {
+      // don't close immediately, since we'll show time next
+    } else {
+      setShowPicker(false);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (mode === 'date') {
+      setMode('time');
+    } else {
+      onConfirm(tempDate);
+      handleClose();
     }
   };
 
   if (!visible) return null;
 
-  return (
+  return Platform.OS === 'ios' ? (
     <Modal transparent animationType="slide" visible={showPicker}>
       <View style={styles.container}>
         <View style={styles.pickerContainer}>
@@ -81,8 +110,8 @@ const DateTimePickerModal: React.FC<DateTimePickerModalProps> = ({
           <DateTimePicker
             value={tempDate}
             mode={mode}
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={onChange}
+            display="spinner"
+            onChange={handleChange}
             style={{ backgroundColor: '#fff' }}
           />
 
@@ -93,6 +122,15 @@ const DateTimePickerModal: React.FC<DateTimePickerModalProps> = ({
         </View>
       </View>
     </Modal>
+  ) : (
+    showPicker && (
+      <DateTimePicker
+        value={tempDate}
+        mode={mode}
+        display="default"
+        onChange={handleChange}
+      />
+    )
   );
 };
 

@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
-    marginTop:30,
+    paddingTop:30,
     flex: 1,
     backgroundColor: '#A7E2E0', // Light teal background like in the image
   },

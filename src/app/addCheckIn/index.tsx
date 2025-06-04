@@ -15,11 +15,16 @@ import { useAddCheckIn } from "./useAddCheckIn";
 import Header from "@/src/components/common/header";
 
 const moods = [
-  { emoji: '😔', label: "Sad" },
-  { emoji: '😐', label: 'Neutral' }, 
-  { emoji: '🙂', label: 'Happy' },
-  { emoji: '😊', label: 'Great' },
-  { emoji: '😄', label: 'Amazing' },
+ 
+  {   label: 'Happy',
+    emoji: '😊',},
+  {    label: 'Calm',
+    emoji: '🙂', }, 
+  {  label: 'Stressed',
+    emoji: '🙁', },
+  {   name: 'Lonely',
+    emoji: '😔', },
+ 
 ];
 
 export const unstable_settings = {
@@ -45,7 +50,7 @@ export default function AddCheckIn() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Check-In" showBack={true} />
+      <Header style={{backgroundColor:'#A7E2E0'}} title="Check-In" showBack={true} />
       
       <View style={styles.contentContainer}>
         <Text style={styles.title}>How are you feeling?</Text>

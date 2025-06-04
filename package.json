@@ -44,11 +44,13 @@
     "react-devtools": "^6.1.2",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
+    "react-native-fast-image": "^8.6.3",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-maps": "1.20.1",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "^5.4.0",
     "react-native-screens": "~4.10.0",
+    "react-native-svg": "15.11.2",
     "react-native-toast-message": "^2.3.0",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "^0.20.0",
@@ -56,8 +58,7 @@
     "react-redux": "^9.2.0",
     "reactotron-react-native": "^5.1.13",
     "redux-persist": "^6.0.0",
-    "victory-native": "^41.17.1",
-    "expo-linear-gradient": "~14.1.4"
+    "victory-native": "^41.17.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

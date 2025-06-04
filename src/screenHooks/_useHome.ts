@@ -82,13 +82,14 @@ export function useHome() {
 
     const getHomeDetailsHandler =async () => {
        try {
-        // const response  = await getHomeDetails();
-        const response = {
-    "open_to_talk_status": true,
-    "user_id": "925a3d70-1108-4806-a5e2-7f1540d44094",
-    "username": "John doe",
-    "mode": "😊"
-}
+        const response  = await getHomeDetails();
+//         const response = {
+//     "open_to_talk_status": true,
+//     "user_id": "925a3d70-1108-4806-a5e2-7f1540d44094",
+//     "username": "John doe",
+//     "mode:":null
+//     // "mode": "😊"
+// }
         if(response)
         {
 
@@ -108,7 +109,7 @@ export function useHome() {
 
     useEffect(() => {
     //  fetchOpenToTalk()
-    getHomeDetailsHandler()
+    // getHomeDetailsHandler()
     setOpenToTalk(open_to_talk_status);
     
     }

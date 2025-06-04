@@ -46,5 +46,5 @@ export const styles = StyleSheet.create({
         timeLabel:{
 fontSize: 16, color: 'gray' 
         },
-        activityLabel:{fontSize: 24, fontWeight: 'bold', color: '#000' , width:'65%'},
+        activityLabel:{fontSize: 24, fontWeight: 'bold', color: '#000' , width:'100%'},
 });

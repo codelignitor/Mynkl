@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dimensions, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
+import * as Location from 'expo-location';
 
 const { width, height } = Dimensions.get('window');
 
 export const useCreateEventLogic = () => {
   // State Management
-  const [eventName, setEventName] = useState('Calm Minds Journaling');
+  const [eventName, setEventName] = useState('');
   const [selectedMood, setSelectedMood] = useState('Happy');
   const [dateTime, setDateTime] = useState<Date>(new Date());
   const [location, setLocation] = useState('');
@@ -15,12 +16,13 @@ export const useCreateEventLogic = () => {
   const [currentLocationName, setCurrentLocationName] = useState('');
   const [maxAttendees, setMaxAttendees] = useState('20');
   const [visibility, setVisibility] = useState('Public');
-  const [description, setDescription] = useState("Let's create a space to breathe, reflect, and share calmly");
+  const [description, setDescription] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [privacyEnabled, setPrivacyEnabled] = useState(false);
   const [showVisibilityDropdown, setShowVisibilityDropdown] = useState(false);
  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showLocationModal, setShowLocationModal] = useState(false);
+  const [image , setImage] = useState<ImagePicker.ImagePickerSuccessResult | null>(null);
   const [mapRegion, setMapRegion] = useState({
     latitude: 31.5204,
     longitude: 74.3587,
@@ -120,16 +122,17 @@ export const useCreateEventLogic = () => {
   const uploadImage = async (image) => {
   const formData = new FormData();
 
-  // Convert image to File format
-  formData?.append('image', image?.assets[0]?.uri ? {
+
+  formData?.append('file', image?.assets[0]?.uri ? {
     uri: image.assets[0].uri,
-    type: image.assets[0].type || 'image/jpeg',
+    type: image.assets[0].type ||   'image/jpeg',
     name: image.assets[0].fileName || `image_${Date.now()}.jpg`,
   } : image.assets[0]);
-  console.log('Uploading image:', formData);
+  console.log('Uploading image:',JSON.stringify( formData));
 
   try {
-    const response = await fetch('https://f80f-110-39-39-254.ngrok-free.app/events/upload_image', {
+   
+    const response = await fetch('https://d919-110-39-39-254.ngrok-free.app/events/upload_image', {
       method: 'POST',
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -167,6 +170,7 @@ export const useCreateEventLogic = () => {
 
       if (!result.canceled && result.assets) {
         const newImages = result.assets.map(asset => asset.uri);
+        setImage(result);
         setSelectedImages(prev => [...prev, ...newImages].slice(0, 3));
       }
     } catch (error) {
@@ -205,6 +209,8 @@ export const useCreateEventLogic = () => {
       return;
     }
 
+    console.log("Image is ",image )
+
     // Prepare event data
     const eventData = {
      
@@ -215,14 +221,14 @@ export const useCreateEventLogic = () => {
       // event_datetime : new Date().toISOString(),
       max_attendees: parseInt(maxAttendees),
       visibility: visibility ? visibility === 'Public' : false,
-   
-      event_image: selectedImages[0],
       privacy_settings: privacyEnabled,
       location: {
      lat: selectedLocation?.latitude || 0,
      lng: selectedLocation?.longitude || 0,
      name: selectedLocation?.name || 'Unknown Location',
   },
+
+  
     };
 
     {
@@ -233,7 +239,8 @@ export const useCreateEventLogic = () => {
 
     console.log('Creating event with data:', eventData);
     router.push({ pathname: '/event/publishevent', 
-       params: { data: JSON.stringify(eventData)  }}
+       params: { data: JSON.stringify(eventData), image: JSON.stringify(image) }
+    }
       
     )
 
@@ -344,6 +351,28 @@ export const useCreateEventLogic = () => {
       description: !!description.trim(),
     };
   };
+
+  useEffect(() => {
+      (async () => {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          console.warn('Permission to access location was denied');
+          return;
+        }
+  
+        const location = await Location.getCurrentPositionAsync({});
+        console.log('Location:', location);
+        setMapRegion((prev) => ({
+          ...prev,
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        }));
+  
+        
+  
+        
+      })();
+    }, []);
 
   // Return all state and functions that the UI component needs
   return {

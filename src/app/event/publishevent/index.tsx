@@ -37,7 +37,9 @@ const EventCreationScreen = () => {
     createEventHandler,
     getEventTypeTextStyle,
     handlePublish,
-    handleBackPress
+    handleBackPress,
+    previewEventHandler,
+    isLoading
   } = useEventCreationLogic();
 
 
@@ -51,6 +53,14 @@ const EventCreationScreen = () => {
         <Text style={styles.headerTitle}>Create an Event</Text>
         <View style={styles.headerRight} />
       </View>
+
+      {isLoading ? (   
+        <View style={styles.loadingContainer}>
+          <Ionicons name="reload" size={24} color="#5DBEA3" />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      ):
+       
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Main Content Container */}
@@ -214,17 +224,15 @@ const EventCreationScreen = () => {
             <Text style={styles.sectionTitle}>Event Preview</Text>
             <TouchableOpacity 
               style={styles.previewContainer}
-              onPress={() => {
-                console.log('Event preview clicked');
-              }}
+              onPress={previewEventHandler}
               activeOpacity={0.8}
             >
               <View style={styles.previewIcon}>
                 <Ionicons name="document-text" size={20} color="#5DBEA3" />
               </View>
               <View style={styles.previewText}>
-                <Text style={styles.previewTitle}>Create a journaling</Text>
-                <Text style={styles.previewSubtitle}>space for calm minds</Text>
+                <Text style={styles.previewTitle}>{eventTitle}</Text>
+                <Text style={styles.previewSubtitle}>{invitationMessage}</Text>
               </View>
               <View style={styles.previewArrow}>
                 <Ionicons name="chevron-forward" size={20} color="#5DBEA3" />
@@ -242,6 +250,7 @@ const EventCreationScreen = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+       }
     </SafeAreaView>
   );
 };

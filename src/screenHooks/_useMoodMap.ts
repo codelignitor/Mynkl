@@ -15,12 +15,20 @@ export function useMoodMap() {
     const [loading, setLoading] = useState<boolean>(true);
      const [searchInput , setSearchInput] = useState('');
      const [moodData , setMoodData] = useState<any>(null);
+     const [currentMarkedLocation, setCurrentMarkedLocation] = useState<any>(null);
        const [mapRegion, setMapRegion] = useState({
              latitude: 0,
              longitude: 0,
              latitudeDelta: 0.0922,
              longitudeDelta: 0.0421,
            });
+
+
+
+  const callBackMapHandler = (location: any) => {
+    console.log('Current Marked Location :',location );
+    setCurrentMarkedLocation(location);
+  }         
      
 
 
@@ -93,5 +101,5 @@ setMoodData(response)
     }, [mapRegion]);
 
 
-    return { hugs, loading,searchInput , setSearchInput , moodData  ,mapRegion, setMapRegion };
+    return { hugs, loading,searchInput , setSearchInput , moodData  ,mapRegion, setMapRegion , callBackMapHandler , currentMarkedLocation };
 }

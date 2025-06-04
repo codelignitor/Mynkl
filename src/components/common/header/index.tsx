@@ -7,13 +7,14 @@ import { Ionicons } from '@expo/vector-icons';
 interface HeaderProps {
   title: string;
   showBack?: boolean;
+  style?: React.CSSProperties; // Allow custom styles
 }
 
-const Header: React.FC<HeaderProps> = ({ title, showBack = true }) => {
+const Header: React.FC<HeaderProps> = ({ title, showBack = true  , style}) => {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container , style]}>
       {showBack ? (
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="black" />
@@ -36,7 +37,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     
     borderBottomColor: '#eee',
-    backgroundColor: '#A7E2E0',
+    backgroundColor: '#fff',
     marginBottom:18
   },
   backButton: {

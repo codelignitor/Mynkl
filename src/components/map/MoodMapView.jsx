@@ -11,10 +11,16 @@ const MoodMapView = ({
   currentEmoji,
   backgroundColor,
   mapContainerStyle,
+  callback
 }) => {
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
 
   console.log("MoodMapView Props", mapRegion); 
+
+  const onSelectMarker = (location) => {
+    setSelectedMarkerId(location.id);
+   callback(location);
+  }
 
   // Memoized MapView key to force rerender when locations change
   const mapKey = useMemo(() => JSON.stringify(currentLocations), [currentLocations]);
@@ -47,7 +53,7 @@ const MoodMapView = ({
                 }}
                 title={location.name}
                 description={location.description}
-                onPress={() => setSelectedMarkerId(location.id)}
+                onPress={()=>onSelectMarker(location)}
               >
                 <MapMarker
                   emoji={location.emoji }
