@@ -4,6 +4,34 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapMarker from './MapMarker';
 import { styles } from '../../screenStyles/styles';
 
+const mapStyle = [
+  {
+    featureType: 'poi',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'transit',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'administrative',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'labels.icon',
+    stylers: [{ visibility: 'off' }],
+  },
+ 
+ 
+  {
+    featureType: 'poi.park',
+    stylers: [{ visibility: 'off' }],
+  }
+];
+
+
 const MoodMapView = ({
   mapRegion,
   selectedMood,
@@ -36,12 +64,12 @@ const MoodMapView = ({
       {selectedMood && currentLocations?.length > 0   ? (
         <MapView
           key={mapKey} 
-          
+           customMapStyle={mapStyle}
           style={styles.map}
           provider={PROVIDER_GOOGLE}
           region={mapRegion}
         >
-          {currentLocations.map((location) => {
+          {currentLocations?.map((location) => {
             const isSelected = selectedMarkerId === location.id;
 
             return (
@@ -56,7 +84,7 @@ const MoodMapView = ({
                 onPress={()=>onSelectMarker(location)}
               >
                 <MapMarker
-                  emoji={location.emoji }
+                  emoji={location.mood }
                   backgroundColor={backgroundColor}
                   markerStyle={{
                     width: isSelected ? 70 : 50,

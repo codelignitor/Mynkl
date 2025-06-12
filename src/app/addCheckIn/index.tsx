@@ -22,10 +22,15 @@ const moods = [
     emoji: '🙂', }, 
   {  label: 'Stressed',
     emoji: '🙁', },
-  {   name: 'Lonely',
+  {   label: 'Lonely',
     emoji: '😔', },
  
 ];
+
+import Happy from '../../assets/svgs/happy-icon.svg';
+import Calm from '../../assets/svgs/calm-icon.svg';
+import Stressed from '../../assets/svgs/stressed-icon.svg';
+import Lonely from '../../assets/svgs/lonely-icon.svg';
 
 export const unstable_settings = {
   initialRouteName: 'index',
@@ -67,7 +72,11 @@ export default function AddCheckIn() {
               ]}
               onPress={() => setSelectedMood(item)}
             >
-              <Text style={styles.moodEmoji}>{item.emoji}</Text>
+               {item.label === 'Happy' && <Happy width={88} height={88}/>}
+              {item.label === 'Calm' && <Calm width={93} height={93}/>}
+               {item.label === 'Stressed' && <Stressed width={88} height={88}/>}
+                {item.label === 'Lonely' && <Lonely width={103} height={103}/>}
+             
             </TouchableOpacity>
           )}
           contentContainerStyle={styles.moodList}
@@ -84,9 +93,9 @@ export default function AddCheckIn() {
             value={text}
             onChangeText={setText}
           />
-          <TouchableOpacity style={styles.voiceButton}>
+          {/* <TouchableOpacity style={styles.voiceButton}>
             <Text style={styles.voiceIcon}>🎙️</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <View style={styles.locationContainer}>

@@ -18,14 +18,10 @@ import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/src/store';
 
-import Frustrated from '../../../assets/svgs/happy-icon.svg';
-import Calm from '../../../assets/svgs/excited-icon.svg';
-
-
 
 const MoodMapScreen = () => {
   const router = useRouter();
-  const {openToTalk ,isLoading ,  updateOpenToTalkHandler , moveToScreen ,selectedMood, setSelectedMood } = useHome();
+  const {openToTalk ,isLoading ,  updateOpenToTalkHandler , moveToScreen ,selectedMood, setSelectedMood , handleSubmitAddCheckin } = useHome();
   // State
   
   const [checkedIn, setCheckedIn] = useState(false);
@@ -63,15 +59,17 @@ const MoodMapScreen = () => {
   }, []);
 
   // Handlers
-  const handleMoodSelection = (id) => {
+  const handleMoodSelection = (mood) => {
     // setSelectedMood(id);
-     router.push('/addCheckIn')
+    //  router.push('/addCheckIn')
+    handleSubmitAddCheckin(mood)
 
   };
 
   const handleCheckIn = () => {
     setCheckedIn(true);
-    router.push('/checkIns')
+     router.push('/addCheckIn')
+    // router.push('/checkIns')
   };
 
 
@@ -125,7 +123,7 @@ const MoodMapScreen = () => {
           <View style={styles.headerTextContainer}>
             <Text style={styles.header}>Hello, {username}</Text>
           </View>
-          <Frustrated width={73} height={73}/>
+         
           <TouchableOpacity 
             style={styles.bellIconContainer} 
             onPress={handleNotificationsPress}

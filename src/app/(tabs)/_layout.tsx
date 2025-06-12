@@ -55,6 +55,8 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="chatbox" size={24} color={color} />,
         }}
       />
+      
+     
        <Tabs.Screen
         name="activity/index"
         options={{

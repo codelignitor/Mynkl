@@ -1,11 +1,9 @@
 import axiosInstance from './axiosInstance';
 import { CheckInPayload, MapSearchParams, OpenToTalkPayload } from './types';
 
-export const checkIn = async (userId: string, payload: CheckInPayload) => {
+export const checkIn = async ( payload: CheckInPayload) => {
   const response = await axiosInstance.post(`/home/check-in`, payload, {
-    params: {
-      user_id: userId,
-    },
+  
   });
 
   return response.data;
@@ -74,14 +72,14 @@ export const getMapSearchResults = async (params: MapSearchParams) => {
   if (query && query.trim() !== '') {
     // Use text-based search endpoint
     url = '/home/map';
-    queryParams = { query , lat, lng, mood };
+    queryParams = { query , lat, lng };
   } else {
     // Use coordinate-based search endpoint
     if (lat == null || lng == null ) {
       throw new Error('lat, lng, radius, and limit must be provided when query is empty.');
     }
     url = '/home/map';
-    queryParams = { lat, lng, mood };
+    queryParams = { lat, lng };
   }
 
   console.log('URL:', url);

@@ -3,7 +3,7 @@ import { logout } from '@/src/store/slices/authSlice';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React from 'react';
-import { View, Button, StyleSheet, Text, Image } from 'react-native';
+import { View, Button, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 const ProfileScreen = () => {
@@ -24,6 +24,11 @@ const ProfileScreen = () => {
             
             <View style={styles.buttonContainer}>
             </View>
+
+            <TouchableOpacity style={{flexDirection:'row', justifyContent:'space-between', alignItems: 'center', borderBottomColor:'gray', borderBottomWidth:1, width:'100%', paddingVertical: 12}} onPress={() => router.push("/chat/room")}>
+                <Text>Chat Rooms</Text>
+                <Ionicons name="chevron-forward" size={24} color="black" />
+            </TouchableOpacity>
             <View style={styles.buttonContainer}>
                 <Button title="Logout" onPress={handleLogout} color="#d9534f" />
             </View>

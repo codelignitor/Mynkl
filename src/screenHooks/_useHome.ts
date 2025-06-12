@@ -1,4 +1,4 @@
-import { getHomeDetails, getOpenToTalkStatus, updateOpenToTalk } from '@/src/services/apis';
+import { checkIn, getHomeDetails, getOpenToTalkStatus, updateOpenToTalk } from '@/src/services/apis';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import Toast from 'react-native-toast-message';
@@ -20,13 +20,6 @@ export function useHome() {
         const open_to_talk_status = useSelector((state: any) => state.auth.open_to_talk_status);
         const user_id  = useSelector((state: RootState) => state.auth.user_id);
         const mode = useSelector((state: RootState) => state.auth.mode);
-
-
-        console.log("Mode is :", mode );
-        
-
-
-
      const fetchOpenToTalk = async () => {
             try {
                  setIsLoading(true);
@@ -80,6 +73,36 @@ export function useHome() {
         }
     }
 
+       const handleSubmitAddCheckin = (mood) => {try {
+          
+          
+           
+             const payload = {
+              mood: mood?.name,
+             
+            
+            };
+            // console.log("Submitted payload:", payload);
+            const response =checkIn(payload);
+             if(response.status === 200){
+            Toast.show({
+              type: "success",
+              text1: "Check-in successful",
+              text2: "Your check-in has been recorded.",
+            });
+        }
+            
+            
+          } catch (error) {
+            
+          }
+          finally{
+           
+          }
+           
+            
+          };
+
     const getHomeDetailsHandler =async () => {
        try {
         const response  = await getHomeDetails();
@@ -120,5 +143,5 @@ export function useHome() {
 
    
 
-    return {isLoading , openToTalk ,  updateOpenToTalkHandler , moveToScreen , selectedMood, setSelectedMood  };
+    return {isLoading , openToTalk ,  updateOpenToTalkHandler , moveToScreen , selectedMood, setSelectedMood , handleSubmitAddCheckin  };
 }

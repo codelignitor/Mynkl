@@ -1,3 +1,4 @@
+import "react-native-gesture-handler"
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Slot, Redirect, Stack } from 'expo-router';
@@ -12,6 +13,9 @@ import { RootState } from '@/src/store';
 import CustomToast from '../components/common/customToast';
 import Toast , { BaseToast, ErrorToast } from 'react-native-toast-message';
 import { Platform } from 'react-native';
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {ChatWrapper} from '../components/common/chatWrapper';
+import { AppProvider } from '../contexts/AppContext';
 
 
 SplashScreen.preventAutoHideAsync();
@@ -37,6 +41,7 @@ function MainLayout() {
 
 
   return (
+
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index"  />
@@ -49,9 +54,18 @@ function MainLayout() {
 
 export default function RootLayout() {
   return (
+     <GestureHandlerRootView style={  {
+    flex: 1,
+     }}>
     <Provider store={store}>
        
+       {/* <ChatWrapper>
+        <AppProvider> */}
       <MainLayout />
+      {/* </AppProvider>
+      </ChatWrapper> */}
+     
     </Provider>
+    </GestureHandlerRootView>
   );
 }

@@ -73,7 +73,7 @@ const MoodMapScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.activityContainer}>
+        <TouchableOpacity onPress={()=> router.push(`/activities/${currentMarkedLocation?.event?.id}`)} style={styles.activityContainer}>
           <Image
             style={{
               height: 132,
@@ -81,7 +81,7 @@ const MoodMapScreen: React.FC = () => {
               borderTopLeftRadius: 32,
               borderBottomLeftRadius: 32,
             }}
-            source={require('../../../assets/images/party_pic.jpg')}
+            source={currentMarkedLocation?.event?.event_image ? {uri:currentMarkedLocation?.event?.event_image} :  require('../../../assets/images/party_pic.jpg')}
           />
           <View style={styles.activityDetailsContainer}>
             <Text style={styles.activityLabel}>{currentMarkedLocation?.name}</Text>
@@ -90,7 +90,7 @@ const MoodMapScreen: React.FC = () => {
           <View style={{ position: 'absolute', right: 16 }}>
           <Ionicons name="arrow-forward-sharp" size={24} color={'#000'} />
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
       )}
     </SafeAreaView>

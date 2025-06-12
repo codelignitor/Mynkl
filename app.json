@@ -13,17 +13,19 @@
     ],
     "newArchEnabled": true,
     "ios": {
-       "infoPlist": {
+      "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need your location to show nearby moods."
       },
       "supportsTablet": true,
       "bundleIdentifier": "com.mynkl"
     },
     "android": {
-      "permissions": ["ACCESS_FINE_LOCATION"],
+      "permissions": [
+        "ACCESS_FINE_LOCATION"
+      ],
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyAY5mXeCxUbxaP2nbP6QwsEOgJ6qIDAzK44"
+          "apiKey": "AIzaSyDnoc6XxrzYXuCC2Tg-QKcoIs3RLcHmuS0"
         }
       },
       "package": "com.mynkl"
@@ -36,8 +38,8 @@
       "preview": {
         "distribution": "internal",
         "android": {
-        "buildType": "apk"
-      }
+          "buildType": "apk"
+        }
       },
       "production": {
         "android": {
@@ -60,7 +62,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

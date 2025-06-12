@@ -115,7 +115,7 @@ const previewEventHandler = async () => {
       description: invitationMessage.trim(),
        name: eventTitle.trim(),
       mood_tag: selectedMood,
-         event_image: url,
+         event_image_url: url,
     }
 
        console.log('Payload for event creation:', payload);

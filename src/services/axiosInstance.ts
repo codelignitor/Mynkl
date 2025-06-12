@@ -5,10 +5,11 @@ import { store } from '../store';
 import { Alert, Platform, ToastAndroid } from 'react-native';
 import { logout } from '../store/slices/authSlice';
 import Toast from 'react-native-toast-message';
+import { router } from 'expo-router';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://13.50.228.222:8000', 
-  // baseURL: 'https://d919-110-39-39-254.ngrok-free.app',
+ //baseURL: 'http://13.50.228.222:8000', 
+    baseURL: 'https://36a0-2404-3100-1c18-cc57-cf15-65a1-7b98-101.ngrok-free.app/',
   
   timeout: 10000,
   headers: {
@@ -44,6 +45,7 @@ axiosInstance.interceptors.response.use(
     if (status === 401) {
       // Token expired or unauthorized
       store.dispatch(logout());
+      router.push('/(auth)');
 
       showMessage('Session expired. Please login again.');
     }
@@ -51,7 +53,7 @@ axiosInstance.interceptors.response.use(
     // if (status === 404) {
         
       // Bad request
-      console.log('Error 404:', error.response.data.detail[0].msg);
+     
      Toast.show({
   type: 'error', 
   text1: 'Error',
