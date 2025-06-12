@@ -1,6 +1,8 @@
-import { getEventDetails } from '@/src/services/apis';
+import { getEventDetails, joinEvent } from '@/src/services/apis';
 import { useRoute } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
+import Toast from 'react-native-toast-message';
 
 
 // const data = {
@@ -32,6 +34,25 @@ export function useEventDetail() {
   const { activityId } = route?.params as { activityId: string };
 
 
+  const joinEventHandler = async () => {
+    try {
+      setLoading(true);
+        const response = await joinEvent(activityId);
+        console.log("Event joined successfully:", response);
+        Toast.show({
+            type: 'success',
+            text1: 'Success',
+            text2: 'You have successfully joined the event!'
+        });
+        router.back();
+    } catch (error) {
+        console.error("Error joining event:", error);
+    } finally {
+        setLoading(false);
+    }
+  }
+
+
     const fetchEventDetails = async () => {
         try {
             setLoading(true);
@@ -50,5 +71,5 @@ export function useEventDetail() {
         fetchEventDetails();
     }, [activityId]);
 
-    return {  loading , eventDetails };
+    return {  loading , eventDetails , joinEventHandler };
 }

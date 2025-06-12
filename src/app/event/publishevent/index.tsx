@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useEventCreationLogic } from './useEventCreationLogic';
 import { styles } from './index-style';
+import { useLocalSearchParams } from 'expo-router';
 
 const EventCreationScreen = () => {
   const {
@@ -33,20 +34,33 @@ const EventCreationScreen = () => {
     eventTypes,
     moods,
     getEventTypeStyle,
+    createEventHandler,
     getEventTypeTextStyle,
     handlePublish,
+    handleBackPress,
+    previewEventHandler,
+    isLoading
   } = useEventCreationLogic();
+
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Create an Event</Text>
         <View style={styles.headerRight} />
       </View>
+
+      {isLoading ? (   
+        <View style={styles.loadingContainer}>
+          <Ionicons name="reload" size={24} color="#5DBEA3" />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      ):
+       
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Main Content Container */}
@@ -191,7 +205,7 @@ const EventCreationScreen = () => {
               />
             </View>
 
-            <View style={styles.toggleItem}>
+            {/* <View style={styles.toggleItem}>
               <View style={styles.toggleLeft}>
                 <Ionicons name="checkmark-circle" size={20} color="#5DBEA3" />
                 <Text style={styles.toggleText}>Anonymous Check-Ins</Text>
@@ -202,7 +216,7 @@ const EventCreationScreen = () => {
                 trackColor={{ false: '#E0E0E0', true: '#5DBEA3' }}
                 thumbColor="#fff"
               />
-            </View>
+            </View> */}
           </View>
 
           {/* Event Preview */}
@@ -210,17 +224,15 @@ const EventCreationScreen = () => {
             <Text style={styles.sectionTitle}>Event Preview</Text>
             <TouchableOpacity 
               style={styles.previewContainer}
-              onPress={() => {
-                console.log('Event preview clicked');
-              }}
+              onPress={previewEventHandler}
               activeOpacity={0.8}
             >
               <View style={styles.previewIcon}>
                 <Ionicons name="document-text" size={20} color="#5DBEA3" />
               </View>
               <View style={styles.previewText}>
-                <Text style={styles.previewTitle}>Create a journaling</Text>
-                <Text style={styles.previewSubtitle}>space for calm minds</Text>
+                <Text style={styles.previewTitle}>{eventTitle}</Text>
+                <Text style={styles.previewSubtitle}>{invitationMessage}</Text>
               </View>
               <View style={styles.previewArrow}>
                 <Ionicons name="chevron-forward" size={20} color="#5DBEA3" />
@@ -231,13 +243,14 @@ const EventCreationScreen = () => {
           {/* Publish Button */}
           <TouchableOpacity 
             style={styles.publishButton}
-            onPress={handlePublish}
+            onPress={createEventHandler}
             activeOpacity={0.8}
           >
             <Text style={styles.publishButtonText}>Publish Event</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+       }
     </SafeAreaView>
   );
 };

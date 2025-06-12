@@ -1,89 +1,239 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Platform } from 'react-native';
 import { styles } from './index-style';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect } from 'react';
+import { createEvent } from '@/src/services/apis';
+import Toast from 'react-native-toast-message';
 
 export const useEventCreationLogic = () => {
   // State variables
-  const [selectedEventType, setSelectedEventType] = useState('journaling');
+  const [selectedEventType, setSelectedEventType] = useState('cafe');
   const [selectedMood, setSelectedMood] = useState('Calm');
-  const [eventTitle, setEventTitle] = useState('Calm Minds Journaling');
+  const [eventTitle, setEventTitle] = useState('');
   const [virtualHug, setVirtualHug] = useState(true);
   const [journalingPrompts, setJournalingPrompts] = useState(true);
   const [musicPlaylist, setMusicPlaylist] = useState(true);
   const [anonymousCheckins, setAnonymousCheckins] = useState(true);
+  const [imageData, setImageData] = useState<object | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [invitationMessage, setInvitationMessage] = useState(
-    "Let's create a space to breathe, reflect, and share calmly."
+    ""
   );
 
+  const [eventData , setEventData] = useState(null);
+
+  
+  const params = useLocalSearchParams();
+  useEffect(() => {
+    let data = null;
+    let image = null;
+    try {
+      data = JSON.parse(params.data as string);
+      image = JSON.parse( params.image as string) ;
+      setEventData(data);
+      setImageData(image);
+      setEventTitle(data?.name || '');
+      // setSelectedEventType(data?.eventType || '');
+      setSelectedMood(data?.mood_tag || '');
+      setInvitationMessage(data?.description || '');
+
+    } catch {
+      data = null;
+    }
+    console.log('Event Creation Data:', data);
+  }, [params.data]);
+
+
+    const uploadImage = async (image) => {
+  const formData = new FormData();
+
+
+  formData?.append('file', image?.assets[0]?.uri ? {
+    uri: image.assets[0].uri,
+    type: image.assets[0].type ||   'image/jpeg',
+    name: image.assets[0].fileName || `image_${Date.now()}.jpg`,
+  } : image.assets[0]);
+  console.log('Uploading image:',JSON.stringify( formData));
+
+  try {
+   
+    const response = await fetch('http://13.50.228.222:8000/events/upload_image', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+    console.log('Uploaded image URL:', data.url);
+    return data.url; // Return the uploaded image URL
+  } catch (error) {
+    console.error('Upload failed:', error);
+  }
+};
+
+
+const previewEventHandler = async () => {
+  const payload = {
+      ...(typeof eventData === 'object' && eventData !== null ? eventData : {}),
+      journaling_prompts: journalingPrompts,
+      music_playlist: musicPlaylist,
+      virtual_hug: virtualHug,
+      type: selectedEventType,
+       eventType: selectedEventType,
+      mood: selectedMood,
+      description: invitationMessage.trim(),
+       name: eventTitle.trim(),
+      mood_tag: selectedMood,
+         event_image: imageData?.assets[0]?.uri || null,
+    }
+      router.push({ pathname: '/previewEvent/eventData', 
+       params: { data: JSON.stringify(payload) }
+    });
+  
+}
+
+
+  const createEventHandler = async ()=>{
+    try {
+
+      setIsLoading(true);
+
+   const url =  await  uploadImage(imageData);
+     
+
+    const payload = {
+      ...(typeof eventData === 'object' && eventData !== null ? eventData : {}),
+      journaling_prompts: journalingPrompts,
+      music_playlist: musicPlaylist,
+      virtual_hug: virtualHug,
+      type: selectedEventType,
+       eventType: selectedEventType,
+      mood: selectedMood,
+      description: invitationMessage.trim(),
+       name: eventTitle.trim(),
+      mood_tag: selectedMood,
+         event_image_url: url,
+    }
+
+       console.log('Payload for event creation:', payload);
+
+
+    
+    const response = await   createEvent(payload)
+    console.log('Event created successfully:', response);
+    Toast.show({
+      type: 'success',
+      text1: 'Event Created',
+      text2: 'Your event has been created successfully!',
+    });
+    router.push('/activity');
+    } catch (error) {
+     
+    }
+    finally {
+      setIsLoading(false);
+    }
+  }
+
+  
+
   // Event types data
-  const eventTypes = [
-    {
-      id: 'mindfulness',
-      icon: 'person',
-      label: 'Mindfulness/\nMeditation',
-      color: '#D4C5F9',
-      selectedColor: '#9B59B6',
-      borderColor: '#E8D5FF',
-      shadowColor: '#D4C5F9',
-    },
-    {
-      id: 'group',
-      icon: 'people',
-      label: 'Group Talk\nor Support Space',
-      color: '#A8C8EC',
-      selectedColor: '#3498DB',
-      borderColor: '#C5DDFC',
-      shadowColor: '#A8C8EC',
-    },
-    {
-      id: 'journaling',
-      icon: 'document-text',
-      label: 'Journaling\nCircle',
-      color: '#5DBEA3',
-      selectedColor: '#16A085',
-      borderColor: '#7DCEA0',
-      shadowColor: '#5DBEA3',
-    },
-    {
-      id: 'music',
-      icon: 'musical-notes',
-      label: 'Music &\nChill',
-      color: '#E6B8FF',
-      selectedColor: '#AF7AC5',
-      borderColor: '#F0C5FF',
-      shadowColor: '#E6B8FF',
-    },
-    {
-      id: 'fitness',
-      icon: 'barbell-outline',
-      label: 'Wellness &\nFitness',
-      color: '#FFB366',
-      selectedColor: '#E67E22',
-      borderColor: '#FFC999',
-      shadowColor: '#FFB366',
-    },
-    {
-      id: 'creative',
-      icon: 'color-palette-outline',
-      label: 'Creative\nWorkshop',
-      color: '#FF9AA2',
-      selectedColor: '#E74C3C',
-      borderColor: '#FFB3B8',
-      shadowColor: '#FF9AA2',
-    },
-    {
-      id: 'other',
-      icon: 'add-circle',
-      label: 'Other\nEvent',
-      color: '#B8B8B8',
-      selectedColor: '#7F8C8D',
-      borderColor: '#CCCCCC',
-      shadowColor: '#B8B8B8',
-    },
-  ];
+const eventTypes = [
+  {
+    id: 'park',
+    icon: 'tree-outline',
+    label: 'Park /\nNature Area',
+    color: '#A8D5BA',
+    selectedColor: '#2ECC71',
+    borderColor: '#C7EFD7',
+    shadowColor: '#A8D5BA',
+  },
+  {
+    id: 'cafe',
+    icon: 'cafe-outline',
+    label: 'Café /\nCoffee Shop',
+    color: '#FFD59E',
+    selectedColor: '#E67E22',
+    borderColor: '#FFE2BA',
+    shadowColor: '#FFD59E',
+  },
+  {
+    id: 'restaurant',
+    icon: 'restaurant-outline',
+    label: 'Restaurant /\nEatery',
+    color: '#F49FB6',
+    selectedColor: '#E74C3C',
+    borderColor: '#F8BCC9',
+    shadowColor: '#F49FB6',
+  },
+  {
+    id: 'bar',
+    icon: 'wine-outline',
+    label: 'Bar /\nLounge',
+    color: '#D9A8FF',
+    selectedColor: '#9B59B6',
+    borderColor: '#E6C9FF',
+    shadowColor: '#D9A8FF',
+  },
+  {
+    id: 'coworking',
+    icon: 'laptop-outline',
+    label: 'Co-working\nSpace',
+    color: '#A8C8EC',
+    selectedColor: '#3498DB',
+    borderColor: '#C5DDFC',
+    shadowColor: '#A8C8EC',
+  },
+  {
+    id: 'wellness',
+    icon: 'heart-outline',
+    label: 'Wellness Center /\nYoga',
+    color: '#96DED1',
+    selectedColor: '#1ABC9C',
+    borderColor: '#B7F1E7',
+    shadowColor: '#96DED1',
+  },
+  {
+    id: 'event',
+    icon: 'ticket-outline',
+    label: 'Event\nVenue',
+    color: '#FECF81',
+    selectedColor: '#E67E22',
+    borderColor: '#FFE2B3',
+    shadowColor: '#FECF81',
+  },
+  {
+    id: 'virtual',
+    icon: 'headset-outline',
+    label: 'Virtual\nSpace',
+    color: '#B9B3F8',
+    selectedColor: '#8E44AD',
+    borderColor: '#D4CFFB',
+    shadowColor: '#B9B3F8',
+  },
+  {
+    id: 'custom',
+    icon: 'extension-puzzle-outline',
+    label: 'Custom\nLocation',
+    color: '#CCCCCC',
+    selectedColor: '#7F8C8D',
+    borderColor: '#E0E0E0',
+    shadowColor: '#CCCCCC',
+  },
+];
+
+
+  const handleBackPress = () => {
+     
+      router.back();
+     
+    };
 
   // Moods data
-  const moods = ['Calm', 'Energetic', 'Reflective', 'Social'];
+  const moods = ['Happy' , 'Calm', 'Stressed', 'Lonely'];
 
   // Style functions
   const getEventTypeStyle = (type) => {
@@ -142,6 +292,7 @@ export const useEventCreationLogic = () => {
 
   return {
     // State
+    isLoading,
     selectedEventType,
     setSelectedEventType,
     selectedMood,
@@ -158,6 +309,7 @@ export const useEventCreationLogic = () => {
     setAnonymousCheckins,
     invitationMessage,
     setInvitationMessage,
+    createEventHandler,
     
     // Data
     eventTypes,
@@ -167,5 +319,7 @@ export const useEventCreationLogic = () => {
     getEventTypeStyle,
     getEventTypeTextStyle,
     handlePublish,
+    handleBackPress,
+    previewEventHandler
   };
 };

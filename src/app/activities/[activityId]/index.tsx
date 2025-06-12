@@ -4,9 +4,11 @@ import { styles } from './index.style';
 import { useEventDetail } from './useEventDetail';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import FastImageWithLoader from '@/src/components/common/fastImageWithLoader';
+
 
 const EventDetail: React.FC = () => {
-  const { loading , eventDetails  } = useEventDetail();
+  const { loading , eventDetails  , joinEventHandler } = useEventDetail();
 
   const Item =({icon , label})=>{
     return( <View style={styles.itemContainer}>
@@ -39,9 +41,14 @@ const EventDetail: React.FC = () => {
                 <Text>{eventDetails?.mood_tag}</Text>
             </View>
             </View>
-            <Image
-                source={ require('../../../assets/images/party_pic.jpg')}
+            <FastImageWithLoader
+              source={
+                eventDetails?.event_image
+                  ? { uri: eventDetails?.event_image }
+                  : require('../../../assets/images/party_pic.jpg')
+              }
                 style={{ width: '100%', height: 200, borderRadius: 32, marginTop: 16  , marginBottom:-32 }}
+                imageStyle={{ borderRadius: 32 }}
             />
         </View>
         <View style={styles.detailsContainer}>
@@ -56,7 +63,7 @@ const EventDetail: React.FC = () => {
             }
             icon={<Ionicons name="calendar-clear-outline" color='#31c0bc' size={22}/>}/>
             <Item 
-            label={`Up to ${eventDetails?.max_attendees} people`}
+            label={`Up to ${eventDetails?.list_of_users?.length} people`}
             icon={<Ionicons name="person" color='#31c0bc' size={22}/>}/>
             <Item 
             label='Public'
@@ -64,8 +71,15 @@ const EventDetail: React.FC = () => {
 
             <View style={{ flexDirection: 'row', marginTop: 12 }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {[...Array(15)].map((_, idx) => (
-            <Image
+            {eventDetails?.list_of_users.map((_, idx) => (
+              <FastImageWithLoader
+              source={
+                eventDetails?.user_img
+                  ? { uri: eventDetails?.user_img }
+                  : require('../../../assets/images/avatar-pic.jpg')
+
+              }
+              imageStyle={{ borderRadius: 16 }}
                 key={idx}
                 style={{
                 height: 38,
@@ -73,7 +87,7 @@ const EventDetail: React.FC = () => {
                 borderRadius: 16,
                 marginRight: idx !== 14 ? 8 : 0,
                 }}
-                source={require('../../../assets/images/avatar-pic.jpg')}
+               
             />
             ))}
             </ScrollView>
@@ -103,8 +117,8 @@ const EventDetail: React.FC = () => {
 
         </ScrollView>
 
-          <TouchableOpacity style={styles.buttonStyle}>
-            <Text style={styles.buttonText}>Join Event</Text>
+          <TouchableOpacity disabled={eventDetails?.joined_event} onPress={joinEventHandler} style={[styles.buttonStyle , eventDetails?.joined_event && {backgroundColor:'gray'}] }>
+            <Text style={styles.buttonText}>{eventDetails?.joined_event ? 'Already Joined' : 'Join Event'  }</Text>
           </TouchableOpacity>
     </View>
   );

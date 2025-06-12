@@ -260,4 +260,16 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#B8E6E1',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '500',
+    marginTop: 10,
+  },
 });

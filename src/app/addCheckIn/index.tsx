@@ -15,12 +15,22 @@ import { useAddCheckIn } from "./useAddCheckIn";
 import Header from "@/src/components/common/header";
 
 const moods = [
-  { emoji: '😔', label: "Sad" },
-  { emoji: '😐', label: 'Neutral' }, 
-  { emoji: '🙂', label: 'Happy' },
-  { emoji: '😊', label: 'Great' },
-  { emoji: '😄', label: 'Amazing' },
+ 
+  {   label: 'Happy',
+    emoji: '😊',},
+  {    label: 'Calm',
+    emoji: '🙂', }, 
+  {  label: 'Stressed',
+    emoji: '🙁', },
+  {   label: 'Lonely',
+    emoji: '😔', },
+ 
 ];
+
+import Happy from '../../assets/svgs/happy-icon.svg';
+import Calm from '../../assets/svgs/calm-icon.svg';
+import Stressed from '../../assets/svgs/stressed-icon.svg';
+import Lonely from '../../assets/svgs/lonely-icon.svg';
 
 export const unstable_settings = {
   initialRouteName: 'index',
@@ -45,7 +55,7 @@ export default function AddCheckIn() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="Check-In" showBack={true} />
+      <Header style={{backgroundColor:'#A7E2E0'}} title="Check-In" showBack={true} />
       
       <View style={styles.contentContainer}>
         <Text style={styles.title}>How are you feeling?</Text>
@@ -62,7 +72,11 @@ export default function AddCheckIn() {
               ]}
               onPress={() => setSelectedMood(item)}
             >
-              <Text style={styles.moodEmoji}>{item.emoji}</Text>
+               {item.label === 'Happy' && <Happy width={88} height={88}/>}
+              {item.label === 'Calm' && <Calm width={93} height={93}/>}
+               {item.label === 'Stressed' && <Stressed width={88} height={88}/>}
+                {item.label === 'Lonely' && <Lonely width={103} height={103}/>}
+             
             </TouchableOpacity>
           )}
           contentContainerStyle={styles.moodList}
@@ -79,9 +93,9 @@ export default function AddCheckIn() {
             value={text}
             onChangeText={setText}
           />
-          <TouchableOpacity style={styles.voiceButton}>
+          {/* <TouchableOpacity style={styles.voiceButton}>
             <Text style={styles.voiceIcon}>🎙️</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <View style={styles.locationContainer}>

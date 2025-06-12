@@ -17,6 +17,15 @@ export const styles = StyleSheet.create({
   backButton: {
     padding: 8,
   },
+   sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+   section: {
+    marginBottom: 24,
+  },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
@@ -366,4 +375,17 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+   moodScrollContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    marginHorizontal: 0,
+  },
+  moodScrollContent: {
+    paddingHorizontal: 12,
+    gap: 12,
+    alignItems: 'center',
+  },
+  
 });

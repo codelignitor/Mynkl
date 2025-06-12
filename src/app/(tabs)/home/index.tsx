@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import SearchIcon from '../../../assets/svgs/SerachIcon'
 import * as SplashScreen from 'expo-splash-screen';
 // You'll need to import icons
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -18,12 +19,11 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/src/store';
 
 
-
 const MoodMapScreen = () => {
   const router = useRouter();
-  const {openToTalk ,isLoading ,  updateOpenToTalkHandler , moveToScreen } = useHome();
+  const {openToTalk ,isLoading ,  updateOpenToTalkHandler , moveToScreen ,selectedMood, setSelectedMood , handleSubmitAddCheckin } = useHome();
   // State
-  const [selectedMood, setSelectedMood] = useState(null);
+  
   const [checkedIn, setCheckedIn] = useState(false);
   const [squareWidth, setSquareWidth] = useState(0);
   const squareRef = useRef(null);
@@ -59,15 +59,17 @@ const MoodMapScreen = () => {
   }, []);
 
   // Handlers
-  const handleMoodSelection = (id) => {
-    setSelectedMood(id);
-     router.push('/addCheckIn')
+  const handleMoodSelection = (mood) => {
+    // setSelectedMood(id);
+    //  router.push('/addCheckIn')
+    handleSubmitAddCheckin(mood)
 
   };
 
   const handleCheckIn = () => {
     setCheckedIn(true);
-    router.push('/checkIns')
+     router.push('/addCheckIn')
+    // router.push('/checkIns')
   };
 
 
@@ -121,6 +123,7 @@ const MoodMapScreen = () => {
           <View style={styles.headerTextContainer}>
             <Text style={styles.header}>Hello, {username}</Text>
           </View>
+         
           <TouchableOpacity 
             style={styles.bellIconContainer} 
             onPress={handleNotificationsPress}
@@ -128,6 +131,10 @@ const MoodMapScreen = () => {
             <Icon name="bell-outline" size={25} color="#ffffff" style={styles.bellIcon} />
           </TouchableOpacity>
         </View>
+
+       { !selectedMood ?
+      <>
+     
 
         <Text style={styles.headerSection}>How are you feeling?</Text>
 
@@ -137,6 +144,10 @@ const MoodMapScreen = () => {
           selectedMood={selectedMood} 
           handleMoodSelection={handleMoodSelection} 
         />
+
+         </> :
+          <Text style={styles.headerSection}>I am feeling {selectedMood}</Text>
+}
         
         {/* Row for sections with related dimensions */}
         <View style={styles.rowContainer}>

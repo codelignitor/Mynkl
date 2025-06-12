@@ -4,6 +4,34 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapMarker from './MapMarker';
 import { styles } from '../../screenStyles/styles';
 
+const mapStyle = [
+  {
+    featureType: 'poi',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'transit',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'administrative',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'labels.icon',
+    stylers: [{ visibility: 'off' }],
+  },
+ 
+ 
+  {
+    featureType: 'poi.park',
+    stylers: [{ visibility: 'off' }],
+  }
+];
+
+
 const MoodMapView = ({
   mapRegion,
   selectedMood,
@@ -11,29 +39,37 @@ const MoodMapView = ({
   currentEmoji,
   backgroundColor,
   mapContainerStyle,
+  callback
 }) => {
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
 
+  console.log("MoodMapView Props", mapRegion); 
+
+  const onSelectMarker = (location) => {
+    setSelectedMarkerId(location.id);
+   callback(location);
+  }
+
   // Memoized MapView key to force rerender when locations change
   const mapKey = useMemo(() => JSON.stringify(currentLocations), [currentLocations]);
-console.log("MapKey",currentLocations)
+// console.log("MapKey",currentLocations)
   return (
     <View style={[styles.mapContainer, mapContainerStyle]}>
-      {selectedMood && !currentLocations?.length && (
+      {selectedMood && !currentLocations?.length   && (
   <View style={styles.loadingOverlay}>
     <ActivityIndicator size="large" color="#000" />
   </View>
 )}
 
-      {selectedMood && currentLocations?.length > 0 ? (
+      {selectedMood && currentLocations?.length > 0   ? (
         <MapView
           key={mapKey} 
-          
+           customMapStyle={mapStyle}
           style={styles.map}
           provider={PROVIDER_GOOGLE}
           region={mapRegion}
         >
-          {currentLocations.map((location) => {
+          {currentLocations?.map((location) => {
             const isSelected = selectedMarkerId === location.id;
 
             return (
@@ -45,10 +81,10 @@ console.log("MapKey",currentLocations)
                 }}
                 title={location.name}
                 description={location.description}
-                onPress={() => setSelectedMarkerId(location.id)}
+                onPress={()=>onSelectMarker(location)}
               >
                 <MapMarker
-                  emoji={location.emoji }
+                  emoji={location.mood }
                   backgroundColor={backgroundColor}
                   markerStyle={{
                     width: isSelected ? 70 : 50,

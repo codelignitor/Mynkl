@@ -13,6 +13,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../../../screenStyles/activity/_index.style';
 import { useActivity } from '../../../screenHooks/_useActivity';
 import { router } from 'expo-router';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/src/store';
+import FastImageWithLoader from '@/src/components/common/fastImageWithLoader';
 
 // Remove route parameter - this is causing the error
 export default function PostScreen() {
@@ -49,6 +52,14 @@ export default function PostScreen() {
   const handleBackPress = () => {
     router.back();
   };
+
+    const mode = useSelector((state: RootState) => state.auth.mode);
+
+  const handleCreateEvent = () => {
+
+    // Navigate to the create event screen
+    router.push('/event');
+  }
   
   // Show loading state
   if (isLoading) {
@@ -80,15 +91,23 @@ export default function PostScreen() {
           <View style={styles.titleContainer}>
             <Text style={styles.username}>{username}</Text>
           </View>
-          <View style={styles.placeholderWidth} />
+        
+            <TouchableOpacity onPress={handleCreateEvent} style={{paddingVertical:8 , paddingHorizontal:12 , backgroundColor:'white' , borderRadius:8}} >
+             <Text>Create Event</Text>
+            </TouchableOpacity>
+         
         </View>
 
         <View style={styles.postContainer}>
-          <Text style={styles.postText}>{statusText}</Text>
+          <Text style={styles.postText}>I am feeling {mode ?? "Happy 😊"}</Text>
 
-          <TouchableOpacity onPress={()=>goToDetailsHandler(acitivitiesList[0]?.event_id)}  style={styles.eventContainer}>
-            <Image
-              source={require('../../../assets/images/party_pic.jpg')}
+          <TouchableOpacity onPress={() => goToDetailsHandler(acitivitiesList[0]?.event_id)} style={styles.eventContainer}>
+            <FastImageWithLoader
+              source={
+                acitivitiesList[0]?.event_image
+                  ? { uri: acitivitiesList[0].event_image }
+                  : require('../../../assets/images/party_pic.jpg')
+              }
               style={styles.eventImage}
               resizeMode="cover"
             />
@@ -101,8 +120,12 @@ export default function PostScreen() {
       data={acitivitiesList?.slice(1)} 
       renderItem={({ item }) => (
           <TouchableOpacity onPress={()=>goToDetailsHandler(item?.event_id)} style={styles.eventContainerItem}>
-            <Image
-              source={require('../../../assets/images/party_pic.jpg')}
+            <FastImageWithLoader
+              source={
+                item?.event_image
+                  ? { uri: item.event_image }
+                  : require('../../../assets/images/party_pic.jpg')
+              }
               style={styles.eventImageItem}
               resizeMode="cover"
             />
