@@ -151,15 +151,15 @@ bellIcon: {
     width: 65,
   },
   moodCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    // width: 66,
+    height: 66,
+    borderRadius: 63,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
+    // marginBottom: 6,
   },
   selectedMoodCircle: {
-    borderWidth: 2,
+    // borderWidth: 2,
     // borderColor: '#fff',
   },
   moodEmoji: {
@@ -172,7 +172,9 @@ bellIcon: {
     marginTop: 4,
   },
   selectedMoodName: {
-    fontWeight: 'bold',
+    fontWeight:'800',
+
+    fontSize:16
   },
   markerContainer: {
     width: 36,

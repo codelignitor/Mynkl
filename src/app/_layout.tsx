@@ -59,11 +59,11 @@ export default function RootLayout() {
      }}>
     <Provider store={store}>
        
-       {/* <ChatWrapper>
-        <AppProvider> */}
+       <ChatWrapper>
+        <AppProvider>
       <MainLayout />
-      {/* </AppProvider>
-      </ChatWrapper> */}
+      </AppProvider>
+      </ChatWrapper>
      
     </Provider>
     </GestureHandlerRootView>

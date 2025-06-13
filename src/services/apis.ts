@@ -91,4 +91,10 @@ export const getMapSearchResults = async (params: MapSearchParams) => {
 
 
 
+export const preferences = async (payload) => {
+  const response = await axiosInstance.post(`/home/preferences` , payload);
+  return response.data;
+};
+
+
 

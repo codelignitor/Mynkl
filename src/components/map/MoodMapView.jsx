@@ -43,7 +43,7 @@ const MoodMapView = ({
 }) => {
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
 
-  console.log("MoodMapView Props", mapRegion); 
+  // console.log("MoodMapView Props", mapRegion); 
 
   const onSelectMarker = (location) => {
     setSelectedMarkerId(location.id);
@@ -55,13 +55,14 @@ const MoodMapView = ({
 // console.log("MapKey",currentLocations)
   return (
     <View style={[styles.mapContainer, mapContainerStyle]}>
-      {selectedMood && !currentLocations?.length   && (
+      {/* { !currentLocations?.length   && (
   <View style={styles.loadingOverlay}>
+    <Text>{currentLocations?.length }</Text>
     <ActivityIndicator size="large" color="#000" />
   </View>
-)}
+)} */}
 
-      {selectedMood && currentLocations?.length > 0   ? (
+     
         <MapView
           key={mapKey} 
            customMapStyle={mapStyle}
@@ -99,13 +100,13 @@ const MoodMapView = ({
             );
           })}
         </MapView>
-      ) : (
+      {/* ) : (
         <View style={styles.mapPlaceholder}>
           <Text style={styles.placeholderText}>
             Select a mood below to see recommended places
           </Text>
         </View>
-      )}
+      )} */}
     </View>
   );
 };

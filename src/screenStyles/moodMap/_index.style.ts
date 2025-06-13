@@ -18,7 +18,7 @@ export const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: '42.5%',
+        height: '48.5%',
     },
     activitiesLabel:{fontSize: 32, fontWeight: 'bold', color: '#fff'},
     rowContiner:{
