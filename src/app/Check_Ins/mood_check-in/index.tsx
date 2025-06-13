@@ -2,235 +2,180 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import Slider from '@react-native-community/slider';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
-export default function MoodReflectionScreen() {
-  const [reflection, setReflection] = useState('');
-  const [selectedMoods, setSelectedMoods] = useState([]);
-
-  const moods = ['Focus', 'Calm', 'Anxious', 'Inspired'];
-
-  const toggleMood = (mood) => {
-    setSelectedMoods((prev) => {
-      if (prev.includes(mood)) {
-        return prev.filter((m) => m !== mood);
-      } else {
-        return prev.concat(mood);
-      }
-    });
-  };
+export default function MoodScreen() {
+  const [moodStrength, setMoodStrength] = useState(0.5);
   const router = useRouter();
 
-
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F1E8" />
-      
-      {/* Peaceful Face Icon */}
-      <View style={styles.iconContainer}>
-        <View style={styles.faceIcon}>
-          <View style={styles.eyesContainer}>
-            <View style={styles.eye} />
-            <View style={styles.eye} />
-          </View>
-          <View style={styles.smile} />
+    <LinearGradient colors={['#a5f3fc', '#0ea5e9']} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+
+        {/* Header: Back button + Centered Mood text */}
+        <View style={styles.headerWrapper}>
+          <Text style={styles.moodLabelCentered}>MOOD</Text>
         </View>
-      </View>
 
-      {/* Main Question */}
-      <Text style={styles.mainQuestion}>
-        Was there a moment{'\n'}of peace or clarity?
-      </Text>
+        {/* Emoji */}
+        <Text style={styles.emoji}>😊</Text>
 
-      {/* AI Icebreaker Label */}
-      <View style={styles.icebreakerContainer}>
-        <Text style={styles.icebreakerText}>AI ICEBREAKER</Text>
-      </View>
+        {/* AI Interpretation Card */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>AI INTERPRETATION</Text>
+          <Text style={styles.cardText}>You seem happy and content.</Text>
+          <Text style={styles.cardSubText}>Continue doing things that bring you joy.</Text>
+        </View>
 
-      {/* Text Input */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Share your reflection..."
-          placeholderTextColor="#8B7355"
-          value={reflection}
-          onChangeText={setReflection}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-        />
-        <TouchableOpacity style={styles.micButton}>
-          <Ionicons name="mic" size={20} color="#8B7355" />
+        {/* Mood Strength Slider */}
+        <View style={styles.sliderRow}>
+          <Text style={styles.sliderLabel}>WEAK</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={1}
+            value={moodStrength}
+            minimumTrackTintColor="#fff"
+            maximumTrackTintColor="#fff"
+            thumbTintColor="#fff"
+            disabled={true} // Slider is now non-interactive
+          />
+          <Text style={styles.sliderLabel}>STRONG</Text>
+        </View>
+
+        {/* Action Buttons */}
+        <TouchableOpacity style={styles.actionBtn}>
+          <Ionicons name="chatbubble-ellipses-outline" size={20} color="white" />
+          <Text style={styles.btnText}>Chat with a friend</Text>
         </TouchableOpacity>
-      </View>
 
-      {/* Mood Tagging Section */}
-      <Text style={styles.moodTaggingTitle}>Mood Tagging</Text>
-      
-      <View style={styles.moodTagsContainer}>
-        {moods.map((mood) => (
-          <TouchableOpacity
-            key={mood}
-            style={[
-              styles.moodTag,
-              selectedMoods.includes(mood) && styles.selectedMoodTag
-            ]}
-            onPress={() => toggleMood(mood)}
-          >
-            <Text style={[
-              styles.moodTagText,
-              selectedMoods.includes(mood) && styles.selectedMoodTagText
-            ]}>
-              {mood}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+        <TouchableOpacity style={styles.actionBtn}>
+          <Ionicons name="location-outline" size={20} color="white" />
+          <Text style={styles.btnText}>Visit a favorite spot</Text>
+        </TouchableOpacity>
 
-      {/* Submit Button */}
-      <TouchableOpacity
-        style={styles.submitButton}
-        onPress={() => {
-            router.push('/mood-screen'); 
-        }}
+        <TouchableOpacity style={styles.actionBtn}>
+          <MaterialIcons name="palette" size={20} color="white" />
+          <Text style={styles.btnText}>Do something creative</Text>
+        </TouchableOpacity>
+
+        {/* Check In Button */}
+        <TouchableOpacity
+          style={styles.checkInBtn}
+          onPress={() => router.push('/moodpattern')}
         >
-        <Text style={styles.submitButtonText}>Submit</Text>
-</TouchableOpacity>
-    </SafeAreaView>
+          <Text style={styles.checkInText}>Check in</Text>
+        </TouchableOpacity>
+
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F1E8',
-    paddingHorizontal: 24,
-    paddingTop: 20,
   },
-  iconContainer: {
+  safeArea: {
+    flex: 1,
     alignItems: 'center',
-    marginBottom: 32,
+    paddingHorizontal: 20,
+    paddingTop: 40,
+  },
+  headerWrapper: {
+    width: '100%',
+    position: 'relative',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  moodLabelCentered: {
+    marginTop: 15,
+    fontSize: 22,
+    color: 'black',
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  emoji: {
+    fontSize: 80,
     marginTop: 20,
   },
-  faceIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#F4C2A1',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  eyesContainer: {
-    flexDirection: 'row',
-    marginBottom: 8,
-  },
-  eye: {
-    width: 16,
-    height: 4,
-    backgroundColor: '#D4A574',
-    borderRadius: 2,
-    marginHorizontal: 4,
-  },
-  smile: {
-    width: 24,
-    height: 12,
-    borderBottomWidth: 3,
-    borderBottomColor: '#D4A574',
-    borderRadius: 12,
-    borderTopWidth: 0,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
-  },
-  mainQuestion: {
-    fontSize: 28,
-    fontWeight: '400',
-    color: '#2C2C2C',
-    textAlign: 'center',
-    lineHeight: 36,
-    marginBottom: 24,
-  },
-  icebreakerContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  icebreakerText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#8B7355',
-    letterSpacing: 1,
-    backgroundColor: '#E8DCC6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-  },
-  inputContainer: {
-    backgroundColor: '#E8DCC6',
+  card: {
+    backgroundColor: 'white',
+    width: '100%',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 32,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
+    marginTop: 20,
   },
-  textInput: {
-    flex: 1,
+  cardTitle: {
+    fontSize: 12,
+    color: '#555',
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  cardText: {
     fontSize: 16,
-    color: '#2C2C2C',
-    lineHeight: 22,
-    minHeight: 60,
+    fontWeight: '600',
+    color: '#000',
   },
-  micButton: {
-    marginLeft: 12,
-    marginTop: 4,
-  },
-  moodTaggingTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#2C2C2C',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  moodTagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginBottom: 40,
-  },
-  moodTag: {
-    backgroundColor: '#E8DCC6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    margin: 4,
-  },
-  selectedMoodTag: {
-    backgroundColor: '#D4A574',
-  },
-  moodTagText: {
+  cardSubText: {
     fontSize: 14,
-    color: '#8B7355',
-    fontWeight: '500',
+    color: '#333',
+    marginTop: 2,
   },
-  selectedMoodTagText: {
-    color: '#FFFFFF',
-  },
-  submitButton: {
-    backgroundColor: '#F4C2A1',
-    borderRadius: 25,
-    paddingVertical: 16,
+  sliderRow: {
+    marginTop: 50,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    width: '100%',
+    marginVertical: 16,
   },
-  submitButtonText: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#FFFFFF',
+  sliderLabel: {
+    color: 'white',
+    fontSize: 12,
+    width: 40,
+    textAlign: 'center',
+  },
+  slider: {
+    flex: 1,
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#01497c',
+    padding: 14,
+    borderRadius: 12,
+    marginTop: 12,
+    width: '100%',
+  },
+  btnText: {
+    color: 'white',
+    marginLeft: 10,
+    fontSize: 16,
+  },
+  checkInBtn: {
+    backgroundColor: '#99f6e4',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginTop: 30,
+    width: '100%',
+    alignItems: 'center',
+  },
+  checkInText: {
+    fontSize: 16,
+    color: '#000',
+    fontWeight: 'bold',
   },
 });

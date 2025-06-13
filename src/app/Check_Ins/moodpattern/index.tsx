@@ -94,7 +94,7 @@ export default function MoodPatternScreen() {
         {/* Tip Button */}
         <TouchableOpacity 
           style={styles.tipButton}
-          onPress={() => router.push('/wellnesssuggestions')}
+          onPress={() => router.push('/mood-screen')}
         >
           <MaterialIcons name="lightbulb" size={20} color="#000" />
           <Text style={styles.tipText}>Creativity improves you mood.</Text>
