@@ -13,6 +13,7 @@ const App = () => {
     }
 
     if (isUserLoggedIn) {
+        //   return <Redirect href="/chat/room" />;
         return <Redirect href="/(tabs)/home" />;
     } else {
         return <Redirect href="/(auth)" />;

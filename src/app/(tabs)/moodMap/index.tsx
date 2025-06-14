@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { styles } from '../../../screenStyles/moodMap/_index.style';
 import { useMoodMap } from '../../../screenHooks/_useMoodMap';
 import { moodsData } from '../../../utils/moodsData';
@@ -7,28 +7,35 @@ import MoodMapView from '@/src/components/map/MoodMapView';
 import SearchInput from '@/src/components/common/searchInput';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Location from 'expo-location';
+import { router } from 'expo-router';
 
 const MoodMapScreen: React.FC = () => {
-  const { hugs, searchInput, setSearchInput, moodData, mapRegion, setMapRegion } = useMoodMap();
+  const { hugs, searchInput, setSearchInput, moodData, mapRegion, setMapRegion , loading  , callBackMapHandler , currentMarkedLocation} = useMoodMap();
   const [selectedMood, setSelectedMood] = React.useState(moodsData[3]?.id);
 
-  // React.useEffect(() => {
-  //   (async () => {
-  //     const { status } = await Location.requestForegroundPermissionsAsync();
-  //     if (status !== 'granted') {
-  //       console.warn('Permission to access location was denied');
-  //       return;
-  //     }
+  React.useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.warn('Permission to access location was denied');
+        return;
+      }
 
-  //     const location = await Location.getCurrentPositionAsync({});
-  //     console.log('Location:', location);
-  //     setMapRegion((prev) => ({
-  //       ...prev,
-  //       latitude: location.coords.latitude,
-  //       longitude: location.coords.longitude,
-  //     }));
-  //   })();
-  // }, []);
+      const location = await Location.getCurrentPositionAsync({});
+      console.log('Location:', location);
+      setMapRegion((prev) => ({
+        ...prev,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      }));
+
+      
+
+      
+    })();
+  }, []);
+
+  console.log('Map Region:', mapRegion);
 
   const currentLocations = selectedMood
     ? moodsData.find((mood) => mood.id === selectedMood)?.locations || []
@@ -45,8 +52,10 @@ const MoodMapScreen: React.FC = () => {
         value={searchInput}
         placeholder={"Mood Map"}
       />
-
+    {loading &&
+      <ActivityIndicator/>}
       <MoodMapView
+        callback={callBackMapHandler}
         mapContainerStyle={styles.mapContainerStyle}
         mapRegion={mapRegion}
         selectedMood={selectedMood}
@@ -55,13 +64,16 @@ const MoodMapScreen: React.FC = () => {
         backgroundColor={undefined}
       />
 
+     { currentMarkedLocation && currentMarkedLocation?.type === 'event' && (
       <View style={styles.activitiesContainer}>
         <View style={styles.rowContiner}>
           <Text style={styles.activitiesLabel}>Activities</Text>
+          <TouchableOpacity onPress={()=> router.push('/activity')}>
           <Text style={styles.seeMore}>See More</Text>
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.activityContainer}>
+        <TouchableOpacity onPress={()=> router.push(`/activities/${currentMarkedLocation?.event?.id}`)} style={styles.activityContainer}>
           <Image
             style={{
               height: 132,
@@ -69,17 +81,18 @@ const MoodMapScreen: React.FC = () => {
               borderTopLeftRadius: 32,
               borderBottomLeftRadius: 32,
             }}
-            source={require('../../../assets/images/party_pic.jpg')}
+            source={currentMarkedLocation?.event?.event_image ? {uri:currentMarkedLocation?.event?.event_image} :  require('../../../assets/images/party_pic.jpg')}
           />
           <View style={styles.activityDetailsContainer}>
-            <Text style={styles.activityLabel}>Live Music Mestup</Text>
-            <Text style={styles.timeLabel}>10:00 PM · Sodal</Text>
+            <Text style={styles.activityLabel}>{currentMarkedLocation?.name}</Text>
+            {/* <Text style={styles.timeLabel}>10:00 PM · Sodal</Text> */}
           </View>
           <View style={{ position: 'absolute', right: 16 }}>
           <Ionicons name="arrow-forward-sharp" size={24} color={'#000'} />
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
+      )}
     </SafeAreaView>
   );
 };

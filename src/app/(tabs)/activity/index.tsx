@@ -6,12 +6,16 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Image
+  Image,
+  FlatList
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../../../screenStyles/activity/_index.style';
 import { useActivity } from '../../../screenHooks/_useActivity';
 import { router } from 'expo-router';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/src/store';
+import FastImageWithLoader from '@/src/components/common/fastImageWithLoader';
 
 // Remove route parameter - this is causing the error
 export default function PostScreen() {
@@ -23,7 +27,9 @@ export default function PostScreen() {
     activityData, 
     isLoading, 
     error, 
-    handleActivityAction 
+    acitivitiesList,
+    handleActivityAction ,
+    goToDetailsHandler
   } = useActivity(activityId);
   
   // Destructure the activity data for easier access
@@ -46,6 +52,14 @@ export default function PostScreen() {
   const handleBackPress = () => {
     router.back();
   };
+
+    const mode = useSelector((state: RootState) => state.auth.mode);
+
+  const handleCreateEvent = () => {
+
+    // Navigate to the create event screen
+    router.push('/event');
+  }
   
   // Show loading state
   if (isLoading) {
@@ -77,26 +91,58 @@ export default function PostScreen() {
           <View style={styles.titleContainer}>
             <Text style={styles.username}>{username}</Text>
           </View>
-          <View style={styles.placeholderWidth} />
+        
+            <TouchableOpacity onPress={handleCreateEvent} style={{paddingVertical:8 , paddingHorizontal:12 , backgroundColor:'white' , borderRadius:8}} >
+             <Text>Create Event</Text>
+            </TouchableOpacity>
+         
         </View>
 
         <View style={styles.postContainer}>
-          <Text style={styles.postText}>{statusText}</Text>
+          <Text style={styles.postText}>I am feeling {mode ?? "Happy 😊"}</Text>
 
-          <View style={styles.eventContainer}>
-            <Image
-              source={require('../../../assets/images/party_pic.jpg')}
+          <TouchableOpacity onPress={() => goToDetailsHandler(acitivitiesList[0]?.event_id)} style={styles.eventContainer}>
+            <FastImageWithLoader
+              source={
+                acitivitiesList[0]?.event_image
+                  ? { uri: acitivitiesList[0].event_image }
+                  : require('../../../assets/images/party_pic.jpg')
+              }
               style={styles.eventImage}
               resizeMode="cover"
             />
             <View style={styles.eventDetails}>
-              <Text style={styles.eventTitle}>{eventTitle}</Text>
-              <Text style={styles.eventTime}>{eventTime}</Text>
+              <Text style={styles.eventTitle}>{acitivitiesList[0]?.event_name}</Text>
+              {/* <Text style={styles.eventTime}>{eventTime}</Text> */}
             </View>
-          </View>
+          </TouchableOpacity>
+          <FlatList
+      data={acitivitiesList?.slice(1)} 
+      renderItem={({ item }) => (
+          <TouchableOpacity onPress={()=>goToDetailsHandler(item?.event_id)} style={styles.eventContainerItem}>
+            <FastImageWithLoader
+              source={
+                item?.event_image
+                  ? { uri: item.event_image }
+                  : require('../../../assets/images/party_pic.jpg')
+              }
+              style={styles.eventImageItem}
+              resizeMode="cover"
+            />
+            <View style={styles.eventDetails}>
+              <Text style={styles.eventTitle}>{item?.event_name}</Text>
+              {/* <Text style={styles.eventTime}>{eventTime}</Text> */}
+            </View>
+            </TouchableOpacity>
+      )}
+        
+      keyExtractor={(item) => item?.event_id}
+      numColumns={2} 
+      columnWrapperStyle={styles.columnRow} 
+    />
 
           {/* First row: Guided Meditation + Mindfulness */}
-          <View style={styles.horizontalSectionsContainer}>
+          {/* <View style={styles.horizontalSectionsContainer}>
             <View style={styles.firstSectionWrapper}>
             <Image
               source={require('../../../assets/images/party_pic.jpg')}
@@ -118,10 +164,10 @@ export default function PostScreen() {
               <Text style={styles.secondSectionTitle}>{mindfulnessTitle}</Text>
               <Text style={styles.secondSectionSubtext}>{mindfulnessText}</Text>
             </View>
-          </View>
+          </View> */}
 
           {/* Second row: Exercise + Create Art */}
-          <View style={styles.horizontalSectionsContainer}>
+          {/* <View style={styles.horizontalSectionsContainer}>
             <View style={styles.thirdSectionBox}>
                <Image
               source={require('../../../assets/images/party_pic.jpg')}
@@ -141,7 +187,7 @@ export default function PostScreen() {
               <Text style={styles.fourthSectionTitle}>{createTitle}</Text>
               <Text style={styles.fourthSectionSubtitle}>{createSubtitle}</Text>
             </View>
-          </View>
+          </View> */}
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -37,13 +37,15 @@ export function useAddCheckIn() {
           location_opt_in: locationOptIn,
         };
         // console.log("Submitted payload:", payload);
-        const response =checkIn('2544ce6f-c214-491f-a15a-076e1fb88fb3',payload);
+        const response =checkIn(payload);
+        if(response.status === 200){
         Toast.show({
           type: "success",
           text1: "Check-in successful",
           text2: "Your check-in has been recorded.",
         });
          router.back()
+      }
         
       } catch (error) {
         
