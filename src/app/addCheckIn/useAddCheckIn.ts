@@ -12,7 +12,7 @@ export function useAddCheckIn() {
       const [locationOptIn, setLocationOptIn] = useState(false);
        const router = useRouter();
     
-      const handleSubmit = () => {try {
+      const handleSubmit =async () => {try {
         if (!selectedMood) {
           Toast.show({
             type: "error",
@@ -37,8 +37,8 @@ export function useAddCheckIn() {
           location_opt_in: locationOptIn,
         };
         // console.log("Submitted payload:", payload);
-        const response =checkIn(payload);
-        if(response.status === 200){
+        const response = await checkIn(payload);
+        if(response?.id){
         Toast.show({
           type: "success",
           text1: "Check-in successful",

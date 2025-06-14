@@ -31,6 +31,8 @@ import Happy from '../../assets/svgs/happy-icon.svg';
 import Calm from '../../assets/svgs/calm-icon.svg';
 import Stressed from '../../assets/svgs/stressed-icon.svg';
 import Lonely from '../../assets/svgs/lonely-icon.svg';
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 export const unstable_settings = {
   initialRouteName: 'index',
@@ -55,7 +57,11 @@ export default function AddCheckIn() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header style={{backgroundColor:'#A7E2E0'}} title="Check-In" showBack={true} />
+      <Header style={{backgroundColor:'#A7E2E0'}} title="Check-In" showBack={true} rightChildren={
+        <TouchableOpacity onPress={() => router.push('/checkIns')}>
+         <Ionicons name='reload' size={24} color="black" />
+        </TouchableOpacity>
+      } />
       
       <View style={styles.contentContainer}>
         <Text style={styles.title}>How are you feeling?</Text>
