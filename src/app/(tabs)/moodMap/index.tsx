@@ -8,10 +8,10 @@ import SearchInput from '@/src/components/common/searchInput';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
-
+import MoodSelector from '@/src/components/mood/MoodSelector';
+import Happy from '../../../assets/svgs/happy-icon.svg';
 const MoodMapScreen: React.FC = () => {
-  const { hugs, searchInput, setSearchInput, moodData, mapRegion, setMapRegion , loading  , callBackMapHandler , currentMarkedLocation} = useMoodMap();
-  const [selectedMood, setSelectedMood] = React.useState(moodsData[3]?.id);
+  const { hugs, searchInput, setSearchInput, moodData, mapRegion, setMapRegion , loading  , callBackMapHandler , currentMarkedLocation ,selectedMood, setSelectedMood ,handleMoodSelection} = useMoodMap();
 
   React.useEffect(() => {
     (async () => {
@@ -35,7 +35,19 @@ const MoodMapScreen: React.FC = () => {
     })();
   }, []);
 
+
+  const handleMood = (moodId: string) => {
+    if(moodId === selectedMood) {
+      setSelectedMood('');
+      handleMoodSelection('');
+      return;
+    }
+    setSelectedMood(moodId);
+    
+    handleMoodSelection(moodId?.name);
+
   console.log('Map Region:', mapRegion);
+  }
 
   const currentLocations = selectedMood
     ? moodsData.find((mood) => mood.id === selectedMood)?.locations || []
@@ -52,20 +64,29 @@ const MoodMapScreen: React.FC = () => {
         value={searchInput}
         placeholder={"Mood Map"}
       />
-    {loading &&
-      <ActivityIndicator/>}
+
+      
+ <MoodSelector
+          moods={moodsData} 
+          selectedMood={selectedMood?.id} 
+          handleMoodSelection={handleMood} 
+        />   
+      
       <MoodMapView
         callback={callBackMapHandler}
         mapContainerStyle={styles.mapContainerStyle}
         mapRegion={mapRegion}
-        selectedMood={selectedMood}
+        selectedMood={selectedMood?.id}
         currentLocations={moodData}
         currentEmoji={currentEmoji}
         backgroundColor={undefined}
       />
 
-     { currentMarkedLocation && currentMarkedLocation?.type === 'event' && (
+     { currentMarkedLocation  && (
       <View style={styles.activitiesContainer}>
+       { currentMarkedLocation?.type === 'event' &&
+       <>
+      
         <View style={styles.rowContiner}>
           <Text style={styles.activitiesLabel}>Activities</Text>
           <TouchableOpacity onPress={()=> router.push('/activity')}>
@@ -91,6 +112,64 @@ const MoodMapScreen: React.FC = () => {
           <Ionicons name="arrow-forward-sharp" size={24} color={'#000'} />
           </View>
         </TouchableOpacity>
+         </>
+}
+ { currentMarkedLocation?.type === 'place' &&
+    <View style={{ marginTop: 8, alignItems: 'center' }}>
+      <Text style={{ fontWeight: 'bold', fontSize: 22, textAlign: 'center' }}>
+        This place to better your mood?
+      </Text>
+       <View style={{ backgroundColor: '#f2f2f2', borderRadius: 8, padding: 12, marginBottom: 4 , marginTop: 8 }}>
+          <Text style={{ fontSize: 15 }}>{currentMarkedLocation?.name || 'Place name here'}</Text>
+                    <Text style={{ fontSize: 15 }}>{currentMarkedLocation?.description || 'Description here'}</Text>
+
+        </View>
+   
+      <TouchableOpacity style={{ marginTop: 2 }}>
+       <Happy width={68} height={68} />
+      </TouchableOpacity>
+    </View>
+}
+
+{currentMarkedLocation?.type === 'user' && (
+  <View style={{ marginTop: 8, alignItems: 'center' }}>
+    <Text style={{ fontWeight: 'bold', fontSize: 22, textAlign: 'center' }}>
+      Nearby user
+    </Text>
+    <View style={{ backgroundColor: '#f2f2f2', borderRadius: 8, padding: 12, marginBottom: 4, marginTop: 8, alignItems: 'center' }}>
+      <Text style={{ fontSize: 15 }}>{currentMarkedLocation?.description || 'User description'}</Text>
+    </View>
+    <View style={{ flexDirection: 'row', marginTop: 12 }}>
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#4F8EF7',
+          paddingVertical: 10,
+          paddingHorizontal: 24,
+          borderRadius: 24,
+          marginRight: 12,
+        }}
+        onPress={() => {
+          // Handle chat action
+        }}
+      >
+        <Text style={{ color: '#fff', fontWeight: 'bold' }}>Chat</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#FFD700',
+          paddingVertical: 10,
+          paddingHorizontal: 24,
+          borderRadius: 24,
+        }}
+        onPress={() => {
+          // Handle send hug action
+        }}
+      >
+        <Text style={{ color: '#333', fontWeight: 'bold' }}>Send Hug</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+)}
       </View>
       )}
     </SafeAreaView>

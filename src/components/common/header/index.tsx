@@ -8,9 +8,10 @@ interface HeaderProps {
   title: string;
   showBack?: boolean;
   style?: React.CSSProperties; // Allow custom styles
+  rightChildren?: React.ReactNode; // Allow custom right children
 }
 
-const Header: React.FC<HeaderProps> = ({ title, showBack = true  , style}) => {
+const Header: React.FC<HeaderProps> = ({ title, showBack = true  , style ,rightChildren}) => {
   const router = useRouter();
 
   return (
@@ -23,7 +24,14 @@ const Header: React.FC<HeaderProps> = ({ title, showBack = true  , style}) => {
         <View style={styles.backButton} /> 
       )}
       <Text style={styles.title}>{title}</Text>
+      {rightChildren?
+      <>
+        {rightChildren}
+</>
+:
       <View style={styles.backButton} />
+}
+
     </View>
   );
 };

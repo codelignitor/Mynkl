@@ -15,11 +15,13 @@ import { router } from 'expo-router';
 import { isUserLoggedIn } from '@/src/store/slices/authSlice';
 import { AppDispatch } from '@/src/store';
 import { moodEntryStyles } from '../moodentry/MoodEntry-style';
+import { preferences } from '@/src/services/apis';
 
 const MoodEntryScreen = ({ selectedMood, onBackPress, onNavigateToHome }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [userLocation, setUserLocation] = useState(null);
   const mapRef = useRef(null);
+  let location = null;
   
   const getMoodRecommendations = (mood) => {
     switch(mood) {
@@ -33,6 +35,25 @@ const MoodEntryScreen = ({ selectedMood, onBackPress, onNavigateToHome }) => {
         return ['Select a mood to see recommendations'];
     }
   };
+
+  const savePreferencesHanlder = async() => {
+    await requestLocationPermission();
+    const payload ={
+      "communityPreference": "observer",
+  "notificationPreference": "daily",
+  "privacyPreference": "low",
+  "suggestionPreference": "always",
+  "themePreference": "light",
+  "addCheckIn": true,
+  "lat": userLocation?.latitude,
+  "lng": userLocation?.longitude
+    }
+
+   
+    const response = await preferences(payload);
+              dispatch(isUserLoggedIn());
+              router.push('/(tabs)/home');
+  }
 
   const recommendations = selectedMood ? getMoodRecommendations(selectedMood) : [];
   
@@ -68,7 +89,7 @@ const MoodEntryScreen = ({ selectedMood, onBackPress, onNavigateToHome }) => {
         return;
       }
       
-      let location = await Location.getCurrentPositionAsync({});
+      location = await Location.getCurrentPositionAsync({});
       const currentLocation = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
@@ -116,6 +137,7 @@ const MoodEntryScreen = ({ selectedMood, onBackPress, onNavigateToHome }) => {
           
           <View style={moodEntryStyles.mapWrapper}>
             <MapView
+              provider='google'
               ref={mapRef}
               style={moodEntryStyles.map}
               initialRegion={{
@@ -142,11 +164,7 @@ const MoodEntryScreen = ({ selectedMood, onBackPress, onNavigateToHome }) => {
           
           <TouchableOpacity 
             style={moodEntryStyles.allowLocationButton}
-            onPress={async() => {
-              await requestLocationPermission();
-              dispatch(isUserLoggedIn());
-              router.push('/(tabs)/home');
-            }}
+            onPress={savePreferencesHanlder}
           >
             <Text style={moodEntryStyles.allowLocationButtonText}>
               Allow Location Access

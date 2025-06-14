@@ -33,6 +33,7 @@ const MoodSelector = ({ moods, selectedMood, handleMoodSelection }) => {
               
             </View>
             <Text 
+            numberOfLines={1}
               style={[
                 styles.moodName,
                 selectedMood === mood.id && styles.selectedMoodName
