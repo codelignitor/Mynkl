@@ -96,5 +96,15 @@ export const preferences = async (payload) => {
   return response.data;
 };
 
+export const getCheckInAiAnalysis = async () => {
+  const response = await axiosInstance.get('/home/checkIn-aiResponse');
+  return response.data;
+};
+
+export const highlightedPlaces = async (payload) => {
+  const response = await axiosInstance.post(`/home/places` , payload);
+  return response.data;
+};
+
 
 

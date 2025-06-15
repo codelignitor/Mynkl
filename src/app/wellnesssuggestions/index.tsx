@@ -84,7 +84,7 @@ export default function WellnessSuggestionsScreen() {
               <Text style={styles.remindButtonText}>Remind me</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.notNowButton}>
+          <TouchableOpacity onPress={()=> router.push('/(tabs)/home')} style={styles.notNowButton}>
             <Text style={styles.notNowButtonText}>Not now</Text>
           </TouchableOpacity>
         </View>

@@ -85,13 +85,14 @@ const MoodMapView = ({
                 onPress={()=>onSelectMarker(location)}
               >
                 <MapMarker
+                count={location.count}
                   emoji={location.mood }
                   backgroundColor={backgroundColor}
-                  markerStyle={{
-                    width: isSelected ? 70 : 50,
-                    height: isSelected ? 70 : 50,
-                    borderRadius: isSelected ? 35 : 25,
-                  }}
+                  // markerStyle={{
+                  //   width: isSelected ? 70 : 50,
+                  //   height: isSelected ? 70 : 50,
+                  //   borderRadius: isSelected ? 35 : 25,
+                  // }}
                   emojiStyle={{
                     fontSize: isSelected ? 50 : 30,
                   }}

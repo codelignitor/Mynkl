@@ -1,96 +1,84 @@
 import { useState, useEffect, useMemo } from 'react';
 import debounce from 'lodash.debounce';
-import { getMapSearchResults } from '@/src/services/apis';
+import { getMapSearchResults, highlightedPlaces } from '@/src/services/apis';
 import * as Location from 'expo-location';
+import Toast from 'react-native-toast-message';
 
 export interface Hug {
-    id: string;
-    sender: string;
-    message: string;
-    timestamp: number;
+  id: string;
+  sender: string;
+  message: string;
+  timestamp: number;
 }
 
 export function useMoodMap() {
-    const [hugs, setHugs] = useState<Hug[]>([]);
-      const [selectedMood, setSelectedMood] = useState('');
-    const [loading, setLoading] = useState<boolean>(true);
-     const [searchInput , setSearchInput] = useState('');
-     const [moodData , setMoodData] = useState<any>(null);
-     const [mapData , setMapData] = useState<any>(null);
-     const [currentMarkedLocation, setCurrentMarkedLocation] = useState<any>(null);
-       const [mapRegion, setMapRegion] = useState({
-             latitude: 0,
-             longitude: 0,
-             latitudeDelta: 0.19,
-             longitudeDelta: 0.191,
-           });
-
-
+  const [hugs, setHugs] = useState<Hug[]>([]);
+  const [selectedMood, setSelectedMood] = useState('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchInput, setSearchInput] = useState('');
+  const [moodData, setMoodData] = useState<any[]>([]);
+  const [mapData, setMapData] = useState<any[]>([]);
+  const [currentMarkedLocation, setCurrentMarkedLocation] = useState<any>(null);
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 0,
+    longitude: 0,
+    latitudeDelta: 0.19,
+    longitudeDelta: 0.191,
+  });
 
   const callBackMapHandler = (location: any) => {
-    console.log('Current Marked Location :',location );
+    console.log('Current Marked Location:', location);
     setCurrentMarkedLocation(location);
-  }         
-     
+  };
 
+  const highlightedPlaceHandler = async () => {
+    if (!currentMarkedLocation) return;
+
+    try {
+      const payload = {
+        mood: currentMarkedLocation?.mood,
+        name: currentMarkedLocation?.name,
+        latitude: currentMarkedLocation?.latitude,
+        longitude: currentMarkedLocation?.longitude,
+      };
+
+      const response = await highlightedPlaces(payload);
+
+      if (response?.count) {
+        console.log('Highlighted Places Response:', response);
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: `Your Feedback saved Successfully!`,
+        });
+        setCurrentMarkedLocation(null);
+      }
+    } catch (error) {
+      console.error('Error submitting highlighted place:', error);
+    }
+  };
 
   const debouncedSearch = useMemo(
     () =>
-      debounce(async (query: string) => { 
+      debounce(async (query: string) => {
+        if (!query.trim() || !mapData || mapData.length === 0) {
+          setMoodData(mapData ?? []);
+          return;
+        }
 
-       
-        //  let location  =null
-        // if(query.trim() === '') 
-        //   return
-        // if(mapRegion?.latitude === 0 || mapRegion?.longitude === 0) { 
-        //   console.warn('Map region is not set, skipping search hello ' ,mapRegion?.latitude , mapRegion?.longitude);
-        //  location = await Location.getCurrentPositionAsync({});
-            
-        // }
+        setSelectedMood('');
+        const filtered = (mapData ?? []).filter((item: any) =>
+          item.name?.toLowerCase().includes(query.toLowerCase())
+        );
 
-        setSelectedMood(null)
-
-        const filtered = mapData?.filter((item: any) => {
-          const matchesName = item.name?.toLowerCase().includes(query.toLowerCase());
-          // const matchesMood =
-          //   !selectedMood?.name || selectedMood?.name.trim() === '' ||
-          //   item.mood?.toLowerCase() === selectedMood?.name?.toLowerCase();
-          return matchesName ;
-        });
-
-        // console.log(filtered);
-
+        console.log('Search Results:', filtered);
         setMoodData(filtered);
-     
-
-  //       const response = await getMapSearchResults({
-  //         query: query,
-  //           lat: location.coords?.latitude,
-  // lng: location.coords?.longitude,
-  //         // radius: 5000,
-  //         // limit: 10,
-  //         mood:'happy'
-  //       });
-
-     
-  //       setMoodData(response);
-        // Replace this with your actual API call
-
-        // console.log('Debounced API call:', query);
       }, 500),
-    []
+    [mapData]
   );
 
-
-
-  useEffect(() => {
-    debouncedSearch(searchInput);
-    return () => debouncedSearch.cancel();
-  }, [searchInput , mapRegion ]);
-
-
-
   const handleMoodSelection = (name) => {
+    setCurrentMarkedLocation(null)
 
     if(!name || name.trim() === '') {
       
@@ -111,41 +99,57 @@ export function useMoodMap() {
         setMoodData(filtered);
 
 
-  }
+  };
 
-
-  useEffect(() => { 
+  useEffect(() => {
     const fetchHugs = async () => {
-     
-       
-    
       try {
         setLoading(true);
-         if(mapRegion?.latitude === 0 || mapRegion?.longitude === 0) { 
-          console.warn('Map region is not set, skipping search');
+
+        if (mapRegion.latitude === 0 || mapRegion.longitude === 0) {
+          console.warn('Map region is not set, skipping fetch');
           return;
         }
-     const response =   await getMapSearchResults({
-  query: '',
-  lat: mapRegion?.latitude,
-  lng: mapRegion?.longitude,
-    mood:'happy'
-  // radius: 5000,
-  // limit: 10,
-});
-setMoodData(response)
-setMapData(response)
 
+        const response = await getMapSearchResults({
+          query: '',
+          lat: mapRegion.latitude,
+          lng: mapRegion.longitude,
+          mood: 'happy',
+        });
 
+        setMapData(response || []);
+        setMoodData(response || []);
+        console.log('Fetched Map Data:', response);
       } catch (error) {
-        console.error('Error fetching maps data:', error);
+        console.error('Error fetching map data:', error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchHugs();
-    }, [mapRegion]);
+  }, [mapRegion]);
 
+  useEffect(() => {
+    if (!mapData || mapData.length === 0) return;
+    debouncedSearch(searchInput);
+    return () => debouncedSearch.cancel();
+  }, [searchInput, mapData]);
 
-    return { hugs, loading,searchInput , setSearchInput , moodData  ,mapRegion, setMapRegion , callBackMapHandler , currentMarkedLocation , selectedMood, setSelectedMood , handleMoodSelection};
+  return {
+    hugs,
+    loading,
+    searchInput,
+    setSearchInput,
+    moodData,
+    mapRegion,
+    setMapRegion,
+    callBackMapHandler,
+    currentMarkedLocation,
+    selectedMood,
+    setSelectedMood,
+    handleMoodSelection,
+    highlightedPlaceHandler,
+  };
 }
