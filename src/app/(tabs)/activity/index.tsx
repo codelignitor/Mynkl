@@ -17,22 +17,18 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/src/store';
 import FastImageWithLoader from '@/src/components/common/fastImageWithLoader';
 
-// Remove route parameter - this is causing the error
 export default function PostScreen() {
-  // Use a hardcoded activityId for now or omit it completely
   const activityId = null;
   
-  // Use our custom hook
   const { 
     activityData, 
     isLoading, 
     error, 
     acitivitiesList,
-    handleActivityAction ,
+    handleActivityAction,
     goToDetailsHandler
   } = useActivity(activityId);
   
-  // Destructure the activity data for easier access
   const { 
     username, 
     statusText,
@@ -48,20 +44,35 @@ export default function PostScreen() {
     createSubtitle
   } = activityData;
   
-  // Handle back button press
   const handleBackPress = () => {
     router.back();
   };
 
-    const mode = useSelector((state: RootState) => state.auth.mode);
+  const mode = useSelector((state: RootState) => state.auth.mode);
 
   const handleCreateEvent = () => {
-
-    // Navigate to the create event screen
     router.push('/event');
   }
+
+  // Updated function to navigate to event details with complete event data
+  const navigateToEventDetails = (event) => {
+    router.push({
+      pathname: '/events_social/event_details', // Update this path to match your route
+      params: {
+        event_id: event.event_id,
+        title: event.event_name,
+        image: event.event_image || '',
+        date: event.event_date || '',
+        time: event.event_time || '',
+        location: event.event_location || '',
+        lat: event.latitude || '',
+        lng: event.longitude || '',
+        description: event.event_description || '',
+        // Add any other event properties you need
+      },
+    });
+  };
   
-  // Show loading state
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -70,7 +81,6 @@ export default function PostScreen() {
     );
   }
   
-  // Show error state
   if (error) {
     return (
       <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -86,108 +96,67 @@ export default function PostScreen() {
 
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            <Ionicons name="arrow-back"  size={24} color="#fff" />
+            <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <View style={styles.titleContainer}>
             <Text style={styles.username}>{username}</Text>
           </View>
         
-            <TouchableOpacity onPress={handleCreateEvent} style={{paddingVertical:8 , paddingHorizontal:12 , backgroundColor:'white' , borderRadius:8}} >
-             <Text>Create Event</Text>
-            </TouchableOpacity>
-         
+          <TouchableOpacity onPress={handleCreateEvent} style={{paddingVertical:8, paddingHorizontal:12, backgroundColor:'white', borderRadius:8}}>
+            <Text>Create Event</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.postContainer}>
           <Text style={styles.postText}>I am feeling {mode ?? "Happy 😊"}</Text>
 
-          <TouchableOpacity onPress={() => goToDetailsHandler(acitivitiesList[0]?.event_id)} style={styles.eventContainer}>
-            <FastImageWithLoader
-              source={
-                acitivitiesList[0]?.event_image
-                  ? { uri: acitivitiesList[0].event_image }
-                  : require('../../../assets/images/party_pic.jpg')
-              }
-              style={styles.eventImage}
-              resizeMode="cover"
-            />
-            <View style={styles.eventDetails}>
-              <Text style={styles.eventTitle}>{acitivitiesList[0]?.event_name}</Text>
-              {/* <Text style={styles.eventTime}>{eventTime}</Text> */}
-            </View>
-          </TouchableOpacity>
-          <FlatList
-      data={acitivitiesList?.slice(1)} 
-      renderItem={({ item }) => (
-          <TouchableOpacity onPress={()=>goToDetailsHandler(item?.event_id)} style={styles.eventContainerItem}>
-            <FastImageWithLoader
-              source={
-                item?.event_image
-                  ? { uri: item.event_image }
-                  : require('../../../assets/images/party_pic.jpg')
-              }
-              style={styles.eventImageItem}
-              resizeMode="cover"
-            />
-            <View style={styles.eventDetails}>
-              <Text style={styles.eventTitle}>{item?.event_name}</Text>
-              {/* <Text style={styles.eventTime}>{eventTime}</Text> */}
-            </View>
-            </TouchableOpacity>
-      )}
-        
-      keyExtractor={(item) => item?.event_id}
-      numColumns={2} 
-      columnWrapperStyle={styles.columnRow} 
-    />
-
-          {/* First row: Guided Meditation + Mindfulness */}
-          {/* <View style={styles.horizontalSectionsContainer}>
-            <View style={styles.firstSectionWrapper}>
-            <Image
-              source={require('../../../assets/images/party_pic.jpg')}
-              style={styles.secondEventImage}
-              resizeMode="cover"
-            />
-              <View style={styles.firstSectionTextBox}>
-                <Text style={styles.firstSectionTitle}>{guidedTitle}</Text>
-                <Text style={styles.firstSectionSubtext}>{guidedText}</Text>
+          {/* Updated first event with new navigation */}
+          {acitivitiesList && acitivitiesList.length > 0 && (
+            <TouchableOpacity 
+              onPress={() => navigateToEventDetails(acitivitiesList[0])} 
+              style={styles.eventContainer}
+            >
+              <FastImageWithLoader
+                source={
+                  acitivitiesList[0]?.event_image
+                    ? { uri: acitivitiesList[0].event_image }
+                    : require('../../../assets/images/party_pic.jpg')
+                }
+                style={styles.eventImage}
+                resizeMode="cover"
+              />
+              <View style={styles.eventDetails}>
+                <Text style={styles.eventTitle}>{acitivitiesList[0]?.event_name}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
+          )}
 
-            <View style={styles.secondHorizontalSection}>
-                <Image
-              source={require('../../../assets/images/party_pic.jpg')}
-              style={styles.thirdEventImage}
-              resizeMode="cover"
-            />
-              <Text style={styles.secondSectionTitle}>{mindfulnessTitle}</Text>
-              <Text style={styles.secondSectionSubtext}>{mindfulnessText}</Text>
-            </View>
-          </View> */}
-
-          {/* Second row: Exercise + Create Art */}
-          {/* <View style={styles.horizontalSectionsContainer}>
-            <View style={styles.thirdSectionBox}>
-               <Image
-              source={require('../../../assets/images/party_pic.jpg')}
-              style={styles.thirdEventImage}
-              resizeMode="cover"
-            />
-              <Text style={styles.thirdSectionTitle}>{exerciseTitle}</Text>
-              <Text style={styles.thirdSectionSubtitle}>{exerciseSubtitle}</Text>
-            </View>
-
-            <View style={styles.fourthSectionBox}>
-               <Image
-              source={require('../../../assets/images/party_pic.jpg')}
-              style={styles.thirdEventImage}
-              resizeMode="cover"
-            />
-              <Text style={styles.fourthSectionTitle}>{createTitle}</Text>
-              <Text style={styles.fourthSectionSubtitle}>{createSubtitle}</Text>
-            </View>
-          </View> */}
+          {/* Updated FlatList with new navigation */}
+          <FlatList
+            data={acitivitiesList?.slice(1)} 
+            renderItem={({ item }) => (
+              <TouchableOpacity 
+                onPress={() => navigateToEventDetails(item)} 
+                style={styles.eventContainerItem}
+              >
+                <FastImageWithLoader
+                  source={
+                    item?.event_image
+                      ? { uri: item.event_image }
+                      : require('../../../assets/images/party_pic.jpg')
+                  }
+                  style={styles.eventImageItem}
+                  resizeMode="cover"
+                />
+                <View style={styles.eventDetails}>
+                  <Text style={styles.eventTitle}>{item?.event_name}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item?.event_id}
+            numColumns={2} 
+            columnWrapperStyle={styles.columnRow} 
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
