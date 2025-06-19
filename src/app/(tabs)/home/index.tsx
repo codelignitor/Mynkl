@@ -220,7 +220,7 @@ const MoodMapScreen = () => {
               styles.largeMenuCard,
               selectedSections.activities && { backgroundColor: '#b7c2cc' }
             ]}
-           onPress={()=> moveToScreen('/activity')}
+           onPress={()=> moveToScreen('/activity_suggestions/suggestions/activity_suggestion')}
           >
             <View style={styles.largeMenuCardContent}>
               <View style={styles.largeMenuIconContainer}>
