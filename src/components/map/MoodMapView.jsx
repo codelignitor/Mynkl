@@ -65,7 +65,7 @@ const MoodMapView = ({
      
         <MapView
           key={mapKey} 
-           customMapStyle={mapStyle}
+          customMapStyle={mapStyle}
           style={styles.map}
           provider={PROVIDER_GOOGLE}
           region={mapRegion}
