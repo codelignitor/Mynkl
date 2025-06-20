@@ -12,7 +12,11 @@ export function useAddCheckIn() {
       const [locationOptIn, setLocationOptIn] = useState(false);
        const router = useRouter();
     
-      const handleSubmit =async () => {try {
+      const handleSubmit =async () => {
+       
+     
+         
+        try {
         if (!selectedMood) {
           Toast.show({
             type: "error",
@@ -44,7 +48,9 @@ export function useAddCheckIn() {
           text1: "Check-in successful",
           text2: "Your check-in has been recorded.",
         });
-         router.back()
+        //  router.back()
+        router.push({pathname:'/Check_Ins/mood_check-in',  params: {  data: JSON.stringify(selectedMood) }});
+
       }
         
       } catch (error) {

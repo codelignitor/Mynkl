@@ -8,8 +8,8 @@ import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
 
 const axiosInstance = axios.create({
-baseURL: 'http://13.50.228.222:8000', 
-  //  baseURL: 'https://ad30-2404-3100-1c69-9b3c-1359-4b9e-ad27-4280.ngrok-free.app/',
+ baseURL: 'http://13.50.228.222:8000', 
+//  baseURL: 'https://02d8-2404-3100-1c19-5ff6-f65f-2baa-6484-7521.ngrok-free.app/',
    
   
   timeout: 10000,
@@ -24,6 +24,8 @@ axiosInstance.interceptors.request.use(
    
     const state = store.getState();
     const token = state.auth.token;
+
+    console.log(token)
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -41,7 +43,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    const message = error.response?.data?.message || 'Something went wrong';
+    const message = error.response?.data?.message ||  'Something went wrong';
 
     if (status === 401) {
       // Token expired or unauthorized
@@ -58,7 +60,7 @@ axiosInstance.interceptors.response.use(
      Toast.show({
   type: 'error', 
   text1: 'Error',
-  text2:error.response.data.detail[0].msg || 'Something went wrong',
+  text2: error.response.data.detail || error.response.data.detail[0].msg || 'Something went wrong',
 });
     
 

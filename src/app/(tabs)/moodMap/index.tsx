@@ -11,7 +11,7 @@ import { router } from 'expo-router';
 import MoodSelector from '@/src/components/mood/MoodSelector';
 import Happy from '../../../assets/svgs/happy-icon.svg';
 const MoodMapScreen: React.FC = () => {
-  const { hugs, searchInput, setSearchInput, moodData, mapRegion, setMapRegion , loading  , callBackMapHandler , currentMarkedLocation ,selectedMood, setSelectedMood ,handleMoodSelection} = useMoodMap();
+  const { hugs, searchInput, setSearchInput, moodData, mapRegion, setMapRegion , loading  , callBackMapHandler , currentMarkedLocation ,selectedMood, setSelectedMood ,handleMoodSelection , highlightedPlaceHandler} = useMoodMap();
 
   React.useEffect(() => {
     (async () => {
@@ -43,6 +43,11 @@ const MoodMapScreen: React.FC = () => {
       return;
     }
     setSelectedMood(moodId);
+    if(moodId?.name ==='Lonely')
+    {
+      handleMoodSelection('alone');
+    return
+  }
     
     handleMoodSelection(moodId?.name);
 
@@ -64,6 +69,8 @@ const MoodMapScreen: React.FC = () => {
         value={searchInput}
         placeholder={"Mood Map"}
       />
+     {loading && <ActivityIndicator size={'large'}/>
+}
 
       
  <MoodSelector
@@ -117,7 +124,7 @@ const MoodMapScreen: React.FC = () => {
  { currentMarkedLocation?.type === 'place' &&
     <View style={{ marginTop: 8, alignItems: 'center' }}>
       <Text style={{ fontWeight: 'bold', fontSize: 22, textAlign: 'center' }}>
-        This place to better your mood?
+        Is this place helping your mood?
       </Text>
        <View style={{ backgroundColor: '#f2f2f2', borderRadius: 8, padding: 12, marginBottom: 4 , marginTop: 8 }}>
           <Text style={{ fontSize: 15 }}>{currentMarkedLocation?.name || 'Place name here'}</Text>
@@ -125,8 +132,12 @@ const MoodMapScreen: React.FC = () => {
 
         </View>
    
-      <TouchableOpacity style={{ marginTop: 2 }}>
-       <Happy width={68} height={68} />
+      <TouchableOpacity onPress={highlightedPlaceHandler} style={{ marginTop: 2 }}>
+        <Image
+          source={require('../../../assets/images/happy-icon.png')}
+          style={{ width: 68, height: 68 }}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
     </View>
 }

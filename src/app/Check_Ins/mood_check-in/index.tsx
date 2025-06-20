@@ -1,37 +1,101 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-
+import { getCheckInAiAnalysis } from '@/src/services/apis';
+import Header from '@/src/components/common/header';
+import Happy from '../../../assets/svgs/happy-icon.svg';
+import Calm from '../../../assets/svgs/calm-icon.svg';
+import Stressed from '../../../assets/svgs/stressed-icon.svg';
+import Lonely from '../../../assets/svgs/lonely-icon.svg';
 export default function MoodScreen() {
   const [moodStrength, setMoodStrength] = useState(0.5);
+  const [data , setData] = useState();
+  const [loading , setLoading] = useState(false);
   const router = useRouter();
+   const params = useLocalSearchParams();
+   const [mood , setMood] = useState();
 
+
+
+  const handleAiAnalysis = async() => {
+
+   
+
+    try {
+      setLoading(true);
+     
+     const response = await getCheckInAiAnalysis();
+      if (response ) {
+        console.log('AI Analysis Response:', response);
+        setData(response);
+        setMoodStrength(response.mood_strength || 0.5); // Default to 0.5 if not provided
+      } else {
+        console.error('No data received from AI analysis');
+      }
+      
+    } catch (error) {
+      
+    }
+    finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    handleAiAnalysis();
+  }, []);
+
+ 
+    useEffect(() => {
+      let data = null;
+      try {
+        data = JSON.parse(params.data as string);
+        setMood(data);
+        
+  
+      } catch {
+        data = null;
+      }
+     
+    }, [params.data]);
+
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </SafeAreaView>
+    );
+  }
+    
   return (
     <LinearGradient colors={['#a5f3fc', '#0ea5e9']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
 
         {/* Header: Back button + Centered Mood text */}
-        <View style={styles.headerWrapper}>
-          <Text style={styles.moodLabelCentered}>MOOD</Text>
-        </View>
-
+       <Header title='Mood' showBack style={{backgroundColor:'#a5f3fc'}}/>
+       
         {/* Emoji */}
-        <Text style={styles.emoji}>😊</Text>
+          {mood?.label === 'Happy' && <Happy width={88} height={88}/>}
+                     {mood?.label === 'Calm' && <Calm width={93} height={93}/>}
+                      {mood?.label === 'Stressed' && <Stressed width={88} height={88}/>}
+                       {mood?.label === 'Lonely' && <Lonely width={103} height={103}/>}
 
         {/* AI Interpretation Card */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>AI INTERPRETATION</Text>
-          <Text style={styles.cardText}>You seem happy and content.</Text>
-          <Text style={styles.cardSubText}>Continue doing things that bring you joy.</Text>
+          <Text style={styles.cardText}>{data?.emotion_label}</Text>
+          <Text style={styles.cardSubText}>{data?.ai_interpretation}</Text>
         </View>
 
         {/* Mood Strength Slider */}
@@ -40,8 +104,8 @@ export default function MoodScreen() {
           <Slider
             style={styles.slider}
             minimumValue={0}
-            maximumValue={1}
-            value={moodStrength}
+            maximumValue={100}
+            value={data?.mood_strength_meter}
             minimumTrackTintColor="#fff"
             maximumTrackTintColor="#fff"
             thumbTintColor="#fff"
@@ -51,27 +115,20 @@ export default function MoodScreen() {
         </View>
 
         {/* Action Buttons */}
-        <TouchableOpacity style={styles.actionBtn}>
-          <Ionicons name="chatbubble-ellipses-outline" size={20} color="white" />
-          <Text style={styles.btnText}>Chat with a friend</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionBtn}>
-          <Ionicons name="location-outline" size={20} color="white" />
-          <Text style={styles.btnText}>Visit a favorite spot</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionBtn}>
-          <MaterialIcons name="palette" size={20} color="white" />
-          <Text style={styles.btnText}>Do something creative</Text>
-        </TouchableOpacity>
+        {data?.suggested_actions?.map((action, idx) => (
+          <TouchableOpacity key={idx} style={styles.actionBtn}>
+            <Text style={{ fontSize: 20 }}>{action.emoji}</Text>
+            <Text style={styles.btnText}>{action.description}</Text>
+          </TouchableOpacity>
+        ))}
+       
 
         {/* Check In Button */}
         <TouchableOpacity
           style={styles.checkInBtn}
           onPress={() => router.push('/moodpattern')}
         >
-          <Text style={styles.checkInText}>Check in</Text>
+          <Text style={styles.checkInText}>Next</Text>
         </TouchableOpacity>
 
       </SafeAreaView>
@@ -88,6 +145,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 40,
+    
   },
   headerWrapper: {
     width: '100%',
@@ -108,7 +166,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: 'white',
-    width: '100%',
+    marginHorizontal:16,
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -138,7 +196,7 @@ const styles = StyleSheet.create({
     marginTop: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
+    marginHorizontal: 16,
     marginVertical: 16,
   },
   sliderLabel: {
@@ -157,7 +215,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     marginTop: 12,
-    width: '100%',
+    width: '90%',
   },
   btnText: {
     color: 'white',
@@ -170,7 +228,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 12,
     marginTop: 30,
-    width: '100%',
+   
     alignItems: 'center',
   },
   checkInText: {
