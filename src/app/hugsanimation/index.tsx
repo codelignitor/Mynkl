@@ -12,17 +12,16 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from './styles';
+import { useRouter } from 'expo-router';
 
 const HugAnimationScreen = () => {
+  const router = useRouter();
   const [isHapticEnabled, setIsHapticEnabled] = useState(true);
 
-  // Animation refs
   const hugEmojiAnim = useRef(new Animated.Value(0)).current;
   const rippleAnim = useRef(new Animated.Value(0)).current;
 
-  // Animation functions
   const startAnimations = () => {
-    // Hug emoji bounce animation
     Animated.loop(
       Animated.sequence([
         Animated.timing(hugEmojiAnim, {
@@ -38,7 +37,6 @@ const HugAnimationScreen = () => {
       ])
     ).start();
 
-    // Ripple effect animation
     Animated.loop(
       Animated.timing(rippleAnim, {
         toValue: 1,
@@ -49,15 +47,11 @@ const HugAnimationScreen = () => {
   };
 
   const restartAnimations = () => {
-    // Reset all animations to initial state
     hugEmojiAnim.setValue(0);
     rippleAnim.setValue(0);
-    
-    // Start animations again
     startAnimations();
   };
 
-  // Animation interpolations
   const hugScale = hugEmojiAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [1, 1.1],
@@ -73,80 +67,67 @@ const HugAnimationScreen = () => {
     outputRange: [0.8, 0.3, 0],
   });
 
-  // Start animations on component mount
   useEffect(() => {
     startAnimations();
   }, []);
 
-  // Event handlers
   const handleSendAnotherHug = () => {
-    // Restart animations
     restartAnimations();
-    
-    // You can add more functionality here like:
-    // - Navigate to contacts screen
-    // - Show success message
-    // - Send analytics event
-    
     Alert.alert(
-      "Sending Another Hug! 🤗", 
-      "Your hug animation has been sended!",
-      [{ text: "OK", style: "default" }]
+      "Sending Another Hug! 🤗",
+      "Your hug animation has been sent!",
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            router.push('/(tabs)/hugs'); // Navigate using Expo Router
+          },
+        },
+      ]
     );
   };
 
   const handleMapIconPress = () => {
-    console.log("Map icon (Send button) clicked!");
     Alert.alert(
-      "Map Location 📍", 
+      "Map Location 📍",
       "Opening location settings or map view",
       [{ text: "OK", style: "default" }]
     );
   };
 
   const handleReceiversPress = () => {
-    console.log("Receivers emoji clicked!");
     Alert.alert(
-      "Receivers 😊", 
+      "Receivers 😊",
       "View recipients list or add more receivers",
       [{ text: "OK", style: "default" }]
     );
   };
 
   const handleHapticPress = () => {
-    console.log("Haptic feedback button clicked!");
     setIsHapticEnabled(!isHapticEnabled);
-    // Add gentle vibration when toggled
     if (isHapticEnabled) {
-      Vibration.vibrate(50); // Short vibration for 50ms
+      Vibration.vibrate(50);
     }
   };
 
   const handleTogglePress = () => {
-    console.log("Toggle button clicked!");
     const newHapticState = !isHapticEnabled;
     setIsHapticEnabled(newHapticState);
-    
-    // Add vibration when toggle is turned ON
     if (newHapticState) {
-      Vibration.vibrate(100); // Vibrate for 100ms when enabled
+      Vibration.vibrate(100);
     }
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-      
-      {/* Gradient Background */}
       <LinearGradient
         colors={['#FFE8E8', '#FFB3E6', '#B3D9FF', '#E8F4FF']}
         style={styles.gradientBackground}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
-
       <SafeAreaView style={styles.safeArea}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="#000" />
@@ -160,9 +141,7 @@ const HugAnimationScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Main Content */}
         <View style={styles.content}>
-          {/* Send Label with Static Map Icon */}
           <View style={styles.sendSection}>
             <TouchableOpacity
               onPress={handleMapIconPress}
@@ -174,9 +153,7 @@ const HugAnimationScreen = () => {
             <Text style={styles.sendText}>Send</Text>
           </View>
 
-          {/* Center Hug Emoji with Ripples */}
           <View style={styles.centerContainer}>
-            {/* Ripple Effects */}
             <Animated.View
               style={[
                 styles.ripple,
@@ -196,8 +173,6 @@ const HugAnimationScreen = () => {
                 },
               ]}
             />
-
-            {/* Main Hug Emoji */}
             <Animated.View
               style={[
                 styles.hugEmoji,
@@ -210,12 +185,8 @@ const HugAnimationScreen = () => {
             </Animated.View>
           </View>
 
-          {/* Receivers Section */}
           <View style={styles.receiversSection}>
-            <TouchableOpacity
-              onPress={handleReceiversPress}
-              activeOpacity={0.8}
-            >
+            <TouchableOpacity onPress={handleReceiversPress} activeOpacity={0.8}>
               <View style={styles.floatingEmoji}>
                 <Text style={styles.floatingEmojiText}>😊</Text>
               </View>
@@ -223,14 +194,10 @@ const HugAnimationScreen = () => {
             <Text style={styles.receiversText}>Receivers</Text>
           </View>
 
-          {/* Message Text */}
           <View style={styles.messageContainer}>
             <Text style={styles.messageText}>Your hug is on the way!</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <TouchableOpacity
-                onPress={handleHapticPress}
-                activeOpacity={0.7}
-              >
+              <TouchableOpacity onPress={handleHapticPress} activeOpacity={0.7}>
                 <Text style={styles.subText}>
                   Haptic feedback you {isHapticEnabled ? 'enabled' : 'disabled'}
                 </Text>
@@ -267,9 +234,8 @@ const HugAnimationScreen = () => {
           </View>
         </View>
 
-        {/* Bottom Button */}
         <View style={styles.bottomContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.sendButton}
             onPress={handleSendAnotherHug}
             activeOpacity={0.8}

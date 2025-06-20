@@ -964,7 +964,7 @@ const ChooseHugTypeScreen = () => {
 
             <TouchableOpacity 
               style={styles.sendHugNowButton}
-              onPress={() => router.push('/(tabs)/hugsanimation')}
+              onPress={() => router.push('/hugsanimation')}
             >
               <LinearGradient
                 colors={['rgba(255, 255, 255, 0.9)', 'rgba(255, 255, 255, 0.8)']}
