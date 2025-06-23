@@ -11,7 +11,7 @@ const App = () => {
         // Optionally show a loading indicator while auth state is being determined
         return <View style={styles.container} />;
     }
-
+//   return <Redirect href="/mood-screen" />;
     if (isUserLoggedIn) {
         //   return <Redirect href="/chat/room" />;
         return <Redirect href="/(tabs)/home" />;

@@ -233,6 +233,27 @@ const MoodMapScreen = () => {
             </View>
           </TouchableOpacity>
         </View>
+
+         <View style={[styles.menuSectionContainer , { marginTop: 4 , marginBottom:38 }]}>
+          <TouchableOpacity 
+            style={[
+              styles.largeMenuCard,
+               { backgroundColor: '#b7c2cc' 
+                }
+            ]}
+           onPress={()=> { router.push({pathname:'/Check_Ins/mood_check-in',  params: {  data: JSON.stringify(selectedMood) }});}}
+          >
+            <View style={styles.largeMenuCardContent}>
+              <View style={styles.largeMenuIconContainer}>
+                <Icon name="run" size={28} color="#ffffff" />
+              </View>
+              <View style={styles.menuTextContainer}>
+                <Text style={styles.largeMenuCardTitle}>CheckIn Analysis</Text>
+              </View>
+              <Icon name="chevron-right" size={24} color="#8c8c8c" style={styles.chevronIcon} />
+            </View>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

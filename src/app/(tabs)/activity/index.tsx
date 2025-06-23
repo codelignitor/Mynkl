@@ -65,8 +65,10 @@ export default function PostScreen() {
         date: event.event_date || '',
         time: event.event_time || '',
         location: event.event_location || '',
-        lat: event.latitude || '',
-        lng: event.longitude || '',
+        lat: event.latitude || 
+31.51874777,
+        lng: event.longitude || 
+74.35688563,
         description: event.event_description || '',
         // Add any other event properties you need
       },

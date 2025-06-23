@@ -11,9 +11,100 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 import { useRouter } from 'expo-router';
+import { useMoodPattern } from '@/src/screenHooks/useMoodPattern';
 
 export default function MoodPatternScreen() {
   const router = useRouter();
+
+  const {isLoading , moodPattern } = useMoodPattern();
+
+//   const moodPattern =
+// {
+//     "Last7Days": [
+//         {
+//             "X": "2025-06-10",
+//             "Y": 1
+//         },
+//         {
+//             "X": "2025-06-13",
+//             "Y": 1
+//         }
+//     ],
+//     "Last30Days": [
+//         {
+//             "X": "2025-05-26",
+//             "Y": 1
+//         },
+//         {
+//             "X": "2025-06-02",
+//             "Y": 1
+//         },
+//         {
+//             "X": "2025-06-03",
+//             "Y": 3
+//         },
+//         {
+//             "X": "2025-06-04",
+//             "Y": 3
+//         },
+//         {
+//             "X": "2025-06-05",
+//             "Y": 1
+//         },
+//         {
+//             "X": "2025-06-06",
+//             "Y": 1
+//         },
+//         {
+//             "X": "2025-06-10",
+//             "Y": 1
+//         },
+//         {
+//             "X": "2025-06-13",
+//             "Y": 1
+//         }
+//     ],
+//     "MoodTrendsHighlight": {
+//         "Emoji": "happy",
+//         "Description": "The user tends to be predominantly happy but experiences intermittent bouts of sadness."
+//     },
+//     "AIInterpretation": "The user shows a generally positive trend in their emotional state, with many instances of having fun and feeling happy. However, there's a brief instance of not feeling well which could indicate a momentary downturn in their mood.",
+//     "TimeBasedFiltering": [
+//         {
+//             "time": "Morning",
+//             "moods": [
+//                 "string",
+//                 "happy",
+//                 "happy",
+//                 "happy",
+//                 "happy",
+//                 "happy",
+//                 "happy",
+//                 "Sad"
+//             ]
+//         },
+//         {
+//             "time": "Night",
+//             "moods": [
+//                 "happy",
+//                 "sad"
+//             ]
+//         },
+//         {
+//             "time": "Afternoon",
+//             "moods": [
+//                 "happy",
+//                 "sad"
+//             ]
+//         }
+//     ],
+//     "MoodCorrelationTags": [
+//         "sad",
+//         "low mood",
+//         "emotions",
+//         "feelings"
+//     ]
+// }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -50,11 +141,13 @@ export default function MoodPatternScreen() {
 
           <LineChart
             data={{
-              labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+              labels: moodPattern?.Last30Days?.map(item => 
+          item?.X ? require('moment')(item?.X)?.format('DD') : ''
+              ) || ["01" , '02'],
               datasets: [
-                {
-                  data: [4, 6, 3, 7, 5, 6, 8],
-                },
+          {
+            data: moodPattern?.Last30Days?.map(item => item?.Y) || [0, 0],
+          },
               ],
             }}
             width={Dimensions.get('window').width - 60}
@@ -67,9 +160,9 @@ export default function MoodPatternScreen() {
               color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
               labelColor: () => '#444',
               propsForDots: {
-                r: '4',
-                strokeWidth: '2',
-                stroke: '#000',
+          r: '4',
+          strokeWidth: '2',
+          stroke: '#000',
               },
             }}
             bezier
@@ -82,13 +175,13 @@ export default function MoodPatternScreen() {
         {/* Mood Insight Box */}
         <View style={styles.insightBox}>
           <Text style={styles.insightEmoji}>😊</Text>
-          <Text style={styles.insightText}>You often feel anxious on Mondays.</Text>
+          <Text style={styles.insightText}>{moodPattern?.MoodTrendsHighlight?.Description ?? "No Data"}</Text>
         </View>
 
         {/* AI Interpretation Box */}
         <View style={styles.aiBox}>
           <Text style={styles.aiTitle}>AI INTERPRETATION BOX</Text>
-          <Text style={styles.aiText}>It sounds like you're processing something important.</Text>
+          <Text style={styles.aiText}>{moodPattern?.AIInterpretation}</Text>
         </View>
 
         {/* Tip Button */}
@@ -106,9 +199,9 @@ export default function MoodPatternScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.tagsScrollContainer}
         >
-          {['Morning', 'Afternoon', 'Evening', 'Social'].map((tag, index) => (
+          {moodPattern?.TimeBasedFiltering?.map((tag, index) => (
             <TouchableOpacity key={index} style={styles.tagButton}>
-              <Text style={styles.tagText}>{tag}</Text>
+              <Text style={styles.tagText}>{tag?.time}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -120,7 +213,7 @@ export default function MoodPatternScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.correlationScrollContainer}
         >
-          {['Activities', 'Sleep', 'Weather', 'Social'].map((tag, index) => (
+          {moodPattern?.MoodCorrelationTags?.map((tag, index) => (
             <TouchableOpacity key={index} style={styles.correlationTag}>
               <Text style={styles.correlationTagText}>{tag}</Text>
             </TouchableOpacity>

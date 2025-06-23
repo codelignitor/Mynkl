@@ -59,11 +59,19 @@ export default function RootLayout() {
      }}>
     <Provider store={store}>
        
-       <ChatWrapper>
-        <AppProvider>
-      <MainLayout />
-      </AppProvider>
-      </ChatWrapper>
+      {/** Only render ChatWrapper if stream token exists and user is logged in */}
+      { store.getState().auth.stream_token ? (
+        <ChatWrapper>
+          <AppProvider>
+        <MainLayout />
+          </AppProvider>
+        </ChatWrapper>
+      ) : (
+       
+          <MainLayout />
+       
+      )}
+    
      
     </Provider>
     </GestureHandlerRootView>

@@ -10,11 +10,13 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useReflectiveMood } from '@/src/screenHooks/useReflectiveMood';
 
 export default function MoodReflectionScreen() {
-  const [reflection, setReflection] = useState('');
-  const [selectedMoods, setSelectedMoods] = useState([]);
+ 
   const router = useRouter();
+
+  const  {reflectivePrompt , isLoading , reflection, setReflection , selectedMoods, setSelectedMoods , submitReflectionHandler } = useReflectiveMood();
 
   const moods = ['Focus', 'Calm', 'Anxious', 'Inspired'];
 
@@ -50,7 +52,7 @@ export default function MoodReflectionScreen() {
 
       {/* Main Question */}
       <Text style={styles.mainQuestion}>
-        Was there a moment{'\n'}of peace or clarity?
+       {reflectivePrompt ?? 'Something went wrong'}
       </Text>
 
       {/* AI Icebreaker Label */}
@@ -103,7 +105,7 @@ export default function MoodReflectionScreen() {
       {/* Submit Button */}
       <TouchableOpacity
         style={styles.submitButton}
-        onPress={() => router.push('/wellnesssuggestions')}
+        onPress={submitReflectionHandler}
       >
         <Text style={styles.submitButtonText}>Submit</Text>
       </TouchableOpacity>
@@ -117,6 +119,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F1E8',
     paddingHorizontal: 24,
     paddingTop: 20,
+
   },
   backButton: {
     marginTop:20,
@@ -190,6 +193,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     flexDirection: 'row',
     alignItems: 'flex-start',
+    marginHorizontal:16
   },
   textInput: {
     flex: 1,
@@ -239,6 +243,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 20,
+    marginHorizontal: 16,
   },
   submitButtonText: {
     fontSize: 18,

@@ -113,6 +113,7 @@ export default function GroupChannelListScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <View style={{paddingHorizontal:16 , flex: 1,}}>
       <Text style={styles.appTitle}>Mynkl</Text>
       <Text style={styles.title}>Mood-Based Chat Rooms</Text>
       <Text style={styles.subtitle}>Connect with others in similar emotional states</Text>
@@ -132,6 +133,7 @@ export default function GroupChannelListScreen() {
           <Text style={styles.footerButtonText}>▶ Listen to uplifting playlist</Text>
         </TouchableOpacity>
       </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -141,6 +143,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#5f3c3c",
     padding: 20,
+    paddingHorizontal:16
   },
   loading: {
     flex: 1,
@@ -200,6 +203,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     marginBottom: 25,
+  
   },
   footerText: {
     fontSize: 14,

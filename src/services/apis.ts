@@ -105,6 +105,35 @@ export const highlightedPlaces = async (payload) => {
   const response = await axiosInstance.post(`/home/places` , payload);
   return response.data;
 };
+export const getAiActivitySuggestions = async () => {
+  const response = await axiosInstance.get(`/activity/AI-Suggestions`);
+  return response.data;
+};
+
+export const getAiMoodPattern = async () => {
+  const response = await axiosInstance.get(`/home/mood-pattern`);
+  return response.data;
+};
+
+
+export const getReflectivePrompt = async () => {
+  const response = await axiosInstance.get(`/home/reflective-prompt`);
+  return response.data;
+};
+
+
+
+export const submitJournal = async (payload) => {
+  const response = await axiosInstance.post(`/home/journal` , payload);
+  return response.data;
+};
+
+export const getActivityMoodPattern = async () => {
+  const response = await axiosInstance.get(`/activity/activity-mood-tracker`);
+  return response.data;
+};
+
+
 
 
 

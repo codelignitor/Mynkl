@@ -11,7 +11,11 @@ const client = StreamChat.getInstance(chatApiKey);
 export const ChatWrapper = ({ children }) => {
   const user_id = useSelector((state) => state.auth.user_id) || "dummy-id";
   const username = useSelector((state) => state.auth.username) || "Dummy User";
+  const streamToken = useSelector((state) => state.auth.stream_token) ;
   const [isReady, setIsReady] = useState(false);
+
+
+  console.log("stream chat " , streamToken)
 
   useEffect(() => {
     const initChat = async () => {
@@ -23,7 +27,7 @@ export const ChatWrapper = ({ children }) => {
       try {
         await client.connectUser(
           { id: user_id, name: username },
-          client.devToken(user_id)
+          streamToken 
         );
         setIsReady(true);
       } catch (error) {

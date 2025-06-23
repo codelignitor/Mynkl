@@ -63,7 +63,7 @@ export const useCreateEventLogic = () => {
     try {
       // Note: Replace YOUR_GOOGLE_MAPS_API_KEY with your actual Google Maps API key
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyDnoc6XxrzYXuCC2Tg-QKcoIs3RLcHmuS0`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyC-V2YHOsvvAEPdJog2DHZRr5Mj2b2hk_Q`
       );
       const data = await response.json();
       console.log('Geocoding response:', data);
