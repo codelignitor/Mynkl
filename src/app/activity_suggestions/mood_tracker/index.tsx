@@ -11,17 +11,23 @@ import {
 import { LineChart } from 'react-native-chart-kit';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useActivityMoodPattern } from '@/src/screenHooks/useActivityMoodPattern';
 
 const { width } = Dimensions.get('window');
 
 const MoodTrackerScreen = () => {
   const router = useRouter();
+  const {moodPattern} =  useActivityMoodPattern();
 
+  
+        
   const moodData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    labels:  moodPattern?.last_7_days_graph?.map(item => 
+          item?.x ? require('moment')(item?.X)?.format('DD') : ''
+              ) || ["01" , '02'],
     datasets: [
       {
-        data: [2.3, 2.7, 2.1, 2.4, 2.8, 2.9],
+        data:moodPattern?.last_7_days_graph?.map(item => item?.y == "good" ? 3: 1) || [0, 0],
         strokeWidth: 3,
         color: () => '#FFA726',
       },
@@ -125,14 +131,14 @@ const MoodTrackerScreen = () => {
           </View>
 
           <Text style={styles.insightText}>
-            You feel most uplifted after{'\n'}creative activities.
+            {moodPattern?.ai_interpretation}
           </Text>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Personal AI Tips</Text>
           <Text style={styles.tipText}>
-            Try morning meditation for a calmer day.
+           {moodPattern?.personal_tips}
           </Text>
         </View>
 

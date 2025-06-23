@@ -13,6 +13,7 @@ import {
 import MapView, { Marker } from 'react-native-maps';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useEventDetail } from '../../activities/[activityId]/useEventDetail';
 
 const { width, height } = Dimensions.get('window');
 
@@ -26,25 +27,22 @@ const EventDetailsScreen = () => {
     image, 
     date,
     time,
-    lat, 
-    lng, 
+    lat="31.51874777", 
+    lng='74.35688563', 
     location,
     description 
   } = params;
+
+   const { loading , eventDetails  , joinEventHandler } = useEventDetail();
+  
 
   const [mapVisible, setMapVisible] = useState(false);
 
   // Format date and time for display
   const formatDateTime = () => {
-    if (date && time) {
-      return `${date} - ${time}`;
-    } else if (date) {
-      return date;
-    } else if (time) {
-      return `Today - ${time}`;
-    } else {
-      return 'Date & Time TBD';
-    }
+  return    eventDetails?.event_datetime
+            ? require('moment')(eventDetails.event_datetime).format('MMMM D, YYYY h:mm A')
+            : 'Start time not specified'
   };
 
   // Check if we have minimum required data
@@ -65,7 +63,8 @@ const EventDetailsScreen = () => {
   }
 
   // Check if we have location data for map
-  const hasLocationData = lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng));
+  const hasLocationData = true;
+  console.log('Location Data:',  lat );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -80,7 +79,7 @@ const EventDetailsScreen = () => {
 
         {/* Event Image */}
         {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
+          <Image source={{ uri: eventDetails?.event_image }} style={styles.image} />
         ) : (
           <View style={[styles.image, styles.placeholderImage]}>
             <Ionicons name="image-outline" size={50} color="#bdc3c7" />
@@ -92,10 +91,10 @@ const EventDetailsScreen = () => {
         <View style={styles.card}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>{formatDateTime()}</Text>
-          {location && (
+          {eventDetails?.location && (
             <View style={styles.locationContainer}>
               <Ionicons name="location-outline" size={16} color="#bdc3c7" />
-              <Text style={styles.locationText}>{location}</Text>
+              <Text style={styles.locationText}>{eventDetails?.location?.name}</Text>
             </View>
           )}
           {description && (
@@ -104,17 +103,18 @@ const EventDetailsScreen = () => {
         </View>
 
         {/* Map Section */}
-        {hasLocationData ? (
+        {eventDetails?.location ? (
           <View style={styles.mapSection}>
             <Text style={styles.mapTitle}>Event Location</Text>
             <TouchableOpacity style={styles.mapCard} onPress={() => setMapVisible(true)}>
               <MapView
+                provider='google'
                 style={styles.map}
                 initialRegion={{
-                  latitude: parseFloat(lat),
-                  longitude: parseFloat(lng),
-                  latitudeDelta: 0.01,
-                  longitudeDelta: 0.01,
+                  latitude: eventDetails?.location?.lat ?? 0,
+                  longitude: eventDetails?.location?.lng?? 0,
+                  latitudeDelta: 0.21,
+                  longitudeDelta: 0.21,
                 }}
                 pointerEvents="none"
               >
@@ -144,7 +144,14 @@ const EventDetailsScreen = () => {
 
         {/* Buttons */}
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.buttonOutline}>
+          <TouchableOpacity onPress={()=> {
+            router.push({
+      pathname: `/activities/${event_id}`, // or replace with `activityId` if defined separately
+      params: {
+       event_id
+      },
+    });
+          }} style={styles.buttonOutline}>
             <Text style={styles.buttonText}>More Details</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -175,14 +182,15 @@ const EventDetailsScreen = () => {
       </ScrollView>
 
       {/* Fullscreen Map Modal */}
-      {hasLocationData && (
+      {eventDetails?.location  && (
         <Modal visible={mapVisible} animationType="slide">
           <View style={styles.fullMapContainer}>
             <MapView
+              provider='google'
               style={styles.fullMap}
               initialRegion={{
-                latitude: parseFloat(lat),
-                longitude: parseFloat(lng),
+                latitude: eventDetails?.location?.lat,
+                longitude: eventDetails?.location?.lng,
                 latitudeDelta: 0.005,
                 longitudeDelta: 0.005,
               }}

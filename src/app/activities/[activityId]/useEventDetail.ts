@@ -31,7 +31,7 @@ export function useEventDetail() {
     const [loading, setLoading] = useState<boolean>(true);
     const [eventDetails, setEventDetails] = useState();
      const route = useRoute();
-  const { activityId } = route?.params as { activityId: string };
+  const { activityId ,event_id } = route?.params as { activityId: string  , event_id ?: string };
 
 
   const joinEventHandler = async () => {
@@ -56,7 +56,7 @@ export function useEventDetail() {
     const fetchEventDetails = async () => {
         try {
             setLoading(true);
-            const response = await getEventDetails(activityId);
+            const response = await getEventDetails(activityId ?? event_id);
           setEventDetails(response);
         } catch (error) {
             console.error("Error fetching event details:", error);

@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from "expo-router";
+import { useActivitySuggestions } from "@/src/screenHooks/useActivitySuggestions";
 
 export default function SuggestionScreen() {
   const router = useRouter();
+
+  const {isLoading , suggestedActivities} = useActivitySuggestions();
+
+
   
   // Array of different activity cards
   const activityCards = [
@@ -38,11 +43,11 @@ export default function SuggestionScreen() {
 
   const handleSwap = () => {
     setCurrentCardIndex((prevIndex) => 
-      (prevIndex + 1) % activityCards.length
+      (prevIndex + 1) % suggestedActivities?.suggestions?.length
     );
   };
 
-  const currentCard = activityCards[currentCardIndex];
+  const currentCard =suggestedActivities?.suggestions[currentCardIndex];
 
   return (
     <LinearGradient
@@ -51,33 +56,49 @@ export default function SuggestionScreen() {
     >
       <Text style={styles.header}>AI-Powered{"\n"}Activity{"\n"}Suggestions</Text>
       
-      <Text style={styles.subHeader}>Feeling lonely?</Text>
+      <Text style={styles.subHeader}>{suggestedActivities &&`${suggestedActivities?.emotion_message}?`}</Text>
 
       <View style={styles.card}>
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>{currentCard.icon}</Text>
+          <Text style={styles.icon}>{currentCard?.emoji}</Text>
         </View>
         
-        <Text style={styles.mainEmoji}>{currentCard.emoji}</Text>
+        <Text style={styles.mainEmoji}>{currentCard?.emoji}</Text>
         
         <Text style={styles.cardText}>
-          {currentCard.title}
+          {currentCard?.activity?.name}
         </Text>
 
         <TouchableOpacity
           style={styles.joinButton}
-          onPress={() => router.push("/activity_suggestions/activity_card")}
+          onPress={() => {
+          if (currentCard?.activity?.type === 'playlist' ) {
+            // Open the playlist URL
+            // You can use Linking from 'react-native' to open URLs
+            Linking.openURL(currentCard?.activity?.url);
+          } else {
+            // Navigate to activity card
+            router.push("/activity_suggestions/activity_card");
+          }
+          }}
         >
-          <Text style={styles.joinButtonText}>Join</Text>
+          <Text style={styles.joinButtonText}>
+            {currentCard?.activity?.type === 'playlist' ? "Play" : "Join"}
+          </Text>
         </TouchableOpacity>
 
         <Text style={styles.bestFor}>
-          Best for: <Text style={styles.bestHighlight}>{currentCard.bestFor}</Text>
+          Best for: <Text style={styles.bestHighlight}>{currentCard?.moods[0]}</Text>
         </Text>
       </View>
 
       <TouchableOpacity style={styles.swapButton} onPress={handleSwap}>
         <Text style={styles.swapText}>Swap</Text>
+      </TouchableOpacity>
+       <TouchableOpacity
+         onPress={() => router.push("/activity_suggestions/activity_card")}
+          style={styles.swapButton} >
+        <Text style={styles.swapText}>Explore Activities</Text>
       </TouchableOpacity>
     </LinearGradient>
   );

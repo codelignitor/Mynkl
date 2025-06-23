@@ -48,8 +48,8 @@ export function useAddCheckIn() {
           text1: "Check-in successful",
           text2: "Your check-in has been recorded.",
         });
-        //  router.back()
-        router.push({pathname:'/Check_Ins/mood_check-in',  params: {  data: JSON.stringify(selectedMood) }});
+          router.back()
+        // router.push({pathname:'/Check_Ins/mood_check-in',  params: {  data: JSON.stringify(selectedMood) }});
 
       }
         
