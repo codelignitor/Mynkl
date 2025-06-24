@@ -105,8 +105,12 @@ export const highlightedPlaces = async (payload) => {
   const response = await axiosInstance.post(`/home/places` , payload);
   return response.data;
 };
-export const getAiActivitySuggestions = async () => {
-  const response = await axiosInstance.get(`/activity/AI-Suggestions`);
+export const getAiActivitySuggestions = async (token: string) => {
+  const response = await axiosInstance.get(`/activity/AI-Suggestions`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   return response.data;
 };
 
@@ -125,6 +129,7 @@ export const getReflectivePrompt = async () => {
 
 export const submitJournal = async (payload) => {
   const response = await axiosInstance.post(`/home/journal` , payload);
+  console.log('Submit Journal Response:', response.data);
   return response.data;
 };
 

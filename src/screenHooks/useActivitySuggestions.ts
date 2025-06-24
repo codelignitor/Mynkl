@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import Toast from 'react-native-toast-message';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { RootState, store } from '../store';
 import { moodsData } from '../utils/moodsData';
 import { getHomeDetail } from '../store/slices/authSlice';
 
@@ -79,6 +79,8 @@ export function useActivitySuggestions() {
 
     const dispatch = useDispatch();
 
+     const state = store.getState();
+        const token = state.auth.token;
     const [selectedMood, setSelectedMood] = useState(null);
     const [suggestedActivities , setSuggestedActivities] = useState<Object>(null);
     
@@ -88,8 +90,10 @@ export function useActivitySuggestions() {
     const getActivitySuggestions = async () => {
         try { 
             setIsLoading(true);
-            // const response = await  getAiActivitySuggestions ();
             setSuggestedActivities(data);
+            
+            const response = await  getAiActivitySuggestions (token);
+            setSuggestedActivities(response);
 
 
            

@@ -40,6 +40,13 @@ export default function ChannelScreen() {
     );
   }
 
+  // Get online members from channel
+  const members = Object.values(channel?.state?.members || {});
+  const onlineMembers = members.filter(
+    (m) => m.user?.online === true
+  );
+  console.log("Online members:", onlineMembers?.length);
+
   const CustomChannelHeader = () => {
     const { channel } = useChannelContext();
     const moodTitle = channel?.data?.name || "Feeling Lonely";
@@ -86,10 +93,10 @@ export default function ChannelScreen() {
         </View>
 
         <Text style={{ color: "white", fontSize: 14, marginLeft: 20 }}>
-          {onlineCount} online now
+          {onlineMembers?.length} online now
         </Text>
 
-        <View
+        {/* <View
           style={{
             backgroundColor: "white",
             alignSelf: "flex-start",
@@ -101,10 +108,10 @@ export default function ChannelScreen() {
           }}
         >
           <Text style={{ fontSize: 15, color: "#333" }}>Hi! Here to connect?</Text>
-        </View>
+        </View> */}
 
         {/* 🔘 Toggle Mood Button */}
-        <View
+        {/* <View
           style={{
             marginTop: 10,
             marginLeft: 20,
@@ -121,7 +128,7 @@ export default function ChannelScreen() {
             thumbColor={showMoodButtons ? "#ffe066" : "#ccc"}
             trackColor={{ true: "#ffd60a", false: "#ccc" }}
           />
-        </View>
+        </View> */}
       </View>
     );
   };

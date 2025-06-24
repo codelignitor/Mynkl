@@ -78,7 +78,8 @@ export default function SuggestionScreen() {
             Linking.openURL(currentCard?.activity?.url);
           } else {
             // Navigate to activity card
-            router.push("/activity_suggestions/activity_card");
+            router.push(`/activities/${currentCard?.activity?.id}`);
+          
           }
           }}
         >

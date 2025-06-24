@@ -38,8 +38,8 @@ export function useActivityMoodPattern() {
     const getMoodPattern = async () => {
         try { 
             setIsLoading(true);
-            //   const response = await  getActivityMoodPattern ();
-            setMoodPattern(data);
+             const response = await  getActivityMoodPattern ();
+            setMoodPattern(response);
 
 
            

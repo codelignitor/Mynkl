@@ -245,7 +245,7 @@ const MoodMapScreen = () => {
           >
             <View style={styles.largeMenuCardContent}>
               <View style={styles.largeMenuIconContainer}>
-                <Icon name="run" size={28} color="#ffffff" />
+                <Icon name="pin" size={28} color="#ffffff" />
               </View>
               <View style={styles.menuTextContainer}>
                 <Text style={styles.largeMenuCardTitle}>CheckIn Analysis</Text>

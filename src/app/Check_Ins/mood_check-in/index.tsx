@@ -36,7 +36,7 @@ export default function MoodScreen() {
      
      const response = await getCheckInAiAnalysis();
       if (response ) {
-        console.log('AI Analysis Response:', response);
+        // console.log('AI Analysis Response:', response);
         setData(response);
         setMoodStrength(response.mood_strength || 0.5); // Default to 0.5 if not provided
       } else {
