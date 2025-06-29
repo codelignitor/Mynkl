@@ -24,108 +24,113 @@ const moods = [
 export default function MoodScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  
-  // Get all the parameters passed from EventDetailsScreen
-  const {
-    event_id,
-    activity_id,
-    title,
-    lat,
-    lng,
-    location,
-    image,
-    date,
-    time,
-    description
-  } = params;
+
+  const { event_id, title, lat, lng, location, image, date, time } = params;
 
   const [selectedMood, setSelectedMood] = useState(null);
   const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Debug: Log the received parameters (you can remove this in production)
   useEffect(() => {
-    console.log('Received Parameters:', {
-      event_id,
-      activity_id,
-      title,
-      lat,
-      lng,
-      location,
-      image,
-      date,
-      time,
-      description
-    });
+    if (__DEV__) {
+      console.log('Received Parameters:', params);
+    }
   }, []);
 
-  const handleSubmit = () => {
-    // Validate required fields
-    if (!selectedMood && selectedMood !== 0) {
+  const getFeeling = (mood) => {
+    switch (mood) {
+      case 'happy':
+      case 'upset':
+        return 'good';
+      case 'excited':
+        return 'better';
+      case 'sad':
+        return 'best';
+      default:
+        return 'good';
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (selectedMood === null) {
       Alert.alert('Required', 'Please select your mood');
       return;
     }
 
-    // Prepare submission data
-    const submissionData = {
-      event_id: event_id || '',
-      activity_id: activity_id || '',
-      mood: moods[selectedMood]?.mood || '',
-      notes: notes.trim(),
-      submission_date: new Date().toISOString(),
-      event_details: {
-        title: title || '',
-        location: location || '',
-        date: date || '',
-        time: time || '',
-        coordinates: {
-          lat: lat || '',
-          lng: lng || ''
-        }
-      }
+    setLoading(true); // show loader right away
+
+    const feeling = getFeeling(moods[selectedMood].mood.toLowerCase());
+
+    const payload = {
+      feeling,
+      note: notes.trim(),
+      activity_id: event_id || '',
     };
 
-    // Debug: Show what will be submitted
-    console.log('Submission Data:', submissionData);
-    
-    // Here you would typically send this data to your backend/API
-    // After successful submission, navigate to the activity page
-    router.push({
-      pathname: `/activities/${event_id}`, // or replace with `activityId` if defined separately
-      params: {
-        event_id,
-        title,
-        lat: lat || '',
-        lng: lng || '',
-        location: location || '',
-        image: image || '',
-        date: date || '',
-        time: time || '',
-        // Also include submission data
-        mood: moods[selectedMood]?.mood || '',
-        notes: notes.trim(),
-      },
-    });
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NDI0ZWNjOC1iYzEwLTRiMWMtOWU4Ny0wNTU3YmE2MDU3YWQiLCJleHAiOjE3NTE1NDE2MTZ9.bg_9zk9rzmdInRSnwwkE28vmc1WXdYBud0qEEyuTNHQ'; // use env-safe way in real apps
+
+    try {
+      const response = await fetch('https://2ae4-110-39-39-254.ngrok-free.app/activity/activity-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      let json;
+      try {
+        json = await response.json();
+      } catch {
+        const text = await response.text();
+        json = { message: text };
+      }
+
+      if (__DEV__) {
+        console.log('API response:', json);
+      }
+
+      Alert.alert(response.ok ? 'Success' : 'Error', json.message || 'No response message');
+
+      if (response.ok) {
+        router.push({
+          pathname: `/activities/${event_id}`,
+          params: {
+            event_id,
+            title,
+            lat,
+            lng,
+            location,
+            image,
+            date,
+            time,
+            mood: moods[selectedMood].mood,
+            notes: notes.trim(),
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Fetch Error:', error);
+      Alert.alert('Error', 'Could not connect to server.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={28} color="#fff" />
       </TouchableOpacity>
 
       <Text style={styles.heading}>How are you{'\n'}feeling now?</Text>
 
-      {/* Show event info if available */}
       {title && (
         <View style={styles.eventInfo}>
           <Text style={styles.eventTitle}>{title}</Text>
-          {date && time && (
-            <Text style={styles.eventDateTime}>{date} - {time}</Text>
-          )}
-          {location && (
-            <Text style={styles.eventLocation}>{location}</Text>
-          )}
+          {date && time && <Text style={styles.eventDateTime}>{date} - {time}</Text>}
+          {location && <Text style={styles.eventLocation}>{location}</Text>}
         </View>
       )}
 
@@ -150,10 +155,9 @@ export default function MoodScreen() {
         ))}
       </View>
 
-      {/* Show selected mood */}
       {selectedMood !== null && (
         <Text style={styles.selectedMoodText}>
-          Selected: {moods[selectedMood]?.mood}
+          Selected: {moods[selectedMood].mood}
         </Text>
       )}
 
@@ -166,12 +170,19 @@ export default function MoodScreen() {
         multiline
       />
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+      {loading && <Text style={{ color: '#fff', marginBottom: 10 }}>Submitting...</Text>}
+
+      <TouchableOpacity
+        style={[styles.submitButton, loading && { opacity: 0.5 }]}
+        onPress={handleSubmit}
+        disabled={loading}
+      >
         <Text style={styles.submitText}>Submit RSVP</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
