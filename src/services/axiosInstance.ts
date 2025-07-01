@@ -8,10 +8,10 @@ import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
 
 const axiosInstance = axios.create({
- baseURL: 'http://13.50.228.222:8000', 
-//  baseURL: 'https://02d8-2404-3100-1c19-5ff6-f65f-2baa-6484-7521.ngrok-free.app/',
-   
-  
+  baseURL: 'http://13.50.228.222:8000',
+  //  baseURL: 'https://02d8-2404-3100-1c19-5ff6-f65f-2baa-6484-7521.ngrok-free.app/',
+
+
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -21,11 +21,11 @@ const axiosInstance = axios.create({
 // 🔐 Request Interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-   
+
     const state = store.getState();
     const token = state.auth.token;
 
-    console.log(token)
+    // console.log(token)
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -43,7 +43,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    const message = error.response?.data?.message ||  'Something went wrong';
+    const message = error.response?.data?.message || 'Something went wrong';
 
     if (status === 401) {
       // Token expired or unauthorized
@@ -54,15 +54,15 @@ axiosInstance.interceptors.response.use(
     }
 
     // if (status === 404) {
-        
-      // Bad request
-     
-     Toast.show({
-  type: 'error', 
-  text1: 'Error',
-  text2: error.response.data.detail || error.response.data.detail[0].msg || 'Something went wrong',
-});
-    
+
+    // Bad request
+
+    Toast.show({
+      type: 'error',
+      text1: 'Error',
+      text2: error.response.data.detail || error.response.data.detail[0].msg || 'Something went wrong',
+    });
+
 
     return Promise.reject(error);
   }
