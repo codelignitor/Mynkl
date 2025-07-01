@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Image, Platform } from 'react-native';
+import LottieView from 'lottie-react-native';
 
 const emojiMap = {
   happy: require('../../assets/images/happy-icon.png'),
@@ -30,11 +31,30 @@ const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count }) =
   return (
     <>
       {source ? (
+        <>
+      {  count > 0  ?
+      <View>
+        <LottieView
+          source={require('../../assets/lottie/highlighted-place.json')}
+          autoPlay
+          loop={true}
+          style={[size, highlightStyle, markerStyle]}
+          >
+             <Image
+          source={source}
+          style={[size, emojiStyle]}
+          resizeMode="contain"
+        />
+          </LottieView>
+          </View>
+          :
         <Image
           source={source}
           style={[size, emojiStyle]}
           resizeMode="contain"
         />
+      }
+      </>
       ) : null}
     </>
     // <View style={[highlightStyle, markerStyle]}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,49 +7,77 @@ import {
   StyleSheet,
   SafeAreaView,
   FlatList,
+  Button,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // ← Added Ionicons
+import { receiveHugsList } from '@/src/services/apis';
+import { router } from 'expo-router';
 
 const PendingHugsDetailScreen = ({ onBack }) => {
-  const hugsData = [
-    {
-      id: 1,
-      avatar: '👱‍♀️',
-      message: 'You got a warm hug!',
-      subMessage: "I'm here for you 💕",
-    },
-    {
-      id: 2,
-      avatar: '🧢',
-      message: 'You got a calm hug!',
-      subMessage: 'Everything is going to be okay',
-    },
-    {
-      id: 3,
-      avatar: '👩🏽‍🦱',
-      message: 'You got an excited hug!',
-      subMessage: 'You did it!👏',
-    },
-  ];
+
+  const [hugsData , setHugsData ] = useState(null);
+  const [loadig, setLoading] = useState(false);
+
+  // const hugsData = [
+  //   {
+  //     id: 1,
+  //     avatar: '👱‍♀️',
+  //     message: 'You got a warm hug!',
+  //     subMessage: "I'm here for you 💕",
+  //   },
+  //   {
+  //     id: 2,
+  //     avatar: '🧢',
+  //     message: 'You got a calm hug!',
+  //     subMessage: 'Everything is going to be okay',
+  //   },
+  //   {
+  //     id: 3,
+  //     avatar: '👩🏽‍🦱',
+  //     message: 'You got an excited hug!',
+  //     subMessage: 'You did it!👏',
+  //   },
+  // ];
+
+  const receiveHugsListHandler = async ()=>{
+    try {
+       setLoading(true);
+      const response = await receiveHugsList();
+      setHugsData(response?.list);
+    } catch (error) {
+      
+    }
+    finally{
+        setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+   
+    receiveHugsListHandler();
+  
+  }, []);
 
   const renderHugItem = ({ item }) => (
     <View style={styles.hugItemCard}>
       <View style={styles.hugCardContent}>
-        <View style={styles.avatarCircle}>
-          <Text style={styles.avatarEmoji}>{item.avatar}</Text>
-        </View>
-        <View style={{ flex: 1, marginLeft: 10 }}>
-          <Text style={styles.hugMessage}>{item.message}</Text>
-          <View style={styles.hugBubble}>
-            <Text style={styles.hugSubMessage}>{item.subMessage}</Text>
-          </View>
-        </View>
-        <View style={styles.hugIcon}>
+         <View style={styles.hugIcon}>
           <Image
-            source={{ uri: 'https://cdn-icons-png.flaticon.com/512/12173/12173945.png' }}
+            source={{ uri:item?.user?.profile_pic ?? 'https://cdn-icons-png.flaticon.com/512/12173/12173945.png' }}
             style={{ width: 36, height: 36 }}
           />
         </View>
+       
+        <View style={{ flex: 1, marginLeft: 10 }}>
+          <Text style={styles.hugMessage}>You got a{item?.hug_type}!</Text>
+          <View style={styles.hugBubble}>
+            <Text style={styles.hugSubMessage}>{item?.message}</Text>
+          </View>
+        </View>
+        <View style={styles.avatarCircle}>
+          <Text style={styles.avatarEmoji}>{item?.emoji}</Text>
+        </View>
+        
       </View>
     </View>
   );
@@ -152,6 +180,17 @@ export default function PendingHugsScreen() {
               style={styles.hugImage}
             />
           </TouchableOpacity>
+        </View>
+      )}
+      {selectedTab === 'Send' && (
+        <View style={styles.pendingContainer}>
+          <Text style={styles.pendingText}>You want to send Hug!</Text>
+          <Text style={styles.heart}>💗</Text>
+         <Button
+            title="Send Hug"
+            onPress={() => router.push('/hugs-selection')}
+            color="#8b7cf6"
+          />  
         </View>
       )}
     </SafeAreaView>

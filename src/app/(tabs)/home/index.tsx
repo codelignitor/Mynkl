@@ -132,9 +132,9 @@ const MoodMapScreen = () => {
           </TouchableOpacity>
         </View>
 
-       { !selectedMood ?
+       {/* { !selectedMood ?
       <>
-     
+      */}
 
         <Text style={styles.headerSection}>How are you feeling?</Text>
 
@@ -145,10 +145,10 @@ const MoodMapScreen = () => {
           handleMoodSelection={handleMoodSelection} 
         />
 
-         </> :
+         {/* </> :
           <Text style={styles.headerSection}>I am feeling {selectedMood}</Text>
 }
-        
+         */}
         {/* Row for sections with related dimensions */}
         <View style={styles.rowContainer}>
           {/* Check-in Section - Height will match square width */}

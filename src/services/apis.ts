@@ -139,6 +139,38 @@ export const getActivityMoodPattern = async () => {
 };
 
 
+export const receiveHugsList = async () => {
+  const response = await axiosInstance.get(`/virtual_hugs/received` );
+ 
+  return response.data;
+};
+
+
+
+
+export const sendHug = async (payload) => {
+  const response = await axiosInstance.post(`/virtual_hugs/send` , payload);
+  
+ 
+  return response.data;
+};
+
+
+
+
+
+export const getUsers = async () => {
+  const response = await axiosInstance.get(`/virtual_hugs/user-list?type=community&page=1&limit=150` );
+  return response.data;
+};
+
+
+
+export const getVirtualHugsAISuggestions = async () => {
+  const response = await axiosInstance.get(`/virtual_hugs/ai-suggestions` );
+  return response.data;
+};
+
 
 
 

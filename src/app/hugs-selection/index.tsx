@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { styles } from './style';
 import { useVirtualHugLogic } from './VirtualHugLogic';
 import { useRouter } from 'expo-router';
+import { getUsers } from '@/src/services/apis';
 
 const VirtualHugFlow = () => {
   const {
@@ -43,6 +44,7 @@ const VirtualHugFlow = () => {
     setActiveTab,
     setSearchText,
     setMessage,
+    virtualHugsSuggestions
   } = useVirtualHugLogic();
 
   // Screen 1: Select Hug
@@ -126,18 +128,20 @@ const VirtualHugFlow = () => {
 
   // Screen 2: Choose Recipient
   const renderChooseRecipientScreen = () => {
+
+   
     const renderFriendItem = ({ item }) => {
-      const isSelected = selectedFriends.includes(item.id);
+      const isSelected = selectedFriends.includes(item?.id);
       
       return (
         <TouchableOpacity 
           key={item.id}
           style={[styles.friendItem, isSelected && styles.selectedFriendItem]}
-          onPress={() => toggleFriendSelection(item.id)}
+          onPress={() => toggleFriendSelection(item?.id)}
         >
-          <Image source={{ uri: item.avatar }} style={styles.avatar} />
+          <Image source={{ uri: item?.profile_pic ?? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" }} style={styles.avatar} />
           <Text style={[styles.friendName, isSelected && styles.selectedFriendName]}>
-            {item.name}
+            {item?.name}
           </Text>
           {isSelected && (
             <View style={styles.checkmarkContainer}>
@@ -147,6 +151,9 @@ const VirtualHugFlow = () => {
         </TouchableOpacity>
       );
     };
+
+
+   
 
     return (
       <SafeAreaView style={styles.recipientContainer}>
@@ -171,7 +178,7 @@ const VirtualHugFlow = () => {
 
             {/* Tab Navigation */}
             <View style={styles.tabContainer}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={[
                   styles.tab,
                   activeTab === 'Friend List' && styles.activeTab,
@@ -186,7 +193,7 @@ const VirtualHugFlow = () => {
                 >
                   Friend List
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <TouchableOpacity
                 style={[
                   styles.tab,
@@ -223,13 +230,13 @@ const VirtualHugFlow = () => {
                 <Text style={styles.heartEmoji}>💗</Text>
               </View>
               <Text style={styles.lonelyText}>
-                Feeling lonely? send{'\n'}to someone who feels{'\n'}the same.
+              {virtualHugsSuggestions?.suggestion ?? "Feeling lonely? Send a hug to someone special!"}  
               </Text>
             </View>
 
             {/* Friends List */}
             <View style={styles.friendsListContainer}>
-              {friends.map((item) => renderFriendItem({ item }))}
+              {friends?.map((item) => renderFriendItem({ item }))}
             </View>
           </View>
         </ScrollView>
@@ -275,7 +282,7 @@ const VirtualHugFlow = () => {
             textAlignVertical="top"
           />
 
-          {presets.map((preset, index) => (
+            {virtualHugsSuggestions?.messages?.slice(0, 2).map((preset, index) => (
             <TouchableOpacity
               key={index}
               style={styles.presetCard}
@@ -283,7 +290,7 @@ const VirtualHugFlow = () => {
             >
               <Text style={styles.presetText}>{preset}</Text>
             </TouchableOpacity>
-          ))}
+            ))}
 
           <TouchableOpacity 
             style={styles.addEmojiContainer}
