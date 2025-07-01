@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity, Image, Animated, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  SafeAreaView,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  ScrollView,
+  Image,
+} from 'react-native';
 import { Feather, AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
-// import { VictoryChart, VictoryLine, VictoryTheme, VictoryAxis } from 'victory-native';
 
 const HugReceivedScreen = () => {
-  // State to track hug count and progress
   const [hugStats, setHugStats] = useState({
     received: 12,
     sent: 8,
     streak: 5,
-    total: 20
+    total: 20,
   });
 
-  // Hug history for graph
   const [hugHistory, setHugHistory] = useState([
     { x: 1, y: 5 },
     { x: 2, y: 8 },
@@ -33,44 +39,56 @@ const HugReceivedScreen = () => {
     }).start();
   }, [hugStats.received]);
 
-
-
   const handleSendHugBack = () => {
-    // Update stats first
-    setHugStats(prev => ({
+    setHugStats((prev) => ({
       ...prev,
       sent: prev.sent + 1,
-      total: prev.total + 1
+      total: prev.total + 1,
     }));
 
-    setHugHistory(prev => [
+    setHugHistory((prev) => [
       ...prev,
-      { x: prev.length + 1, y: hugStats.received + 1 }
+      { x: prev.length + 1, y: hugStats.received + 1 },
     ]);
 
-    // Route to your send hug screen
-    // Replace '/your-send-hug-path' with the actual path of your screen
-    router.push('/sendHugs')
-    
-    
-    // If you need to pass state to the next screen, you can do:
-    // history.push('/your-send-hug-path', { 
-    //   hugStats: hugStats,
-    //   someOtherData: 'value'
-    // });
+    router.push('/sendHugs');
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>mynkl</Text>
+
+          {/* Settings Button (top-right) */}
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => router.push('/hugs/hugs_settings')}
+          >
+            <Feather name="settings" size={24} color="#333" />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.mainContent}>
           <View style={styles.hugIconContainer}>
-            <Image source={require('../../../assets/images/HugLogo1.jpg')} style={styles.hugImage} />
+            <Image
+              source={require('../../../assets/images/HugLogo1.jpg')}
+              style={styles.hugImage}
+            />
           </View>
+
+          {/* Badges Button (below hug image) */}
+          <TouchableOpacity
+            style={styles.badgesButton}
+            onPress={() => router.push('/hugs/hugsBadges')}
+          >
+            <AntDesign name="staro" size={16} color="#fff" />
+            <Text style={styles.badgesText}>View Badges</Text>
+          </TouchableOpacity>
 
           <Text style={styles.hugReceivedText}>You received a hug!</Text>
 
@@ -124,9 +142,9 @@ const HugReceivedScreen = () => {
                     {
                       width: progressAnim.interpolate({
                         inputRange: [0, 1],
-                        outputRange: ['0%', '100%']
-                      })
-                    }
+                        outputRange: ['0%', '100%'],
+                      }),
+                    },
                   ]}
                 />
                 <View style={[styles.milestone, { left: '25%' }]} />
@@ -150,29 +168,6 @@ const HugReceivedScreen = () => {
               </Text>
             </View>
           </View>
-
-          {/* Hug Graph */}
-          {/* <View style={styles.graphContainer}>
-            <Text style={styles.graphTitle}>Hug Progress Over Time</Text>
-            <VictoryChart theme={VictoryTheme?.material}>
-              <VictoryAxis
-                dependentAxis
-                tickFormat={(tick) => `${tick}`}
-                style={{ tickLabels: { fontSize: 10 } }}
-              />
-              <VictoryAxis
-                tickFormat={(tick) => `Day ${tick}`}
-                style={{ tickLabels: { fontSize: 10 } }}
-              />
-              <VictoryLine
-                data={hugHistory}
-                interpolation="natural"
-                style={{
-                  data: { stroke: "#3a4a59", strokeWidth: 2 }
-                }}
-              />
-            </VictoryChart>
-          </View> */}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -184,10 +179,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f7f9',
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    paddingBottom: 30,
+  },
   header: {
     paddingTop: 50,
     padding: 15,
     alignItems: 'center',
+    position: 'relative',
   },
   headerTitle: {
     marginTop: 20,
@@ -196,12 +199,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    flexGrow: 1,
-    paddingBottom: 30,
+  settingsButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    padding: 8,
   },
   mainContent: {
     alignItems: 'center',
@@ -221,6 +223,26 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     resizeMode: 'contain',
+  },
+  badgesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3a4a59',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  badgesText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 8,
   },
   hugReceivedText: {
     fontSize: 30,
@@ -373,20 +395,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     fontStyle: 'italic',
-  },
-  graphContainer: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
-    width: '100%',
-    marginTop: 30,
-  },
-  graphTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#3a4a59',
-    marginBottom: 10,
-    textAlign: 'center',
   },
 });
 
