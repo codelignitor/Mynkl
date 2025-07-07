@@ -54,6 +54,23 @@ export const checkIn = async (payload: CheckInPayload) => {
   return response.data;
 };
 
+// profile api
+export const updateUserProfile = async (payload) => {
+    const config = {
+        headers: {
+            'Content-Type': payload instanceof FormData ? 'multipart/form-data' : 'application/json'
+        }
+    };
+    
+    const response = await axiosInstance.post(`/virtual_hugs/profile/update-profile`, payload, config);
+    return response.data;
+};
+
+export const updatedUserProfile = async (userId: string) => {
+  const response = await axiosInstance.get(`/virtual_hugs/profile/${userId}`)
+  return response.data;
+};
+
 export const createEvent = async (payload) => {
   const response = await axiosInstance.post(`/events/create_event`, payload);
   return response.data;
