@@ -75,7 +75,8 @@ const PendingHugsDetailScreen = ({ onBack }) => {
           </View>
         </View>
         <View style={styles.avatarCircle}>
-          <Text style={styles.avatarEmoji}>{item?.emoji}</Text>
+          <Text style={styles.avatarEmoji}>💗 </Text>
+          {/* <Text style={styles.avatarEmoji}>{item?.emoji} </Text> */}
         </View>
         
       </View>
@@ -95,7 +96,7 @@ const PendingHugsDetailScreen = ({ onBack }) => {
       <FlatList
         data={hugsData}
         renderItem={renderHugItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item?.id?.toString()}
         style={styles.hugsList}
         showsVerticalScrollIndicator={false}
       />
@@ -172,7 +173,7 @@ export default function PendingHugsScreen() {
       {/* Pending Hugs */}
       {selectedTab === 'Receive' && (
         <View style={styles.pendingContainer}>
-          <Text style={styles.pendingText}>You have 3 pending hugs</Text>
+          <Text style={styles.pendingText}>You have pending hugs</Text>
           <Text style={styles.heart}>💗</Text>
           <TouchableOpacity onPress={handleHugImagePress}>
             <Image

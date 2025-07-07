@@ -128,7 +128,7 @@ export default function MoodScreen() {
           style={styles.checkInBtn}
           onPress={() => router.push('/moodpattern')}
         >
-          <Text style={styles.checkInText}>Next</Text>
+          <Text style={styles.checkInText}>View my Mood Pattern</Text>
         </TouchableOpacity>
 
       </SafeAreaView>

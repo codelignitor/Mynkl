@@ -129,17 +129,32 @@ export const highlightedPlaces = async (payload) => {
   const response = await axiosInstance.post(`/home/places`, payload);
   return response.data;
 };
-// export const getAiActivitySuggestions = async (token: string) => {
-//   const response = await axiosInstance.get(`/activity/AI-Suggestions`, {
-//     headers: {
-//       Authorization: `Bearer ${token}`,
-//     },
-//   });
+export const getAiActivitySuggestions = async (token: string) => {
+  try {
+    const response = await axiosInstance.get('/activity/AI-Suggestions', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      timeout: 5000, // 5 seconds max
+      responseType: 'json',
+    });
 
-export const getAiActivitySuggestions = async () => {
-  const response = await axiosInstance.get(`/activity/AI-Suggestions`);
-  return response.data;
+    console.log('✅ Response:', response);
+    return response;
+  } catch (err: any) {
+    console.log('❌ Failed AI Suggestion:', err.message);
+    if (err.code === 'ECONNABORTED') {
+      console.log('⚠️ Request timeout!');
+    }
+    throw err;
+  }
 };
+
+
+// export const getAiActivitySuggestions = async () => {
+//   const response = await axiosInstance.get(`/activity/AI-Suggestions`);
+//   return response.data;
+// };
 
 export const getAiMoodPattern = async () => {
   const response = await axiosInstance.get(`/home/mood-pattern`);

@@ -125,8 +125,8 @@ export const useVirtualHugLogic = () => {
   "ai_choice":selectedHug === null ?true :false,
   "message": message,
   "emoji": 'emoji',
-  // "receiver_id": selectedFriends[0],
-  "receiver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+   "receiver_id": selectedFriends[0],
+  // "receiver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   "receiver_type": "Community"
 }
 

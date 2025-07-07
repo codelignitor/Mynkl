@@ -213,7 +213,7 @@ const VirtualHugFlow = () => {
             </View>
 
             {/* Search Bar */}
-            <View style={styles.searchContainer}>
+            {/* <View style={styles.searchContainer}>
               <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
               <TextInput
                 style={styles.searchInput}
@@ -222,7 +222,7 @@ const VirtualHugFlow = () => {
                 onChangeText={setSearchText}
                 placeholderTextColor="#999"
               />
-            </View>
+            </View> */}
 
             {/* Lonely Message */}
             <View style={styles.lonelyMessage}>

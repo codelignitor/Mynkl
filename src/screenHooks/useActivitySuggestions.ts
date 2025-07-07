@@ -110,7 +110,7 @@ export function useActivitySuggestions() {
     const moveToScreen = (screen:any) => {
     router.push(screen);
   };
-   console.log("Suggested Activities: ", suggestedActivities);
+//    console.log("Suggested Activities: ", suggestedActivities);
     useEffect(() => {
     getActivitySuggestions();
    

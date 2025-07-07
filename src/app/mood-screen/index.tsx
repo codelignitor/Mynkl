@@ -116,7 +116,7 @@ export default function MoodReflectionScreen() {
         style={styles.submitButton}
         onPress={submitReflectionHandler}
       >
-        <Text style={styles.submitButtonText}>Submit</Text>
+        <Text style={styles.submitButtonText}>Submit and continue</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
