@@ -125,14 +125,14 @@ export default function GroupChannelListScreen() {
         contentContainerStyle={{ paddingBottom: 20 }}
       />
 
-      {/* <View style={styles.footerCard}>
+      <View style={styles.footerCard}>
         <Text style={styles.footerText}>
           How about a happiness challenge to lift your mood? <Text>😉</Text>
         </Text>
         <TouchableOpacity style={styles.footerButton}>
           <Text style={styles.footerButtonText}>▶ Listen to uplifting playlist</Text>
         </TouchableOpacity>
-      </View> */}
+      </View>
       </View>
     </SafeAreaView>
   );

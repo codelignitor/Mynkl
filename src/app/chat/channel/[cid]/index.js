@@ -96,7 +96,7 @@ export default function ChannelScreen() {
           {onlineMembers?.length} online now
         </Text>
 
-        {/* <View
+        <View
           style={{
             backgroundColor: "white",
             alignSelf: "flex-start",
@@ -108,10 +108,10 @@ export default function ChannelScreen() {
           }}
         >
           <Text style={{ fontSize: 15, color: "#333" }}>Hi! Here to connect?</Text>
-        </View> */}
+        </View>
 
         {/* 🔘 Toggle Mood Button */}
-        {/* <View
+        <View
           style={{
             marginTop: 10,
             marginLeft: 20,
@@ -128,7 +128,7 @@ export default function ChannelScreen() {
             thumbColor={showMoodButtons ? "#ffe066" : "#ccc"}
             trackColor={{ true: "#ffd60a", false: "#ccc" }}
           />
-        </View> */}
+        </View>
       </View>
     );
   };
