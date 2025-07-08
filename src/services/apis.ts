@@ -146,11 +146,32 @@ export const highlightedPlaces = async (payload) => {
   const response = await axiosInstance.post(`/home/places`, payload);
   return response.data;
 };
+export const getAiActivitySuggestions = async (token: string) => {
+  try {
+    const response = await axiosInstance.get('/activity/AI-Suggestions', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      timeout: 5000, // 5 seconds max
+      responseType: 'json',
+    });
 
-export const getAiActivitySuggestions = async () => {
-  const response = await axiosInstance.get(`/activity/AI-Suggestions`);
-  return response.data;
+    console.log('✅ Response:', response);
+    return response;
+  } catch (err: any) {
+    console.log('❌ Failed AI Suggestion:', err.message);
+    if (err.code === 'ECONNABORTED') {
+      console.log('⚠️ Request timeout!');
+    }
+    throw err;
+  }
 };
+
+
+// export const getAiActivitySuggestions = async () => {
+//   const response = await axiosInstance.get(`/activity/AI-Suggestions`);
+//   return response.data;
+// };
 
 export const getAiMoodPattern = async () => {
   const response = await axiosInstance.get(`/home/mood-pattern`);
@@ -171,3 +192,40 @@ export const getActivityMoodPattern = async () => {
   const response = await axiosInstance.get(`/activity/activity-mood-tracker`);
   return response.data;
 };
+
+
+export const receiveHugsList = async () => {
+  const response = await axiosInstance.get(`/virtual_hugs/received` );
+ 
+  return response.data;
+};
+
+
+
+
+export const sendHug = async (payload) => {
+  const response = await axiosInstance.post(`/virtual_hugs/send` , payload);
+  
+ 
+  return response.data;
+};
+
+
+
+
+
+export const getUsers = async () => {
+  const response = await axiosInstance.get(`/virtual_hugs/user-list?type=community&page=1&limit=150` );
+  return response.data;
+};
+
+
+
+export const getVirtualHugsAISuggestions = async () => {
+  const response = await axiosInstance.get(`/virtual_hugs/ai-suggestions` );
+  return response.data;
+};
+
+
+
+

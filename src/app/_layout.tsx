@@ -65,7 +65,7 @@ export default function RootLayout() {
           <AppProvider>
         <MainLayout />
           </AppProvider>
-        </ChatWrapper>
+         </ChatWrapper>
       ) : (
        
           <MainLayout />

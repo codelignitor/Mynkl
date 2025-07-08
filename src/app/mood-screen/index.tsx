@@ -7,6 +7,7 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,6 +30,14 @@ export default function MoodReflectionScreen() {
       }
     });
   };
+
+  if (isLoading) {
+      return (
+        <SafeAreaView style={styles.container}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </SafeAreaView>
+      );
+    }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -72,9 +81,9 @@ export default function MoodReflectionScreen() {
           numberOfLines={4}
           textAlignVertical="top"
         />
-        <TouchableOpacity style={styles.micButton}>
+        {/* <TouchableOpacity style={styles.micButton}>
           <Ionicons name="mic" size={20} color="#8B7355" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {/* Mood Tagging Section */}
@@ -107,7 +116,7 @@ export default function MoodReflectionScreen() {
         style={styles.submitButton}
         onPress={submitReflectionHandler}
       >
-        <Text style={styles.submitButtonText}>Submit</Text>
+        <Text style={styles.submitButtonText}>Submit and continue</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

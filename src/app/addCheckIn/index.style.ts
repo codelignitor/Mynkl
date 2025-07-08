@@ -85,7 +85,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 18,
-    marginBottom: 80,
+    marginBottom: 16,
   },
   locationContent: {
     flexDirection: 'row',

@@ -49,7 +49,9 @@ export default function AddCheckIn() {
     text, 
     locationOptIn, 
     setIsLoading, 
+    AnonymousCheckIn,
     setSelectedMood, 
+    setAnonymousCheckIn,
     setText, 
     setLocationOptIn, 
     handleSubmit 
@@ -114,6 +116,20 @@ export default function AddCheckIn() {
             onValueChange={setLocationOptIn}
             trackColor={{ false: '#E0E0E0', true: '#4A9B9B' }}
             thumbColor={locationOptIn ? '#FFFFFF' : '#FFFFFF'}
+            style={styles.switch}
+          />
+        </View>
+
+ <View style={styles.locationContainer}>
+          <View style={styles.locationContent}>
+            <Text style={styles.locationIcon}>👤</Text>
+            <Text style={styles.locationText}>Anonymous Check-in</Text>
+          </View>
+          <Switch
+            value={AnonymousCheckIn}
+            onValueChange={setAnonymousCheckIn}
+            trackColor={{ false: '#E0E0E0', true: '#4A9B9B' }}
+            thumbColor={AnonymousCheckIn ? '#FFFFFF' : '#FFFFFF'}
             style={styles.switch}
           />
         </View>

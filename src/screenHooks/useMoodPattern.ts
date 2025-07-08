@@ -109,8 +109,8 @@ export function useMoodPattern() {
     const getMoodPattern = async () => {
         try { 
             setIsLoading(true);
-            //  const response = await  getAiMoodPattern ();
-            setMoodPattern(data);
+            const response = await  getAiMoodPattern ();
+            setMoodPattern(response);
 
 
            

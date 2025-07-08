@@ -190,7 +190,7 @@ const MoodMapScreen: React.FC = () => {
             <>
               <View style={styles.rowContiner}>
                 <Text style={styles.activitiesLabel}>Activities</Text>
-                <TouchableOpacity onPress={() => router.push('/activity')}>
+                <TouchableOpacity onPress={() => router.push('/activity_suggestions/activity_card')}>
                   <Text style={styles.seeMore}>See More</Text>
                 </TouchableOpacity>
               </View>

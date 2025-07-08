@@ -40,6 +40,13 @@ export default function ChannelScreen() {
     );
   }
 
+  // Get online members from channel
+  const members = Object.values(channel?.state?.members || {});
+  const onlineMembers = members.filter(
+    (m) => m.user?.online === true
+  );
+  console.log("Online members:", onlineMembers?.length);
+
   const CustomChannelHeader = () => {
     const { channel } = useChannelContext();
     const moodTitle = channel?.data?.name || "Feeling Lonely";
@@ -86,7 +93,7 @@ export default function ChannelScreen() {
         </View>
 
         <Text style={{ color: "white", fontSize: 14, marginLeft: 20 }}>
-          {onlineCount} online now
+          {onlineMembers?.length} online now
         </Text>
 
         <View

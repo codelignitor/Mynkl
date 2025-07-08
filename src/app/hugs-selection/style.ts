@@ -222,6 +222,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     lineHeight: 18,
+    width:'80%'
   },
   friendsListContainer: {
     paddingBottom: 20,

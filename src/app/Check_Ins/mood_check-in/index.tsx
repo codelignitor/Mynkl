@@ -36,7 +36,7 @@ export default function MoodScreen() {
      
      const response = await getCheckInAiAnalysis();
       if (response ) {
-        console.log('AI Analysis Response:', response);
+        // console.log('AI Analysis Response:', response);
         setData(response);
         setMoodStrength(response.mood_strength || 0.5); // Default to 0.5 if not provided
       } else {
@@ -128,7 +128,7 @@ export default function MoodScreen() {
           style={styles.checkInBtn}
           onPress={() => router.push('/moodpattern')}
         >
-          <Text style={styles.checkInText}>Next</Text>
+          <Text style={styles.checkInText}>View my Mood Pattern</Text>
         </TouchableOpacity>
 
       </SafeAreaView>
