@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import debounce from 'lodash.debounce';
-import { getMapSearchResults, highlightedPlaces } from '@/src/services/apis';
+import { getMapSearchResults, highlightedPlaces} from '@/src/services/apis';
 import * as Location from 'expo-location';
 import Toast from 'react-native-toast-message';
 
@@ -11,6 +11,35 @@ export interface Hug {
   timestamp: number;
 }
 
+export interface LocationDetail {
+  id: string;
+  name: string;
+  mood: string;
+  moodEmoji: string;
+  latitude: number;
+  longitude: number;
+  hasLocations?: boolean;
+}
+
+export interface CheckInData {
+  count: number;
+  breakdown: string;
+}
+
+export interface Comment {
+  id: string;
+  text: string;
+  timestamp: number;
+  user: string;
+}
+
+export interface User {
+  id: string;
+  username: string;
+  name?: string;
+  email?: string;
+}
+
 export function useMoodMap() {
   const [hugs, setHugs] = useState<Hug[]>([]);
   const [selectedMood, setSelectedMood] = useState('');
@@ -18,6 +47,8 @@ export function useMoodMap() {
   const [searchInput, setSearchInput] = useState('');
   const [moodData, setMoodData] = useState<any[]>([]);
   const [mapData, setMapData] = useState<any[]>([]);
+  const [filteredMapData, setFilteredMapData] = useState<any[]>([]);
+  const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [currentMarkedLocation, setCurrentMarkedLocation] = useState<any>(null);
   const [mapRegion, setMapRegion] = useState({
     latitude: 0,
@@ -26,9 +57,280 @@ export function useMoodMap() {
     longitudeDelta: 0.191,
   });
 
+  // Updated state for current user - will be set from location data
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userName, setUserName] = useState<string>('Anonymous');
+
+  // New states for location detail screen
+  const [showLocationDetail, setShowLocationDetail] = useState(false);
+  const [selectedLocationDetail, setSelectedLocationDetail] = useState<LocationDetail | null>(null);
+  const [locationCheckIns, setLocationCheckIns] = useState<CheckInData>({
+    count: 0,
+    breakdown: ''
+  });
+  const [locationComments, setLocationComments] = useState<Comment[]>([]);
+
+  // New states for user pin expansion
+  const [selectedUserPin, setSelectedUserPin] = useState<any>(null);
+
   const callBackMapHandler = (location: any) => {
     console.log('Current Marked Location:', location);
+    console.log('Location Type:', location?.type);
+    
+    // CRUCIAL: Only show new screen if mood-pin is a PLACE
+    if (location && location.type === 'place') {
+      console.log('🏢 PLACE DETECTED - Opening location detail screen');
+      
+      // Clear everything else
+      setCurrentMarkedLocation(null);
+      setSelectedUserPin(null);
+      
+      // Prepare location detail data for PLACE
+      const locationDetail: LocationDetail = {
+        id: location.id || Math.random().toString(),
+        name: location.name || 'Unknown Place',
+        mood: location.mood || 'Happy',
+        moodEmoji: getMoodEmoji(location.mood),
+        latitude: location.latitude || 0,
+        longitude: location.longitude || 0,
+        hasLocations: true
+      };
+      
+      setSelectedLocationDetail(locationDetail);
+      loadLocationDetails(locationDetail);
+      setShowLocationDetail(true);
+      
+      return; // Exit early for places
+    }
+    
+    // NEW: For USER pins, show expanded pin details on map
+    if (location && location.type === 'user') {
+      console.log('👤 USER DETECTED - Expanding user pin on map');
+      console.log('User data:', location.user);
+      
+      // Extract user data from the location object
+      const userData = location.user;
+      if (userData) {
+        const user: User = {
+          id: userData.id,
+          username: userData.username,
+          name: userData.name,
+          email: userData.email
+        };
+        
+        // Set current user from the location data
+        setCurrentUser(user);
+        setUserName(userData.username || userData.name || 'Anonymous');
+        
+        console.log('Set userName to:', userData.username || userData.name || 'Anonymous');
+      }
+      
+      // Clear everything else
+      setCurrentMarkedLocation(null);
+      setShowLocationDetail(false);
+      setSelectedLocationDetail(null);
+      
+      // Set selected user pin for map expansion
+      setSelectedUserPin({
+        ...location,
+        moodEmoji: getMoodEmoji(location.mood),
+        username: userData?.username || userData?.name || 'Anonymous'
+      });
+      
+      return; // Exit early for users
+    }
+    
+    // For ALL OTHER types (events, etc.), use existing bottom sheet
+    console.log(`🔄 Type (${location?.type}) - Using existing bottom sheet`);
     setCurrentMarkedLocation(location);
+    
+    // Clear everything else
+    setShowLocationDetail(false);
+    setSelectedLocationDetail(null);
+    setSelectedUserPin(null);
+  };
+
+  const getMoodEmoji = (mood: string): string => {
+    const moodEmojis: { [key: string]: string } = {
+      'happy': '😊',
+      'calm': '😌',
+      'inspired': '💡',
+      'relaxed': '😌',
+      'creative': '🎨',
+      'comforted': '❤️',
+      'sad': '😢',
+      'anxious': '😰',
+      'excited': '🤩',
+      'peaceful': '☮️'
+    };
+    return moodEmojis[mood?.toLowerCase()] || '😊';
+  };
+
+  const loadLocationDetails = async (location: LocationDetail) => {
+    try {
+      // Simulate loading check-in data for places
+      const checkInData: CheckInData = {
+        count: Math.floor(Math.random() * 10) + 1,
+        breakdown: generateCheckInBreakdown()
+      };
+      
+      // Load real comments from API instead of hardcoded
+      // Replace this with actual API call: const comments = await getLocationComments(location.id);
+      const comments: Comment[] = [
+        {
+          id: '1',
+          text: 'Great music today.',
+          timestamp: Date.now() - 3600000,
+          user: 'john_doe' // This should come from API
+        },
+        {
+          id: '2',
+          text: 'Needed this latte break 😊',
+          timestamp: Date.now() - 1800000,
+          user: 'sarah_smith' // This should come from API
+        }
+      ];
+
+      setLocationCheckIns(checkInData);
+      setLocationComments(comments);
+    } catch (error) {
+      console.error('Error loading location details:', error);
+    }
+  };
+
+  const generateCheckInBreakdown = (): string => {
+    const moods = ['Happy', 'Calm', 'Anxious', 'Excited', 'Peaceful'];
+    const counts = moods.map(mood => {
+      const count = Math.floor(Math.random() * 3) + 1;
+      return `${count} ${mood}`;
+    });
+    return counts.slice(0, 3).join(', ');
+  };
+
+  const handleCheckIn = async () => {
+    if (!selectedLocationDetail) return;
+
+    try {
+      console.log('Checking in at:', selectedLocationDetail.name);
+      
+      Toast.show({
+        type: 'success',
+        text1: 'Check-in Successful!',
+        text2: `${userName} checked in at ${selectedLocationDetail.name}`,
+      });
+
+      // Update check-in count
+      setLocationCheckIns(prev => ({
+        ...prev,
+        count: prev.count + 1
+      }));
+
+    } catch (error) {
+      console.error('Error checking in:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Check-in Failed',
+        text2: 'Please try again later.',
+      });
+    }
+  };
+
+  const handleSendHug = async () => {
+    if (!selectedLocationDetail) return;
+
+    try {
+      console.log('Sending hug to:', selectedLocationDetail.name);
+      
+      const newHug: Hug = {
+        id: Math.random().toString(),
+        sender: userName, // Using dynamic username
+        message: `${userName} sent a hug to everyone at ${selectedLocationDetail.name}`,
+        timestamp: Date.now()
+      };
+
+      setHugs(prev => [...prev, newHug]);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Hug Sent! 🤗',
+        text2: `${userName} sent a hug to everyone at ${selectedLocationDetail.name}`,
+      });
+
+    } catch (error) {
+      console.error('Error sending hug:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to Send Hug',
+        text2: 'Please try again later.',
+      });
+    }
+  };
+
+  const handleOpenToTalk = () => {
+    if (!selectedLocationDetail) return;
+
+    Toast.show({
+      type: 'info',
+      text1: 'Open to Talk',
+      text2: `${userName} is now marked as open to talk!`,
+    });
+  };
+
+  const handleSendUserHug = async (user: any) => {
+    try {
+      const targetUserName = user?.username || user?.name || 'Unknown User';
+      console.log('Sending hug to user:', targetUserName);
+      
+      const newHug: Hug = {
+        id: Math.random().toString(),
+        sender: userName, // Using dynamic username
+        message: `${userName} sent a virtual hug to ${targetUserName}`,
+        timestamp: Date.now()
+      };
+
+      setHugs(prev => [...prev, newHug]);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Virtual Hug Sent! 🤗',
+        text2: `${userName} sent a hug to ${targetUserName}`,
+      });
+
+    } catch (error) {
+      console.error('Error sending user hug:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to Send Hug',
+        text2: 'Please try again later.',
+      });
+    }
+  };
+
+  const handleStartChat = (user: any) => {
+    const targetUserName = user?.username || user?.name || 'Unknown User';
+    const userId = user?.id || user?.user_id;
+    
+    Toast.show({
+      type: 'success',
+      text1: 'Chat Started! 💬',
+      text2: `${userName} started conversation with ${targetUserName}`,
+    });
+
+    // Here you would typically navigate to a chat screen
+    // router.push(`/chat/${userId}`);
+  };
+
+  const addComment = (commentText: string) => {
+    if (!commentText.trim() || !selectedLocationDetail) return;
+
+    const newComment: Comment = {
+      id: Math.random().toString(),
+      text: commentText,
+      timestamp: Date.now(),
+      user: userName // Using dynamic username instead of 'You'
+    };
+
+    setLocationComments(prev => [...prev, newComment]);
   };
 
   const highlightedPlaceHandler = async () => {
@@ -40,6 +342,7 @@ export function useMoodMap() {
         name: currentMarkedLocation?.name,
         latitude: currentMarkedLocation?.latitude,
         longitude: currentMarkedLocation?.longitude,
+        user: userName // Include current user in payload
       };
 
       const response = await highlightedPlaces(payload);
@@ -49,60 +352,101 @@ export function useMoodMap() {
         Toast.show({
           type: 'success',
           text1: 'Success',
-          text2: `Your Feedback saved Successfully!`,
+          text2: `${userName}'s feedback saved successfully!`,
         });
         setCurrentMarkedLocation(null);
       }
     } catch (error) {
       console.error('Error submitting highlighted place:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to save feedback. Please try again.',
+      });
     }
+  };
+
+  // Apply mood filter
+  const applyMoodFilter = (selectedMoods: string[]) => {
+    console.log('Applying mood filter:', selectedMoods);
+    setActiveFilters(selectedMoods);
+    setSelectedMood('');
+    setSearchInput('');
+    
+    if (selectedMoods.length === 0) {
+      setFilteredMapData(mapData);
+      setMoodData(mapData);
+      console.log('No filters applied, showing all data:', mapData.length);
+    } else {
+      const filtered = mapData.filter((item: any) => {
+        const itemMood = item.mood?.toLowerCase();
+        return selectedMoods.some(mood => 
+          itemMood === mood.toLowerCase()
+        );
+      });
+      
+      console.log('Filtered data:', filtered.length, 'items from', mapData.length);
+      setFilteredMapData(filtered);
+      setMoodData(filtered);
+    }
+  };
+
+  const clearMoodFilter = () => {
+    console.log('Clearing all mood filters');
+    setActiveFilters([]);
+    setSelectedMood('');
+    setSearchInput('');
+    setFilteredMapData(mapData);
+    setMoodData(mapData);
   };
 
   const debouncedSearch = useMemo(
     () =>
       debounce(async (query: string) => {
-        if (!query.trim() || !mapData || mapData.length === 0) {
-          setMoodData(mapData ?? []);
+        const dataToSearch = activeFilters.length > 0 ? filteredMapData : mapData;
+        
+        if (!query.trim() || !dataToSearch || dataToSearch.length === 0) {
+          setMoodData(dataToSearch ?? []);
           return;
         }
 
         setSelectedMood('');
-        const filtered = (mapData ?? []).filter((item: any) =>
+        const filtered = (dataToSearch ?? []).filter((item: any) =>
           item.name?.toLowerCase().includes(query.toLowerCase())
         );
 
-        console.log('Search Results:', filtered);
+        console.log('Search Results:', filtered.length, 'items found for query:', query);
         setMoodData(filtered);
       }, 500),
-    [mapData]
+    [mapData, filteredMapData, activeFilters]
   );
 
-  const handleMoodSelection = (name) => {
-    setCurrentMarkedLocation(null)
+  const handleMoodSelection = (name: string) => {
+    console.log('Handling mood selection:', name);
+    setCurrentMarkedLocation(null);
 
-    if(!name || name.trim() === '') {
-      
-      setMoodData(mapData);
+    if (!name || name.trim() === '') {
+      const dataToShow = activeFilters.length > 0 ? filteredMapData : mapData;
+      setMoodData(dataToShow);
+      console.log('No mood selected, showing data:', dataToShow.length);
       return;
     }
 
+    setSearchInput('');
+    const dataToFilter = activeFilters.length > 0 ? filteredMapData : mapData;
     
-    setSearchInput('')
-     const filtered = mapData?.filter((item: any) => {
-         
-          const matchesMood =
-           
-            item.mood?.toLowerCase() === name?.toLowerCase();
-          return matchesMood ;
-        });
+    const filtered = dataToFilter?.filter((item: any) => {
+      const matchesMood = item.mood?.toLowerCase() === name?.toLowerCase();
+      return matchesMood;
+    });
 
-        setMoodData(filtered);
-
-
+    console.log('Mood selection filtered data:', filtered.length, 'items for mood:', name);
+    setMoodData(filtered);
   };
 
+  // Initial data fetch
   useEffect(() => {
-    const fetchHugs = async () => {
+    const fetchMapData = async () => {
       try {
         setLoading(true);
 
@@ -111,6 +455,7 @@ export function useMoodMap() {
           return;
         }
 
+        console.log('Fetching map data for region:', mapRegion);
         const response = await getMapSearchResults({
           query: '',
           lat: mapRegion.latitude,
@@ -118,24 +463,50 @@ export function useMoodMap() {
           mood: 'happy',
         });
 
-        setMapData(response || []);
-        setMoodData(response || []);
-        console.log('Fetched Map Data:', response);
+        const fetchedData = response || [];
+        
+        // You should replace this test data with real API calls
+        // const realUsers = await getUsersNearLocation(mapRegion.latitude, mapRegion.longitude);
+        // const realPlaces = await getPlacesNearLocation(mapRegion.latitude, mapRegion.longitude);
+        // const realEvents = await getEventsNearLocation(mapRegion.latitude, mapRegion.longitude);
+        
+        console.log('Map Data fetched:', fetchedData.length);
+        
+        setMapData(fetchedData);
+        setFilteredMapData(fetchedData);
+        setMoodData(fetchedData);
       } catch (error) {
         console.error('Error fetching map data:', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: 'Failed to load map data. Please try again.',
+        });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHugs();
+    fetchMapData();
   }, [mapRegion]);
 
+  // Handle search input changes
   useEffect(() => {
-    if (!mapData || mapData.length === 0) return;
+    const dataToSearch = activeFilters.length > 0 ? filteredMapData : mapData;
+    if (!dataToSearch || dataToSearch.length === 0) return;
+    
     debouncedSearch(searchInput);
     return () => debouncedSearch.cancel();
-  }, [searchInput, mapData]);
+  }, [searchInput, mapData, filteredMapData, activeFilters, debouncedSearch]);
+
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log('Active filters changed:', activeFilters);
+  }, [activeFilters]);
+
+  useEffect(() => {
+    console.log('Mood data updated:', moodData.length, 'items');
+  }, [moodData]);
 
   return {
     hugs,
@@ -151,5 +522,26 @@ export function useMoodMap() {
     setSelectedMood,
     handleMoodSelection,
     highlightedPlaceHandler,
+    applyMoodFilter,
+    clearMoodFilter,
+    activeFilters,
+    // New exports for location detail screen
+    showLocationDetail,
+    setShowLocationDetail,
+    selectedLocationDetail,
+    locationCheckIns,
+    locationComments,
+    handleCheckIn,
+    handleSendHug,
+    handleOpenToTalk,
+    addComment,
+    // New exports for user pin expansion
+    selectedUserPin,
+    setSelectedUserPin,
+    handleSendUserHug,
+    handleStartChat,
+    // Export current user data
+    currentUser,
+    userName,
   };
 }

@@ -145,6 +145,20 @@ export const getReflectivePrompt = async () => {
   return response.data;
 };
 
+//comments api 
+export const getComments = async (placeName: string) => {
+  const response = await axiosInstance.get(`/home/places/comments`, {
+    params: { name: placeName }
+  });
+  return response.data;
+};
+
+//comments api
+export const submitComments = async (payload) => {
+  const response = await axiosInstance.post(`/home/places`, payload);
+  return response.data;
+};
+
 export const submitJournal = async (payload) => {
   const response = await axiosInstance.post(`/home/journal`, payload);
   return response.data;

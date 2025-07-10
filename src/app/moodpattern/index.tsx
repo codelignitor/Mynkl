@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,108 +12,27 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 import { useRouter } from 'expo-router';
 import { useMoodPattern } from '@/src/screenHooks/useMoodPattern';
+import moment from 'moment';
+
+const screenWidth = Dimensions.get('window').width;
 
 export default function MoodPatternScreen() {
   const router = useRouter();
+  const { isLoading, moodPattern } = useMoodPattern();
+  const [selectedRange, setSelectedRange] = useState<'Last7Days' | 'Last30Days'>('Last30Days');
 
-  const {isLoading , moodPattern } = useMoodPattern();
+  const moodData = moodPattern?.[selectedRange] ?? [];
 
-//   const moodPattern =
-// {
-//     "Last7Days": [
-//         {
-//             "X": "2025-06-10",
-//             "Y": 1
-//         },
-//         {
-//             "X": "2025-06-13",
-//             "Y": 1
-//         }
-//     ],
-//     "Last30Days": [
-//         {
-//             "X": "2025-05-26",
-//             "Y": 1
-//         },
-//         {
-//             "X": "2025-06-02",
-//             "Y": 1
-//         },
-//         {
-//             "X": "2025-06-03",
-//             "Y": 3
-//         },
-//         {
-//             "X": "2025-06-04",
-//             "Y": 3
-//         },
-//         {
-//             "X": "2025-06-05",
-//             "Y": 1
-//         },
-//         {
-//             "X": "2025-06-06",
-//             "Y": 1
-//         },
-//         {
-//             "X": "2025-06-10",
-//             "Y": 1
-//         },
-//         {
-//             "X": "2025-06-13",
-//             "Y": 1
-//         }
-//     ],
-//     "MoodTrendsHighlight": {
-//         "Emoji": "happy",
-//         "Description": "The user tends to be predominantly happy but experiences intermittent bouts of sadness."
-//     },
-//     "AIInterpretation": "The user shows a generally positive trend in their emotional state, with many instances of having fun and feeling happy. However, there's a brief instance of not feeling well which could indicate a momentary downturn in their mood.",
-//     "TimeBasedFiltering": [
-//         {
-//             "time": "Morning",
-//             "moods": [
-//                 "string",
-//                 "happy",
-//                 "happy",
-//                 "happy",
-//                 "happy",
-//                 "happy",
-//                 "happy",
-//                 "Sad"
-//             ]
-//         },
-//         {
-//             "time": "Night",
-//             "moods": [
-//                 "happy",
-//                 "sad"
-//             ]
-//         },
-//         {
-//             "time": "Afternoon",
-//             "moods": [
-//                 "happy",
-//                 "sad"
-//             ]
-//         }
-//     ],
-//     "MoodCorrelationTags": [
-//         "sad",
-//         "low mood",
-//         "emotions",
-//         "feelings"
-//     ]
-// }
+  const chartLabels = moodData.map((item) =>
+    item?.X ? moment(item.X).format('DD') : ''
+  );
+  const chartValues = moodData.map((item) => item?.Y ?? 0);
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header with back button */}
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#111" />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
@@ -123,10 +42,47 @@ export default function MoodPatternScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Line Chart */}
         <View style={styles.chartContainer}>
-          <Text style={styles.chartLabel}>Past 30 Days</Text>
-          
+          <Text style={styles.chartLabel}>
+            Past {selectedRange === 'Last7Days' ? '7' : '30'} Days
+          </Text>
+
+          {/* Toggle */}
+          <View style={styles.toggleContainer}>
+            <TouchableOpacity
+              style={[
+                styles.toggleButton,
+                selectedRange === 'Last7Days' && styles.activeToggle,
+              ]}
+              onPress={() => setSelectedRange('Last7Days')}
+            >
+              <Text
+                style={[
+                  styles.toggleText,
+                  selectedRange === 'Last7Days' && styles.activeToggleText,
+                ]}
+              >
+                7 Days
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.toggleButton,
+                selectedRange === 'Last30Days' && styles.activeToggle,
+              ]}
+              onPress={() => setSelectedRange('Last30Days')}
+            >
+              <Text
+                style={[
+                  styles.toggleText,
+                  selectedRange === 'Last30Days' && styles.activeToggleText,
+                ]}
+              >
+                30 Days
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Legend */}
           <View style={styles.legendContainer}>
             <View style={styles.legendItem}>
@@ -139,63 +95,59 @@ export default function MoodPatternScreen() {
             </View>
           </View>
 
-          <LineChart
-            data={{
-              labels: moodPattern?.Last30Days?.map(item => 
-          item?.X ? require('moment')(item?.X)?.format('DD') : ''
-              ) || ["01" , '02'],
-              datasets: [
-          {
-            data: moodPattern?.Last30Days?.map(item => item?.Y) || [0, 0],
-          },
-              ],
-            }}
-            width={Dimensions.get('window').width - 60}
-            height={180}
-            chartConfig={{
-              backgroundColor: '#fefce8',
-              backgroundGradientFrom: '#fefce8',
-              backgroundGradientTo: '#fefce8',
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              labelColor: () => '#444',
-              propsForDots: {
-          r: '4',
-          strokeWidth: '2',
-          stroke: '#000',
-              },
-            }}
-            bezier
-            style={{
-              borderRadius: 12,
-            }}
-          />
+          {/* Line Chart or Fallback */}
+          {moodData.length > 0 ? (
+            <LineChart
+              data={{
+                labels: chartLabels,
+                datasets: [{ data: chartValues }],
+              }}
+              width={screenWidth - 60}
+              height={180}
+              chartConfig={{
+                backgroundColor: '#fefce8',
+                backgroundGradientFrom: '#fefce8',
+                backgroundGradientTo: '#fefce8',
+                decimalPlaces: 0,
+                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                labelColor: () => '#444',
+                propsForDots: {
+                  r: '4',
+                  strokeWidth: '2',
+                  stroke: '#000',
+                },
+              }}
+              bezier
+              style={{ borderRadius: 12 }}
+            />
+          ) : (
+            <Text style={styles.noDataText}>No mood data available for this range.</Text>
+          )}
         </View>
 
         {/* Mood Insight Box */}
         <View style={styles.insightBox}>
           <Text style={styles.insightEmoji}>😊</Text>
-          <Text style={styles.insightText}>{moodPattern?.MoodTrendsHighlight?.Description ?? "No Data"}</Text>
+          <Text style={styles.insightText}>
+            {moodPattern?.MoodTrendsHighlight?.Description ?? 'No Data'}
+          </Text>
         </View>
 
-        {/* AI Interpretation Box */}
+        {/* AI Box */}
         <View style={styles.aiBox}>
           <Text style={styles.aiTitle}>AI INTERPRETATION BOX</Text>
           <Text style={styles.aiText}>{moodPattern?.AIInterpretation}</Text>
         </View>
 
         {/* Tip Button */}
-        <TouchableOpacity 
-          style={styles.tipButton}
-          onPress={() => router.push('/mood-screen')}
-        >
+        <TouchableOpacity style={styles.tipButton}>
           <MaterialIcons name="lightbulb" size={20} color="#000" />
-          <Text style={styles.tipText}>Creativity improves you mood.</Text>
+          <Text style={styles.tipText}>Creativity improves your mood.</Text>
         </TouchableOpacity>
 
-        {/* Tag Buttons */}
-        <ScrollView 
-          horizontal={true}
+        {/* Time Tags */}
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.tagsScrollContainer}
         >
@@ -206,10 +158,10 @@ export default function MoodPatternScreen() {
           ))}
         </ScrollView>
 
-        {/* Mood Correlation Tags */}
+        {/* Correlation Tags */}
         <Text style={styles.correlationTitle}>Mood Correlation Tags</Text>
-        <ScrollView 
-          horizontal={true}
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.correlationScrollContainer}
         >
@@ -219,16 +171,19 @@ export default function MoodPatternScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
+        <TouchableOpacity
+          style={styles.reflectButton}
+          onPress={() => router.push('/mood-screen')}
+        >
+          <Text style={styles.reflectButtonText}>Reflect Today</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fefce8',
-  },
+  safeArea: { flex: 1, backgroundColor: '#fefce8' },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -236,35 +191,12 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 10,
   },
-  backButton: {
-    marginTop: 40,
-    marginRight: 10,
-    padding: 5,
-  },
-  headerTextContainer: {
-    flex: 1,
-    marginTop: 40,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#444',
-  },
-  container: {
-    padding: 20,
-    paddingTop: 0,
-    backgroundColor: '#fefce8',
-  },
-  chartContainer: {
-    marginBottom: 20,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
+  backButton: { marginTop: 40, marginRight: 10, padding: 5 },
+  headerTextContainer: { flex: 1, marginTop: 40 },
+  title: { fontSize: 24, fontWeight: 'bold', color: '#111', marginBottom: 4 },
+  subtitle: { fontSize: 14, color: '#444' },
+  container: { padding: 20, paddingTop: 0, backgroundColor: '#fefce8' },
+  chartContainer: { marginBottom: 20, borderRadius: 12, overflow: 'hidden' },
   chartLabel: {
     fontSize: 16,
     color: '#444',
@@ -272,16 +204,40 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
+  toggleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 16,
+    gap: 12,
+  },
+  toggleButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#999',
+    backgroundColor: '#fff',
+  },
+  activeToggle: {
+    backgroundColor: '#facc15',
+    borderColor: '#f59e0b',
+  },
+  toggleText: {
+    fontSize: 14,
+    color: '#444',
+    fontWeight: '500',
+  },
+  activeToggleText: {
+    color: '#000',
+    fontWeight: '700',
+  },
   legendContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
     marginBottom: 15,
     gap: 20,
   },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+  legendItem: { flexDirection: 'row', alignItems: 'center' },
   legendDot: {
     width: 12,
     height: 12,
@@ -293,6 +249,12 @@ const styles = StyleSheet.create({
     color: '#444',
     fontWeight: '500',
   },
+  noDataText: {
+    textAlign: 'center',
+    color: '#999',
+    marginTop: 20,
+    fontStyle: 'italic',
+  },
   insightBox: {
     backgroundColor: '#fff9db',
     padding: 16,
@@ -301,10 +263,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  insightEmoji: {
-    fontSize: 24,
-    marginRight: 12,
-  },
+  insightEmoji: { fontSize: 24, marginRight: 12 },
   insightText: {
     fontSize: 14,
     color: '#333',
@@ -323,10 +282,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     fontWeight: 'bold',
   },
-  aiText: {
-    fontSize: 14,
-    color: '#222',
-  },
+  aiText: { fontSize: 14, color: '#222' },
   tipButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -341,10 +297,7 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '500',
   },
-  tagsScrollContainer: {
-    paddingVertical: 10,
-    gap: 10,
-  },
+  tagsScrollContainer: { paddingVertical: 10, gap: 10 },
   tagButton: {
     backgroundColor: '#fff7ed',
     borderRadius: 20,
@@ -354,21 +307,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minWidth: 80,
   },
-  tagText: {
-    fontSize: 12,
-    color: '#000',
-    fontWeight: '500',
-  },
+  tagText: { fontSize: 12, color: '#000', fontWeight: '500' },
   correlationTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#111',
     marginBottom: 15,
   },
-  correlationScrollContainer: {
-    paddingVertical: 10,
-    gap: 10,
-  },
+  correlationScrollContainer: { paddingVertical: 10, gap: 10 },
   correlationTag: {
     backgroundColor: '#fff7ed',
     borderRadius: 20,
@@ -376,9 +322,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginRight: 10,
   },
-  correlationTagText: {
-    fontSize: 14,
-    color: '#000',
-    fontWeight: '500',
-  },
+  correlationTagText: { fontSize: 14, color: '#000', fontWeight: '500' },
+  reflectButton: {
+  backgroundColor: '#f59e0b',
+  paddingVertical: 14,
+  borderRadius: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: 20,
+  marginBottom: 30,
+},
+reflectButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: 'bold',
+},
+
 });
