@@ -152,12 +152,12 @@ export const getAiActivitySuggestions = async (token: string) => {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      timeout: 5000, // 5 seconds max
+      // timeout: 5000, // 5 seconds max
       responseType: 'json',
     });
 
     console.log('✅ Response:', response);
-    return response;
+    return response.data;
   } catch (err: any) {
     console.log('❌ Failed AI Suggestion:', err.message);
     if (err.code === 'ECONNABORTED') {

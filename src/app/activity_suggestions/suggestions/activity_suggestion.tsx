@@ -18,15 +18,17 @@ export default function SuggestionScreen() {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   const handleSwap = () => {
+    if (!suggestedActivities?.suggestions?.length) return;
     setCurrentCardIndex((prevIndex) =>
-      (prevIndex + 1) % suggestedActivities?.suggestions?.length
+      (prevIndex + 1) % suggestedActivities.suggestions.length
     );
   };
 
   const handlePrevious = () => {
+    if (!suggestedActivities?.suggestions?.length) return;
     setCurrentCardIndex((prevIndex) =>
       prevIndex === 0
-        ? suggestedActivities?.suggestions?.length - 1
+        ? suggestedActivities.suggestions.length - 1
         : prevIndex - 1
     );
   };
@@ -44,7 +46,17 @@ export default function SuggestionScreen() {
     },
   });
 
-  const currentCard = suggestedActivities?.suggestions[currentCardIndex];
+  console.log("Suggested Activities:", suggestedActivities);
+
+  if (isLoading || !suggestedActivities?.suggestions?.length) {
+    return (
+      <View style={[styles.container, { justifyContent: "center" }]}>
+        <Text style={styles.subHeader}>Loading suggestions...</Text>
+      </View>
+    );
+  }
+
+  const currentCard = suggestedActivities.suggestions[currentCardIndex];
 
   return (
     <LinearGradient
@@ -56,13 +68,12 @@ export default function SuggestionScreen() {
       </Text>
 
       <Text style={styles.subHeader}>
-        {suggestedActivities && `${suggestedActivities?.emotion_message}?`}
+        {suggestedActivities?.emotion_message
+          ? `${suggestedActivities.emotion_message}?`
+          : ""}
       </Text>
 
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={styles.card}
-      >
+      <Animated.View {...panResponder.panHandlers} style={styles.card}>
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>{currentCard?.emoji}</Text>
         </View>
@@ -75,7 +86,7 @@ export default function SuggestionScreen() {
           style={styles.joinButton}
           onPress={() => {
             if (currentCard?.activity?.type === "playlist") {
-              Linking.openURL(currentCard?.activity?.url);
+              Linking.openURL(currentCard.activity.url);
             } else {
               router.push(`/activities/${currentCard?.activity?.id}`);
             }
@@ -88,9 +99,7 @@ export default function SuggestionScreen() {
 
         <Text style={styles.bestFor}>
           Best for:{" "}
-          <Text style={styles.bestHighlight}>
-            {currentCard?.moods?.[0]}
-          </Text>
+          <Text style={styles.bestHighlight}>{currentCard?.moods?.[0]}</Text>
         </Text>
       </Animated.View>
 
