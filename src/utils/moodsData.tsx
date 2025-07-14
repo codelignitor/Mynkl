@@ -1,5 +1,3 @@
-
-
 export const moodsData = [
   {
     id: 1,
@@ -166,6 +164,132 @@ export const moodsData = [
         latitude: 37.77675,
         longitude: -122.4394,
         description: 'Meet people through community volunteering',
+      },
+    ],
+  },
+  {
+    id: 5,
+    name: 'Grateful',
+    emoji: '🙏',
+    locations: [
+      {
+        id: 501,
+        name: 'Gratitude Garden',
+        latitude: 37.78125,
+        longitude: -122.4164,
+        description: 'Peaceful space for reflection and appreciation',
+      },
+      {
+        id: 502,
+        name: 'Thankfulness Temple',
+        latitude: 37.79325,
+        longitude: -122.4384,
+        description: 'Spiritual center for mindful gratitude practice',
+      },
+      {
+        id: 503,
+        name: 'Appreciation Café',
+        latitude: 37.77725,
+        longitude: -122.4244,
+        description: 'Community café celebrating daily blessings',
+      },
+      {
+        id: 504,
+        name: 'Blessing Bridge',
+        latitude: 37.78775,
+        longitude: -122.4314,
+        description: 'Scenic bridge for contemplating life\'s gifts',
+      },
+      {
+        id: 505,
+        name: 'Mindful Meadow',
+        latitude: 37.79525,
+        longitude: -122.4154,
+        description: 'Natural setting for gratitude meditation',
+      },
+    ],
+  },
+  {
+    id: 6,
+    name: 'Sad',
+    emoji: '😢',
+    locations: [
+      {
+        id: 601,
+        name: 'Comfort Corner',
+        latitude: 37.78325,
+        longitude: -122.4464,
+        description: 'Safe space for emotional support and healing',
+      },
+      {
+        id: 602,
+        name: 'Healing Haven',
+        latitude: 37.77825,
+        longitude: -122.4364,
+        description: 'Therapeutic environment for processing emotions',
+      },
+      {
+        id: 603,
+        name: 'Support Circle',
+        latitude: 37.79225,
+        longitude: -122.4264,
+        description: 'Group therapy sessions and peer support',
+      },
+      {
+        id: 604,
+        name: 'Gentle Grove',
+        latitude: 37.78525,
+        longitude: -122.4134,
+        description: 'Quiet nature spot for solace and reflection',
+      },
+      {
+        id: 605,
+        name: 'Renewal Center',
+        latitude: 37.77525,
+        longitude: -122.4484,
+        description: 'Professional counseling and emotional wellness',
+      },
+    ],
+  },
+  {
+    id: 7,
+    name: 'Frustrated',
+    emoji: '😤',
+    locations: [
+      {
+        id: 701,
+        name: 'Release Room',
+        latitude: 37.79125,
+        longitude: -122.4344,
+        description: 'Safe space to vent and release pent-up energy',
+      },
+      {
+        id: 702,
+        name: 'Anger Management Center',
+        latitude: 37.78225,
+        longitude: -122.4254,
+        description: 'Professional help for managing frustration',
+      },
+      {
+        id: 703,
+        name: 'Boxing Gym',
+        latitude: 37.77925,
+        longitude: -122.4434,
+        description: 'Physical outlet for releasing frustration',
+      },
+      {
+        id: 704,
+        name: 'Scream Sanctuary',
+        latitude: 37.78725,
+        longitude: -122.4174,
+        description: 'Soundproof space for emotional release',
+      },
+      {
+        id: 705,
+        name: 'Problem-Solving Plaza',
+        latitude: 37.79425,
+        longitude: -122.4404,
+        description: 'Collaborative space for working through challenges',
       },
     ],
   },

@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react'; 
 import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import SearchIcon from '../../../assets/svgs/SerachIcon'
+import SearchIcon from '../../../assets/svgs/SerachIcon';
 import * as SplashScreen from 'expo-splash-screen';
-// You'll need to import icons
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Components
@@ -18,25 +17,29 @@ import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/src/store';
 
-
 const MoodMapScreen = () => {
   const router = useRouter();
-  const {openToTalk ,isLoading ,  updateOpenToTalkHandler , moveToScreen ,selectedMood, setSelectedMood , handleSubmitAddCheckin } = useHome();
-  // State
-  
+  const {
+    openToTalk,
+    isLoading,
+    updateOpenToTalkHandler,
+    moveToScreen,
+    selectedMood,
+    setSelectedMood,
+    handleSubmitAddCheckin
+  } = useHome();
+
   const [checkedIn, setCheckedIn] = useState(false);
   const [squareWidth, setSquareWidth] = useState(0);
   const squareRef = useRef(null);
-      const username  = useSelector((state: RootState) => state.auth.username);
+  const username = useSelector((state: RootState) => state.auth.username);
 
-  // State to track selected sections
   const [selectedSections, setSelectedSections] = useState({
     moodMap: false,
     hugs: false,
     activities: false
   });
 
-  // Effect to measure the square's width after layout
   useEffect(() => {
     const measureSquare = () => {
       if (squareRef.current) {
@@ -52,29 +55,19 @@ const MoodMapScreen = () => {
       }
     };
 
-    // Delay the measurement to ensure the component is rendered
     const timer = setTimeout(measureSquare, 300);
-    
-    return () => clearTimeout(timer); // Cleanup on unmount
+    return () => clearTimeout(timer);
   }, []);
 
-  // Handlers
   const handleMoodSelection = (mood) => {
-    // setSelectedMood(id);
-    //  router.push('/addCheckIn')
-    handleSubmitAddCheckin(mood)
-
+    handleSubmitAddCheckin(mood);
   };
 
   const handleCheckIn = () => {
     setCheckedIn(true);
-     router.push('/addCheckIn')
-    // router.push('/checkIns')
+    router.push('/addCheckIn');
   };
 
-
-
-  // Handler for section selection
   const handleSectionSelect = (section) => {
     setSelectedSections(prev => ({
       ...prev,
@@ -82,23 +75,15 @@ const MoodMapScreen = () => {
     }));
   };
 
-  // Notifications handler
   const handleNotificationsPress = () => {
-    // Add your notifications logic here
     console.log('Notifications pressed');
-    // You can navigate to notifications screen or show a modal here
   };
 
-
-
-  // Computed values
   const currentEmoji = selectedMood
     ? moodsData.find((mood) => mood.id === selectedMood)?.emoji
     : null;
 
-  // Handle layout change for the square
   const handleSquareLayout = () => {
-    // Wait a bit to ensure the component is fully rendered
     setTimeout(() => {
       if (squareRef.current) {
         try {
@@ -116,14 +101,12 @@ const MoodMapScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-       {isLoading &&<ActivityIndicator/>}
+      {isLoading && <ActivityIndicator />}
       <ScrollView contentContainerStyle={[styles.contentContainer, { flexGrow: 1 }]}>
-        {/* Header with notification bell */}
         <View style={styles.headerContainer}>
           <View style={styles.headerTextContainer}>
             <Text style={styles.header}>Hello, {username}</Text>
           </View>
-         
           <TouchableOpacity 
             style={styles.bellIconContainer} 
             onPress={handleNotificationsPress}
@@ -151,7 +134,6 @@ const MoodMapScreen = () => {
          */}
         {/* Row for sections with related dimensions */}
         <View style={styles.rowContainer}>
-          {/* Check-in Section - Height will match square width */}
           <TouchableOpacity 
             style={[
               styles.rectangularCard, 
@@ -167,8 +149,7 @@ const MoodMapScreen = () => {
               <View style={styles.darkDot} />
             </View>
           </TouchableOpacity>
-          
-          {/* Open to Talk Section - Square */}
+
           <TouchableOpacity 
             style={styles.squareCard}
             ref={squareRef}
@@ -177,34 +158,31 @@ const MoodMapScreen = () => {
           >
             <Text style={styles.statusCardTitle}>Open to Talk</Text>
             <View style={styles.singleDotContainer}>
-              <View style={[openToTalk ?styles.greenDot : styles.lightDot]} />
+              <View style={[openToTalk ? styles.greenDot : styles.lightDot]} />
             </View>
           </TouchableOpacity>
         </View>
-        
-        {/* Second Row - App Icon Style Sections with color change on click */}
+
         <View style={styles.rowContainer}>
-          {/* MoodMap Icon Style Section */}
           <TouchableOpacity 
             style={[
               styles.appIconCard, 
               selectedSections.moodMap && { backgroundColor: '#b7c2cc' }
             ]}
-            onPress={()=> moveToScreen('/moodMap')}
+            onPress={() => moveToScreen('/moodMap')}
           >
             <View style={styles.iconContainer}>
               <Icon name="map-marker" size={24} color="#4287f5" />
             </View>
             <Text style={styles.appIconText}>MoodMap</Text>
           </TouchableOpacity>
-          
-          {/* Hugs Icon Style Section */}
+
           <TouchableOpacity 
             style={[
               styles.appIconCard, 
               selectedSections.hugs && { backgroundColor: '#b7c2cc' }
             ]}
-            onPress={()=> moveToScreen('/hugs')}
+            onPress={() => moveToScreen('/donation_hugs')}
           >
             <View style={styles.iconContainer}>
               <Icon name="heart" size={24} color="#ff4f8b" />
@@ -212,15 +190,14 @@ const MoodMapScreen = () => {
             <Text style={styles.appIconText}>Hugs</Text>
           </TouchableOpacity>
         </View>
-        
-        {/* Activities Section - Menu style with larger size */}
+
         <View style={styles.menuSectionContainer}>
           <TouchableOpacity 
             style={[
               styles.largeMenuCard,
               selectedSections.activities && { backgroundColor: '#b7c2cc' }
             ]}
-           onPress={()=> moveToScreen('/activity_suggestions/suggestions/activity_suggestion')}
+            onPress={() => moveToScreen('/activity_suggestions/suggestions/activity_suggestion')}
           >
             <View style={styles.largeMenuCardContent}>
               <View style={styles.largeMenuIconContainer}>
@@ -234,14 +211,15 @@ const MoodMapScreen = () => {
           </TouchableOpacity>
         </View>
 
-         <View style={[styles.menuSectionContainer , { marginTop: 4 , marginBottom:38 }]}>
+        <View style={[styles.menuSectionContainer, { marginTop: 4, marginBottom: 38 }]}>
           <TouchableOpacity 
-            style={[
-              styles.largeMenuCard,
-               { backgroundColor: '#b7c2cc' 
-                }
-            ]}
-           onPress={()=> { router.push({pathname:'/Check_Ins/mood_check-in',  params: {  data: JSON.stringify(selectedMood) }});}}
+            style={[styles.largeMenuCard, { backgroundColor: '#b7c2cc' }]}
+            onPress={() => { 
+              router.push({
+                pathname: '/Check_Ins/mood_check-in',
+                params: { data: JSON.stringify(selectedMood) }
+              });
+            }}
           >
             <View style={styles.largeMenuCardContent}>
               <View style={styles.largeMenuIconContainer}>

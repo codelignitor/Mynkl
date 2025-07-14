@@ -325,8 +325,11 @@ export const styles = StyleSheet.create({
     // Location Detail Content
     locationDetailContent: {
         flex: 1,
+    },
+    locationDetailScrollContent: {
         paddingHorizontal: 16,
         paddingTop: 16,
+        paddingBottom: 20,
     },
     
     // Location Card
@@ -444,6 +447,141 @@ export const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
     },
+
+    // ========== MOOD IMAGES STYLES ==========
+    
+    // Container for mood images
+    moodImageContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#F5F5F5',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    
+    // Base mood image style
+    moodImage: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+    },
+    
+    // Selected mood image style
+    moodImageSelected: {
+        width: 35,
+        height: 35,
+        borderRadius: 17.5,
+        borderWidth: 2,
+        borderColor: '#40E0D0',
+    },
+    
+    // Header mood image (for the "Available Moods" section)
+    moodsHeaderImage: {
+        width: 24,
+        height: 24,
+        marginRight: 8,
+    },
+    
+    // Fallback emoji styles (if images don't load)
+    moodDisplayEmoji: {
+        fontSize: 24,
+        textAlign: 'center',
+        marginBottom: 4,
+    },
+    
+    moodDisplayEmojiSelected: {
+        fontSize: 26, // Slightly larger when selected
+    },
+
+    // ========== MOODS SECTION STYLES ==========
+    
+    // Moods Card
+    moodsCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    moodsHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    moodsEmoji: {
+        fontSize: 20,
+        marginRight: 8,
+    },
+    moodsTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#000',
+    },
+    moodsDesc: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 16,
+        lineHeight: 20,
+    },
+    moodsList: {
+        maxHeight: 150, // Increased height to allow more content
+        minHeight: 100, // Minimum height to ensure proper display
+    },
+    moodsListContent: {
+        paddingHorizontal: 8,
+        paddingBottom: 16,
+    },
+    moodDisplayItem: {
+        flex: 1,
+        alignItems: 'center',
+        padding: 12,
+        margin: 4,
+        borderRadius: 12,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        minHeight: 80,
+        maxWidth: '30%', // Ensure proper 3-column layout
+    },
+    moodDisplayItemSelected: {
+        backgroundColor: '#F0FFFE',
+        borderColor: '#40E0D0',
+        borderWidth: 2,
+        shadowColor: '#40E0D0',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    moodDisplayName: {
+        fontSize: 12,
+        fontWeight: '500',
+        textAlign: 'center',
+        color: '#333',
+        marginTop: 4,
+        flexWrap: 'wrap',
+    },
+    moodDisplayNameSelected: {
+        color: '#40E0D0',
+        fontWeight: '600',
+    },
+    moodSelectedIndicator: {
+        position: 'absolute',
+        top: 4,
+        right: 4,
+    },
     
     // Comments Card
     commentsCard: {
@@ -525,4 +663,91 @@ export const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '600',
     },
+
+    // ========== USER PIN OVERLAY STYLES ==========
+    
+    // User Pin Overlay Container
+    userPinOverlay: {
+        position: 'absolute',
+        top: '30%',
+        left: '50%',
+        transform: [{ translateX: -125 }], // Half of card width
+        zIndex: 1000,
+    },
+    
+    // User Expanded Card
+    userExpandedCard: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 16,
+        width: 250,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 8,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 15,
+        alignItems: 'center',
+    },
+    
+    // User Expanded Emoji
+    userExpandedEmoji: {
+        fontSize: 48,
+        marginBottom: 8,
+    },
+    
+    // User Expanded Info
+    userExpandedInfo: {
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    userExpandedName: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 4,
+    },
+    userExpandedMood: {
+        fontSize: 16,
+        color: '#666',
+        textTransform: 'capitalize',
+    },
+    
+    // User Action Buttons
+    userHugButton: {
+        backgroundColor: '#FF6B6B',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        marginBottom: 8,
+        width: '100%',
+        gap: 6,
+    },
+    userHugButtonText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    userChatButton: {
+        backgroundColor: '#4ECDC4',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        width: '100%',
+        gap: 6,
+    },
+    userChatButtonText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    
 });
