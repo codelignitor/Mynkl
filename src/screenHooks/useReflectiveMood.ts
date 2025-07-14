@@ -1,6 +1,7 @@
 import { checkIn, getAiActivitySuggestions, getAiMoodPattern, getHomeDetails, getOpenToTalkStatus, getReflectivePrompt, submitJournal, updateOpenToTalk } from '@/src/services/apis';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
+import Toast from 'react-native-toast-message';
 import { useDispatch, useSelector } from 'react-redux';
 
 
@@ -24,8 +25,8 @@ export function useReflectiveMood() {
     const getMoodPattern = async () => {
         try { 
             setIsLoading(true);
-            //   const response = await  getReflectivePrompt ();
-            setReflectivePrompt(data?.reflective_prompt);
+            const response = await  getReflectivePrompt ();
+            setReflectivePrompt(response?.reflective_prompt);
 
 
            
@@ -43,15 +44,33 @@ export function useReflectiveMood() {
     router.push(screen);
   };
 
+  console.log('selected Moods' , selectedMoods)
+
 
   const submitReflectionHandler = async () => {
     try {
          const payload = {
-    "message": reflection,
-    "id": user_id
+    reflections: reflection,
+    mood: selectedMoods?.[0]
+
+
 };
-        // const response = await submitJournal(payload);
-        router.push('/wellnesssuggestions')
+console.log('payload', payload)
+
+ 
+       const response = await submitJournal(payload);
+       if(response?.message =="Reflection saved"){
+        Toast.show({
+            type: 'success',
+            text1: 'Reflection saved successfully',
+            position: 'top',
+            visibilityTime: 2000,
+        });
+       
+
+        
+    }
+    router.push('/wellnesssuggestions')
     } catch (error) {
         
     }

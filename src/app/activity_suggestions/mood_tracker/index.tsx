@@ -7,6 +7,7 @@ import {
   ScrollView,
   Dimensions,
   SafeAreaView,
+  ActivityIndicator,
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { useRouter } from 'expo-router';
@@ -17,7 +18,7 @@ const { width } = Dimensions.get('window');
 
 const MoodTrackerScreen = () => {
   const router = useRouter();
-  const {moodPattern} =  useActivityMoodPattern();
+  const {moodPattern , isLoading} =  useActivityMoodPattern();
 
   
         
@@ -73,6 +74,14 @@ const MoodTrackerScreen = () => {
   const handleStartActivity = () => {
     console.log('Start Activity pressed');
   };
+
+  if (isLoading) {
+      return (
+        <SafeAreaView style={styles.container}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </SafeAreaView>
+      );
+    }
 
   return (
     <SafeAreaView style={styles.container}>

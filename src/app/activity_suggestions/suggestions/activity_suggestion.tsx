@@ -1,103 +1,107 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from "react-native";
-import { LinearGradient } from 'expo-linear-gradient';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+  PanResponder,
+  Animated,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useActivitySuggestions } from "@/src/screenHooks/useActivitySuggestions";
 
 export default function SuggestionScreen() {
   const router = useRouter();
-
-  const {isLoading , suggestedActivities} = useActivitySuggestions();
-
-
-  
-  // Array of different activity cards
-  const activityCards = [
-    {
-      emoji: "🎨",
-      title: "Join a\ncreative hangout\ntonight!",
-      bestFor: "Lonely + Creative",
-      icon: "💡"
-    },
-    {
-      emoji: "🏃‍♂️",
-      title: "Morning jog\nwith local\nrunning group!",
-      bestFor: "Energetic + Social",
-      icon: "⚡"
-    },
-    {
-      emoji: "📚",
-      title: "Book club\nmeeting at\ncafe nearby!",
-      bestFor: "Introverted + Learning",
-      icon: "🧠"
-    },
-    {
-      emoji: "🎵",
-      title: "Open mic\nnight at\nlocal venue!",
-      bestFor: "Musical + Outgoing",
-      icon: "🎤"
-    }
-  ];
-
+  const { isLoading, suggestedActivities } = useActivitySuggestions();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   const handleSwap = () => {
-    setCurrentCardIndex((prevIndex) => 
+    setCurrentCardIndex((prevIndex) =>
       (prevIndex + 1) % suggestedActivities?.suggestions?.length
     );
   };
 
-  const currentCard =suggestedActivities?.suggestions[currentCardIndex];
+  const handlePrevious = () => {
+    setCurrentCardIndex((prevIndex) =>
+      prevIndex === 0
+        ? suggestedActivities?.suggestions?.length - 1
+        : prevIndex - 1
+    );
+  };
+
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState) => {
+      return Math.abs(gestureState.dx) > 20;
+    },
+    onPanResponderRelease: (_, gesture) => {
+      if (gesture.dx > 50) {
+        handlePrevious(); // swipe right
+      } else if (gesture.dx < -50) {
+        handleSwap(); // swipe left
+      }
+    },
+  });
+
+  const currentCard = suggestedActivities?.suggestions[currentCardIndex];
 
   return (
     <LinearGradient
       colors={["#ffecd2", "#fcb69f"]}
       style={styles.container}
     >
-      <Text style={styles.header}>AI-Powered{"\n"}Activity{"\n"}Suggestions</Text>
-      
-      <Text style={styles.subHeader}>{suggestedActivities &&`${suggestedActivities?.emotion_message}?`}</Text>
+      <Text style={styles.header}>
+        AI-Powered{"\n"}Activity{"\n"}Suggestions
+      </Text>
 
-      <View style={styles.card}>
+      <Text style={styles.subHeader}>
+        {suggestedActivities && `${suggestedActivities?.emotion_message}?`}
+      </Text>
+
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={styles.card}
+      >
         <View style={styles.iconContainer}>
           <Text style={styles.icon}>{currentCard?.emoji}</Text>
         </View>
-        
+
         <Text style={styles.mainEmoji}>{currentCard?.emoji}</Text>
-        
-        <Text style={styles.cardText}>
-          {currentCard?.activity?.name}
-        </Text>
+
+        <Text style={styles.cardText}>{currentCard?.activity?.name}</Text>
 
         <TouchableOpacity
           style={styles.joinButton}
           onPress={() => {
-          if (currentCard?.activity?.type === 'playlist' ) {
-            // Open the playlist URL
-            // You can use Linking from 'react-native' to open URLs
-            Linking.openURL(currentCard?.activity?.url);
-          } else {
-            // Navigate to activity card
-            router.push("/activity_suggestions/activity_card");
-          }
+            if (currentCard?.activity?.type === "playlist") {
+              Linking.openURL(currentCard?.activity?.url);
+            } else {
+              router.push(`/activities/${currentCard?.activity?.id}`);
+            }
           }}
         >
           <Text style={styles.joinButtonText}>
-            {currentCard?.activity?.type === 'playlist' ? "Play" : "Join"}
+            {currentCard?.activity?.type === "playlist" ? "Play" : "Join"}
           </Text>
         </TouchableOpacity>
 
         <Text style={styles.bestFor}>
-          Best for: <Text style={styles.bestHighlight}>{currentCard?.moods[0]}</Text>
+          Best for:{" "}
+          <Text style={styles.bestHighlight}>
+            {currentCard?.moods?.[0]}
+          </Text>
         </Text>
-      </View>
+      </Animated.View>
 
       <TouchableOpacity style={styles.swapButton} onPress={handleSwap}>
         <Text style={styles.swapText}>Swap</Text>
       </TouchableOpacity>
-       <TouchableOpacity
-         onPress={() => router.push("/activity_suggestions/activity_card")}
-          style={styles.swapButton} >
+
+      <TouchableOpacity
+        onPress={() => router.push("/activity_suggestions/activity_card")}
+        style={styles.swapButton}
+      >
         <Text style={styles.swapText}>Explore Activities</Text>
       </TouchableOpacity>
     </LinearGradient>

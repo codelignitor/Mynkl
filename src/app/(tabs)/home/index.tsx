@@ -115,23 +115,24 @@ const MoodMapScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {!selectedMood ? (
-          <>
-            <Text style={styles.headerSection}>How are you feeling?</Text>
+       {/* { !selectedMood ?
+      <>
+      */}
 
-            {/* Mood Selection with Horizontal Scroll */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <MoodSelector 
-                moods={moodsData} 
-                selectedMood={selectedMood} 
-                handleMoodSelection={handleMoodSelection} 
-              />
-            </ScrollView>
-          </>
-        ) : (
+        <Text style={styles.headerSection}>How are you feeling?</Text>
+
+        {/* Mood Selection */}
+        <MoodSelector 
+          moods={moodsData} 
+          selectedMood={selectedMood} 
+          handleMoodSelection={handleMoodSelection} 
+        />
+
+         {/* </> :
           <Text style={styles.headerSection}>I am feeling {selectedMood}</Text>
-        )}
-
+}
+         */}
+        {/* Row for sections with related dimensions */}
         <View style={styles.rowContainer}>
           <TouchableOpacity 
             style={[
@@ -222,7 +223,7 @@ const MoodMapScreen = () => {
           >
             <View style={styles.largeMenuCardContent}>
               <View style={styles.largeMenuIconContainer}>
-                <Icon name="run" size={28} color="#ffffff" />
+                <Icon name="pin" size={28} color="#ffffff" />
               </View>
               <View style={styles.menuTextContainer}>
                 <Text style={styles.largeMenuCardTitle}>CheckIn Analysis</Text>

@@ -132,7 +132,7 @@ export function useHome() {
 
     useEffect(() => {
     //  fetchOpenToTalk()
-    // getHomeDetailsHandler()
+     getHomeDetailsHandler()
     setOpenToTalk(open_to_talk_status);
     
     }

@@ -143,6 +143,20 @@ export default function AddCheckIn() {
           />
         </View>
 
+ <View style={styles.locationContainer}>
+          <View style={styles.locationContent}>
+            <Text style={styles.locationIcon}>👤</Text>
+            <Text style={styles.locationText}>Anonymous Check-in</Text>
+          </View>
+          <Switch
+            value={AnonymousCheckIn}
+            onValueChange={setAnonymousCheckIn}
+            trackColor={{ false: '#E0E0E0', true: '#4A9B9B' }}
+            thumbColor={AnonymousCheckIn ? '#FFFFFF' : '#FFFFFF'}
+            style={styles.switch}
+          />
+        </View>
+
         <LinearGradient
           colors={['#E91E63', '#3F51B5']}
           start={{ x: 0, y: 0 }}

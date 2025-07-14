@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Image, Platform } from 'react-native';
+import LottieView from 'lottie-react-native';
 
 const emojiMap = {
   happy: require('../../assets/images/happy-icon.png'),
@@ -22,36 +23,45 @@ const imageSizes = {
 const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count }) => {
   const key = emoji?.toLowerCase();
   const source = emojiMap[key];
-  const size = Platform.OS === 'android'? { width: 44, height: 44 } : imageSizes[key] || { width: 44, height: 44 };
+  const size = Platform.OS === 'android'
+    ? { width: 44, height: 44 }
+    : imageSizes[key] || { width: 44, height: 44 };
 
-  // Highlight style if count > 1
   const highlightStyle = count > 1 ? styles.highlight : null;
 
+  if (!source) return null;
+
   return (
-    <>
-      {source ? (
+    <View>
+      {count > 0 ? (
+        <View style={[size, { position: 'relative' }]}>
+          <LottieView
+            source={require('../../assets/lottie/highlighted-place.json')}
+            autoPlay
+            loop
+            enableMergePathsAndroidForKitKatAndAbove
+            style={[StyleSheet.absoluteFill, highlightStyle, markerStyle]}
+          />
+          <Image
+            source={source}
+            style={[size, emojiStyle]}
+            resizeMode="contain"
+          />
+        </View>
+      ) : (
         <Image
           source={source}
           style={[size, emojiStyle]}
           resizeMode="contain"
         />
-      ) : null}
-    </>
-    // <View style={[highlightStyle, markerStyle]}>
-    //   {source ? (
-    //     <Image
-    //       source={source}
-    //       style={[size, emojiStyle]}
-    //       resizeMode="contain"
-    //     />
-    //   ) : null}
-    // </View>
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   highlight: {
-    backgroundColor: 'rgba(255, 255, 0, 0.2)', // Light yellow background for highlight
+    backgroundColor: 'rgba(255, 255, 0, 0.2)',
     borderRadius: 50,
     padding: 2,
   },

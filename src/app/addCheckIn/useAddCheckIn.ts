@@ -10,6 +10,7 @@ export function useAddCheckIn() {
      const [selectedMood, setSelectedMood] = useState(null);
       const [text, setText] = useState("");
       const [locationOptIn, setLocationOptIn] = useState(false);
+      const [AnonymousCheckIn , setAnonymousCheckIn] = useState(false);
        const router = useRouter();
     
       const handleSubmit =async () => {
@@ -66,5 +67,5 @@ export function useAddCheckIn() {
    
     const [ isloading ,setIsLoading] = useState<boolean>(true);
 
-    return {  isloading , selectedMood,text , locationOptIn , setIsLoading ,setSelectedMood ,setText ,setLocationOptIn ,handleSubmit  };
+    return {  isloading , selectedMood,text , locationOptIn , setIsLoading ,setSelectedMood ,setText ,setLocationOptIn ,handleSubmit  , AnonymousCheckIn ,setAnonymousCheckIn };
 }
