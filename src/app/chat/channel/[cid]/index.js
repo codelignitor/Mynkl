@@ -19,6 +19,7 @@ import { router } from "expo-router";
 import { AppContext } from "../../../../contexts/AppContext";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Ionicons } from "@expo/vector-icons";
+import Mascot from "../../../../assets/svgs/mascot.svg";
 
 export default function ChannelScreen() {
   const { channel } = useContext(AppContext);
@@ -40,16 +41,23 @@ export default function ChannelScreen() {
     );
   }
 
+  // Get online members from channel
+  const members = Object.values(channel?.state?.members || {});
+  const onlineMembers = members.filter(
+    (m) => m.user?.online === true
+  );
+  console.log("Online members:", onlineMembers?.length);
+
   const CustomChannelHeader = () => {
     const { channel } = useChannelContext();
     const moodTitle = channel?.data?.name || "Feeling Lonely";
     const onlineCount = Object.keys(channel?.state?.members || {}).length;
-    const topEmoji = "😊";
+    // const topEmoji = "😊";
 
     return (
       <View
         style={{
-          paddingTop:30,
+          paddingTop: 30,
           backgroundColor: "#284d66",
           // paddingBottom: 10,
           borderBottomLeftRadius: 30,
@@ -69,7 +77,8 @@ export default function ChannelScreen() {
               name="chevron-back"
               size={28}
               color="white"
-              onPress={() => router.back()}
+              onPress={() => router.push("../../chat_comments")} 
+              style={{ padding: 5 }}
             />
             <Text
               style={{
@@ -82,25 +91,38 @@ export default function ChannelScreen() {
               {moodTitle}
             </Text>
           </View>
-          <Text style={{ fontSize: 36 }}>{topEmoji}</Text>
+          {/* <Text style={{ fontSize: 36 }}>{topEmoji}</Text> */}
         </View>
 
         <Text style={{ color: "white", fontSize: 14, marginLeft: 20 }}>
-          {onlineCount} online now
+          {onlineMembers?.length} online now
         </Text>
 
         <View
           style={{
-            backgroundColor: "white",
-            alignSelf: "flex-start",
+            flexDirection: "row",
+            alignItems: "center",
             marginTop: 12,
             marginLeft: 20,
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            borderRadius: 20,
           }}
         >
-          <Text style={{ fontSize: 15, color: "#333" }}>Hi! Here to connect?</Text>
+          {/* Text Bubble */}
+          <View
+            style={{
+              backgroundColor: "white",
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              borderRadius: 20,
+              marginRight: 10,
+            }}
+          >
+            <Text style={{ fontSize: 15, color: "#333" }}>
+              Hi! Here to connect?
+            </Text>
+          </View>
+
+          {/* Mascot SVG */}
+          <Mascot width={112} height={112} style={{ marginLeft: 60 }} />
         </View>
 
         {/* 🔘 Toggle Mood Button */}
@@ -156,7 +178,7 @@ export default function ChannelScreen() {
         <Channel channel={channel} keyboardVerticalOffset={headerHeight}>
           <ScrollView
             style={{ backgroundColor: "#0f2027", flexGrow: 0 }}
-            // contentContainerStyle={{ paddingBottom: 10 }}
+          // contentContainerStyle={{ paddingBottom: 10 }}
           >
             <CustomChannelHeader />
 
