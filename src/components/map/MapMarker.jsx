@@ -9,6 +9,11 @@ const emojiMap = {
   lonely: require('../../assets/images/lonely-icon.png'),
   alone: require('../../assets/images/lonely-icon.png'),
   sad: require('../../assets/images/sad-icon.png'),
+  grateful:require('../../assets/images/grateful-icon.png'),
+  frustrated:require('../../assets/images/frustrated.png'),
+
+
+
 };
 
 const imageSizes = {
@@ -18,6 +23,8 @@ const imageSizes = {
   lonely: { width: 83, height: 83 },
   alone: { width: 83, height: 83 },
   sad: { width: 83, height: 83 },
+  grateful:{ width: 83, height: 83 },
+  frustrated:{ width: 73, height: 73 },
 };
 
 const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count }) => {

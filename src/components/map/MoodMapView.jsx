@@ -80,8 +80,8 @@ const MoodMapView = ({
                   latitude: location.latitude,
                   longitude: location.longitude,
                 }}
-                title={location.name}
-                description={location.description}
+                // title={location.name}
+                // description={location.description}
                 onPress={()=>onSelectMarker(location)}
               >
                 <MapMarker

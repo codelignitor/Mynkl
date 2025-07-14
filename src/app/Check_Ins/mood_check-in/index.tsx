@@ -17,6 +17,9 @@ import Happy from '../../../assets/svgs/happy-icon.svg';
 import Calm from '../../../assets/svgs/calm-icon.svg';
 import Stressed from '../../../assets/svgs/stressed-icon.svg';
 import Lonely from '../../../assets/svgs/lonely-icon.svg';
+import Sad from '../../../assets/svgs/sad-icon.svg';
+import Frustrated from '../../../assets/svgs/frustrated.svg';
+import Grateful from '../../../assets/svgs/grateful-icon.svg';
 export default function MoodScreen() {
   const [moodStrength, setMoodStrength] = useState(0.5);
   const [data , setData] = useState();
@@ -84,12 +87,19 @@ export default function MoodScreen() {
 
         {/* Header: Back button + Centered Mood text */}
        <Header title='Mood' showBack style={{backgroundColor:'#a5f3fc'}}/>
+
+
        
         {/* Emoji */}
-          {mood?.label === 'Happy' && <Happy width={88} height={88}/>}
-                     {mood?.label === 'Calm' && <Calm width={93} height={93}/>}
-                      {mood?.label === 'Stressed' && <Stressed width={88} height={88}/>}
-                       {mood?.label === 'Lonely' && <Lonely width={103} height={103}/>}
+        
+                       {data?.last_check_in_mood === 'Lonely' && <Lonely width={103} height={103}/>}
+                         {data?.last_check_in_mood === 'Happy' && <Happy width={88} height={88} />}
+                                     {data?.last_check_in_mood === 'Calm' && <Calm width={93} height={93} />}
+                                     {data?.last_check_in_mood === 'Stressed' && <Stressed width={88} height={88} />}
+                                     {data?.last_check_in_mood === 'Lonely' && <Lonely width={103} height={103} />}
+                                     {data?.last_check_in_mood === 'Grateful' && <Grateful width={74} height={73} />}
+                                     {data?.last_check_in_mood === 'Sad' && <Sad width={79} height={79} />}
+                                     {data?.last_check_in_mood === 'Frustrated' && <Frustrated width={71} height={73} />}[]
 
         {/* AI Interpretation Card */}
         <View style={styles.card}>

@@ -23,6 +23,9 @@ const moodData = [
   { mood: "Lonely", emoji: "😔", gradient: ["#2D6A78", "#3D8B99"] },
   { mood: "Anxious", emoji: "😟", gradient: ["#7A5CFA", "#4C2FBD"] },
   { mood: "Calm", emoji: "😌", gradient: ["#5DC2AF", "#3B8B7A"] },
+   { mood: "Grateful", emoji: "😌", gradient: ["#5DC2AF", "#3B8B7A"] },
+    { mood: "Sad", emoji: "😌", gradient:["#7A5CFA", "#4C2FBD"]  },
+    { mood: "Frustrated", emoji: "😌", gradient: ["#5DC2AF", "#3B8B7A"] },
 ];
 
 export default function GroupChannelListScreen() {
@@ -72,16 +75,21 @@ export default function GroupChannelListScreen() {
   };
 
   const getMoodStyle = (name) => {
+    console.log("getMoodStyle called with name:", name);
     const lower = name.toLowerCase();
     if (lower.includes("happy")) return moodData[0];
     if (lower.includes("lonely")) return moodData[1];
     if (lower.includes("anxious")) return moodData[2];
     if (lower.includes("calm")) return moodData[3];
+     if (lower.includes("grateful")) return moodData[4];
+      if (lower.includes("sad")) return moodData[4];
+       if (lower.includes("frustrated")) return moodData[4];
     return moodData[0];
   };
 
   const renderMoodCard = ({ item }) => {
     const mood = getMoodStyle(item.data.name);
+    // console.log("Rendering mood card for item:", item.data.name, "with mood:", mood);
     return (
       <TouchableOpacity onPress={() => handleChannelSelect(item)} style={styles.cardWrapper}>
         <LinearGradient

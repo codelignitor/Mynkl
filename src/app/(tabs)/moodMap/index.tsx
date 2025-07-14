@@ -106,88 +106,88 @@ const MoodMapScreen: React.FC = () => {
   const [isLoadingComments, setIsLoadingComments] = React.useState(false);
 
   // Fetch comments for selected location
-  React.useEffect(() => {
-    const fetchCommentsForLocation = async () => {
-      try {
-        if (!selectedLocationDetail?.name) {
-          setFetchedComments([]);
-          return;
-        }
+  // React.useEffect(() => {
+  //   const fetchCommentsForLocation = async () => {
+  //     try {
+  //       if (!selectedLocationDetail?.name) {
+  //         setFetchedComments([]);
+  //         return;
+  //       }
 
-        setIsLoadingComments(true);
+  //       setIsLoadingComments(true);
 
-        // Make sure we're calling the API correctly
-        const response = await getComments(selectedLocationDetail.name);
-        console.log('API Response Status: Success');
-        console.log('API Response Data:', response);
-        console.log('API Response Type:', typeof response);
-        console.log('Is Array:', Array.isArray(response));
+  //       // Make sure we're calling the API correctly
+  //       const response = await getComments(selectedLocationDetail.name);
+  //       console.log('API Response Status: Success');
+  //       console.log('API Response Data:', response);
+  //       console.log('API Response Type:', typeof response);
+  //       console.log('Is Array:', Array.isArray(response));
 
-        // Handle different response formats
-        let commentsData = response;
+  //       // Handle different response formats
+  //       let commentsData = response;
 
-        // If response is wrapped in a data property
-        if (response && response.data && Array.isArray(response.data)) {
-          commentsData = response.data;
-        }
+  //       // If response is wrapped in a data property
+  //       if (response && response.data && Array.isArray(response.data)) {
+  //         commentsData = response.data;
+  //       }
 
-        // If response is not an array, try to extract array
-        if (!Array.isArray(commentsData)) {
-          console.warn('Response is not an array, attempting to extract:', commentsData);
-          // If it's an object with comments property
-          if (commentsData && commentsData.comments && Array.isArray(commentsData.comments)) {
-            commentsData = commentsData.comments;
-          } else {
-            console.error('Cannot extract comments array from response');
-            setFetchedComments([]);
-            return;
-          }
-        }
+  //       // If response is not an array, try to extract array
+  //       if (!Array.isArray(commentsData)) {
+  //         console.warn('Response is not an array, attempting to extract:', commentsData);
+  //         // If it's an object with comments property
+  //         if (commentsData && commentsData.comments && Array.isArray(commentsData.comments)) {
+  //           commentsData = commentsData.comments;
+  //         } else {
+  //           console.error('Cannot extract comments array from response');
+  //           setFetchedComments([]);
+  //           return;
+  //         }
+  //       }
 
-        console.log('Processing comments data:', commentsData);
+  //       console.log('Processing comments data:', commentsData);
 
-        // Filter comments for current location by matching place name
-        const locationComments = commentsData.filter(comment => {
-          console.log('Checking comment:', comment);
-          return comment &&
-            comment.name &&
-            typeof comment.name === 'string' &&
-            comment.name.toLowerCase().trim() === selectedLocationDetail.name.toLowerCase().trim();
-        });
+  //       // Filter comments for current location by matching place name
+  //       const locationComments = commentsData.filter(comment => {
+  //         console.log('Checking comment:', comment);
+  //         return comment &&
+  //           comment.name &&
+  //           typeof comment.name === 'string' &&
+  //           comment.name.toLowerCase().trim() === selectedLocationDetail.name.toLowerCase().trim();
+  //       });
 
-        console.log(`Found ${locationComments.length} comments for location "${selectedLocationDetail.name}"`);
-        console.log('Filtered comments:', locationComments);
-        setFetchedComments(locationComments);
+  //       console.log(`Found ${locationComments.length} comments for location "${selectedLocationDetail.name}"`);
+  //       console.log('Filtered comments:', locationComments);
+  //       setFetchedComments(locationComments);
 
-      } catch (error) {
-        console.error('Error fetching comments:', error);
-        console.error('Error message:', error.message);
-        console.error('Error response:', error.response);
-        console.error('Error response data:', error.response?.data);
-        console.error('Error response status:', error.response?.status);
-        console.error('Error response headers:', error.response?.headers);
+  //     } catch (error) {
+  //       console.error('Error fetching comments:', error);
+  //       console.error('Error message:', error.message);
+  //       console.error('Error response:', error.response);
+  //       console.error('Error response data:', error.response?.data);
+  //       console.error('Error response status:', error.response?.status);
+  //       console.error('Error response headers:', error.response?.headers);
 
-        setFetchedComments([]);
+  //       setFetchedComments([]);
 
-        // More specific error handling
-        if (error.response?.status === 422) {
-          console.error('422 Error - Validation failed. Check API endpoint and request format.');
-          // Don't show alert to user during development
-          // Alert.alert('Error', 'Unable to load comments. Please try again later.');
-        } else if (error.response?.status === 401) {
-          console.error('401 Error - Authentication required');
-        } else if (error.response?.status === 404) {
-          console.error('404 Error - Endpoint not found');
-        }
-      } finally {
-        setIsLoadingComments(false);
-      }
-    };
+  //       // More specific error handling
+  //       if (error.response?.status === 422) {
+  //         console.error('422 Error - Validation failed. Check API endpoint and request format.');
+  //         // Don't show alert to user during development
+  //         // Alert.alert('Error', 'Unable to load comments. Please try again later.');
+  //       } else if (error.response?.status === 401) {
+  //         console.error('401 Error - Authentication required');
+  //       } else if (error.response?.status === 404) {
+  //         console.error('404 Error - Endpoint not found');
+  //       }
+  //     } finally {
+  //       setIsLoadingComments(false);
+  //     }
+  //   };
 
-    // Add small delay to prevent rapid API calls during development
-    const timeoutId = setTimeout(fetchCommentsForLocation, 500);
-    return () => clearTimeout(timeoutId);
-  }, [selectedLocationDetail?.name]);
+  //   // Add small delay to prevent rapid API calls during development
+  //   const timeoutId = setTimeout(fetchCommentsForLocation, 500);
+  //   return () => clearTimeout(timeoutId);
+  // }, [selectedLocationDetail?.name]);
 
   // Initialize location
   React.useEffect(() => {
@@ -621,7 +621,7 @@ const MoodMapScreen: React.FC = () => {
 
         <View style={styles.userExpandedInfo}>
           <Text style={styles.userExpandedName}>
-            {selectedUserPin?.name || selectedUserPin?.username || 'Unknown User'}
+            { selectedUserPin?.user.username || 'Unknown User'}
           </Text>
           <Text style={styles.userExpandedMood}>
             {selectedUserPin?.mood || 'Happy'}
@@ -659,7 +659,7 @@ const MoodMapScreen: React.FC = () => {
     <View style={styles.activitiesContainer}>
       <View style={styles.rowContiner}>
         <Text style={styles.activitiesLabel}>Activities</Text>
-        <TouchableOpacity onPress={() => router.push('/activity')}>
+        <TouchableOpacity onPress={() => router.push('/activity_suggestions/activity_card')}>
           <Text style={styles.seeMore}>See More</Text>
         </TouchableOpacity>
       </View>

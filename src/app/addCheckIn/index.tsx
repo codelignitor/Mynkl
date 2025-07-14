@@ -75,7 +75,9 @@ export default function AddCheckIn() {
     setSelectedMood,
     setText,
     setLocationOptIn,
-    handleSubmit
+    handleSubmit,
+    AnonymousCheckIn,
+    setAnonymousCheckIn
   } = useAddCheckIn();
 
   return (
