@@ -15,18 +15,41 @@ import { useAddCheckIn } from "./useAddCheckIn";
 import Header from "@/src/components/common/header";
 
 const moods = [
- 
-  {   label: 'Happy',
-    emoji: '😊',},
-  {    label: 'Calm',
-    emoji: '🙂', }, 
-  {  label: 'Stressed',
-    emoji: '🙁', },
-  {   label: 'Lonely',
-    emoji: '😔', },
- 
+
+  {
+    label: 'Happy',
+    emoji: '😊',
+  },
+  {
+    label: 'Calm',
+    emoji: '🙂',
+  },
+  {
+    label: 'Stressed',
+    emoji: '🙁',
+  },
+  {
+    label: 'Lonely',
+    emoji: '😔',
+  },
+  {
+    label: 'Grateful',
+    emoji: '😔',
+  },
+  {
+    label: 'Sad',
+    emoji: '😔',
+  },
+  {
+    label: 'Frustrated',
+    emoji: '😔',
+  },
+
 ];
 
+import Sad from '../../assets/svgs/sad-icon.svg';
+import Frustrated from '../../assets/svgs/frustrated.svg';
+import Grateful from '../../assets/svgs/grateful-icon.svg';
 import Happy from '../../assets/svgs/happy-icon.svg';
 import Calm from '../../assets/svgs/calm-icon.svg';
 import Stressed from '../../assets/svgs/stressed-icon.svg';
@@ -43,35 +66,33 @@ export const screenOptions = {
 };
 
 export default function AddCheckIn() {
-  const { 
-    isloading, 
-    selectedMood, 
-    text, 
-    locationOptIn, 
-    setIsLoading, 
-    AnonymousCheckIn,
-    setSelectedMood, 
-    setAnonymousCheckIn,
-    setText, 
-    setLocationOptIn, 
-    handleSubmit 
+  const {
+    isloading,
+    selectedMood,
+    text,
+    locationOptIn,
+    setIsLoading,
+    setSelectedMood,
+    setText,
+    setLocationOptIn,
+    handleSubmit
   } = useAddCheckIn();
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header style={{backgroundColor:'#A7E2E0'}} title="Check-In" showBack={true} rightChildren={
+      <Header style={{ backgroundColor: '#A7E2E0' }} title="Check-In" showBack={true} rightChildren={
         <TouchableOpacity onPress={() => router.push('/checkIns')}>
-         <Ionicons name='reload' size={24} color="black" />
+          <Ionicons name='reload' size={24} color="black" />
         </TouchableOpacity>
       } />
-      
+
       <View style={styles.contentContainer}>
         <Text style={styles.title}>How are you feeling?</Text>
-        
+
         <FlatList
           data={moods}
           horizontal
-          keyExtractor={(item) => item.emoji}
+          keyExtractor={(item) => item.label}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[
@@ -80,11 +101,13 @@ export default function AddCheckIn() {
               ]}
               onPress={() => setSelectedMood(item)}
             >
-               {item.label === 'Happy' && <Happy width={88} height={88}/>}
-              {item.label === 'Calm' && <Calm width={93} height={93}/>}
-               {item.label === 'Stressed' && <Stressed width={88} height={88}/>}
-                {item.label === 'Lonely' && <Lonely width={103} height={103}/>}
-             
+              {item.label === 'Happy' && <Happy width={88} height={88} />}
+              {item.label === 'Calm' && <Calm width={93} height={93} />}
+              {item.label === 'Stressed' && <Stressed width={88} height={88} />}
+              {item.label === 'Lonely' && <Lonely width={103} height={103} />}
+              {item.label === 'Grateful' && <Grateful width={74} height={73} />}
+              {item.label === 'Sad' && <Sad width={79} height={79} />}
+              {item.label === 'Frustrated' && <Frustrated width={71} height={73} />}[]
             </TouchableOpacity>
           )}
           contentContainerStyle={styles.moodList}
