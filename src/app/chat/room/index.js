@@ -15,6 +15,8 @@ import { useRouter } from "expo-router";
 import { AppContext } from "../../../contexts/AppContext";
 import { useSelector } from "react-redux";
 import { chatApiKey } from "../../../../chatConfig";
+import Mascot from "../../../assets/svgs/mascot.svg";
+
 
 const client = StreamChat.getInstance(chatApiKey);
 
@@ -113,28 +115,34 @@ export default function GroupChannelListScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{paddingHorizontal:16 , flex: 1,}}>
-      <Text style={styles.appTitle}>Mynkl</Text>
-      <Text style={styles.title}>Mood-Based Chat Rooms</Text>
-      <Text style={styles.subtitle}>Connect with others in similar emotional states</Text>
+  <View style={{ paddingHorizontal: 16, flex: 1 }}>
+    <Text style={styles.appTitle}>Mynkl</Text>
 
-      <FlatList
-        data={channels}
-        renderItem={renderMoodCard}
-        keyExtractor={(item) => item.cid}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 16 }}>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.title}>Mood-Based Chat Rooms</Text>
+        <Text style={styles.subtitle}>Connect with others in similar emotional states</Text>
+      </View>
+      <Mascot width={112} height={112} style={{ marginLeft: 10 }} />
+    </View>
 
-      <View style={styles.footerCard}>
-        <Text style={styles.footerText}>
-          How about a happiness challenge to lift your mood? <Text>😉</Text>
-        </Text>
-        <TouchableOpacity style={styles.footerButton}>
-          <Text style={styles.footerButtonText}>▶ Listen to uplifting playlist</Text>
-        </TouchableOpacity>
-      </View>
-      </View>
-    </SafeAreaView>
+    <FlatList
+      data={channels}
+      renderItem={renderMoodCard}
+      keyExtractor={(item) => item.cid}
+      contentContainerStyle={{ paddingBottom: 20 }}
+    />
+
+    <View style={styles.footerCard}>
+      <Text style={styles.footerText}>
+        How about a happiness challenge to lift your mood? <Text>😉</Text>
+      </Text>
+      <TouchableOpacity style={styles.footerButton}>
+        <Text style={styles.footerButtonText}>▶ Listen to uplifting playlist</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</SafeAreaView>
   );
 }
 

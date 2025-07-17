@@ -73,6 +73,18 @@ export function useMoodMap() {
   // New states for user pin expansion
   const [selectedUserPin, setSelectedUserPin] = useState<any>(null);
 
+  // Explore Bottom Sheet State
+  const [showExploreSheet, setShowExploreSheet] = useState(false);
+  const [exploreTab, setExploreTab] = useState<'Nearby' | 'Trending' | 'Mood-Specific'>('Nearby');
+
+  const handleExploreTabPress = (tab: 'Nearby' | 'Trending' | 'Mood-Specific') => {
+    setExploreTab(tab);
+    if (tab === 'Nearby') {
+      clearMoodFilter();
+      setSelectedMood('');
+    }
+  };
+
   const callBackMapHandler = (location: any) => {
     console.log('Current Marked Location:', location);
     console.log('Location Type:', location?.type);
@@ -460,7 +472,7 @@ export function useMoodMap() {
           query: '',
           lat: mapRegion.latitude,
           lng: mapRegion.longitude,
-          mood: 'happy',
+          // mood: 'happy',
         });
 
         const fetchedData = response || [];
@@ -543,5 +555,11 @@ export function useMoodMap() {
     // Export current user data
     currentUser,
     userName,
+    // Explore Bottom Sheet exports
+    showExploreSheet,
+    setShowExploreSheet,
+    exploreTab,
+    setExploreTab,
+    handleExploreTabPress,
   };
 }
