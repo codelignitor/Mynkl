@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import debounce from 'lodash.debounce';
-import { getMapSearchResults, highlightedPlaces} from '@/src/services/apis';
+import { getMapSearchResults, getLocation } from '@/src/services/apis';
 import * as Location from 'expo-location';
 import Toast from 'react-native-toast-message';
 
@@ -76,12 +76,67 @@ export function useMoodMap() {
   // Explore Bottom Sheet State
   const [showExploreSheet, setShowExploreSheet] = useState(false);
   const [exploreTab, setExploreTab] = useState<'Nearby' | 'Trending' | 'Mood-Specific'>('Nearby');
+  const [exploreData, setExploreData] = useState<any[]>([]);
+  const [exploreLoading, setExploreLoading] = useState(false);
 
-  const handleExploreTabPress = (tab: 'Nearby' | 'Trending' | 'Mood-Specific') => {
+  const handleExploreTabPress = async (tab: 'Nearby' | 'Trending' | 'Mood-Specific') => {
     setExploreTab(tab);
     if (tab === 'Nearby') {
       clearMoodFilter();
       setSelectedMood('');
+      setExploreData([]);
+    } else if (tab === 'Trending') {
+      await fetchExploreData(tab);
+    } else if (tab === 'Mood-Specific') {
+      // Do nothing for Mood-Specific
+      setExploreData([]);
+    }
+  };
+
+  const fetchExploreData = async (tab: 'Trending' | 'Mood-Specific') => {
+    try {
+      setExploreLoading(true);
+      console.log(`Fetching highlighted places data...`);
+      
+      // Pass the current map region coordinates to the API
+      const response = await getLocation(mapRegion.latitude, mapRegion.longitude);
+      console.log('API Response:', response);
+      
+      // Extract the recommended_places array from the response
+      const data = response?.recommended_places || [];
+      
+      console.log(`Highlighted places data fetched:`, data.length, 'items');
+      console.log('Places data:', data);
+      
+      // Log each place for debugging
+      data.forEach((place, index) => {
+        console.log(`Place ${index + 1}:`, {
+          id: place.id,
+          name: place.name,
+          latitude: place.latitude,
+          longitude: place.longitude,
+          mood: place.mood,
+          count: place.count
+        });
+      });
+      
+      setExploreData(data);
+      
+      // Update mood data to show the explore results
+      setMoodData(data);
+      
+    } catch (error) {
+      console.error(`Error fetching highlighted places data:`, error);
+      // Set empty array on error to prevent map errors
+      setExploreData([]);
+      setMoodData([]);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: `Failed to load highlighted places data. Please try again.`,
+      });
+    } finally {
+      setExploreLoading(false);
     }
   };
 
@@ -345,39 +400,6 @@ export function useMoodMap() {
     setLocationComments(prev => [...prev, newComment]);
   };
 
-  const highlightedPlaceHandler = async () => {
-    if (!currentMarkedLocation) return;
-
-    try {
-      const payload = {
-        mood: currentMarkedLocation?.mood,
-        name: currentMarkedLocation?.name,
-        latitude: currentMarkedLocation?.latitude,
-        longitude: currentMarkedLocation?.longitude,
-        user: userName // Include current user in payload
-      };
-
-      const response = await highlightedPlaces(payload);
-
-      if (response?.count) {
-        console.log('Highlighted Places Response:', response);
-        Toast.show({
-          type: 'success',
-          text1: 'Success',
-          text2: `${userName}'s feedback saved successfully!`,
-        });
-        setCurrentMarkedLocation(null);
-      }
-    } catch (error) {
-      console.error('Error submitting highlighted place:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Failed to save feedback. Please try again.',
-      });
-    }
-  };
-
   // Apply mood filter
   const applyMoodFilter = (selectedMoods: string[]) => {
     console.log('Applying mood filter:', selectedMoods);
@@ -533,7 +555,6 @@ export function useMoodMap() {
     selectedMood,
     setSelectedMood,
     handleMoodSelection,
-    highlightedPlaceHandler,
     applyMoodFilter,
     clearMoodFilter,
     activeFilters,
@@ -561,5 +582,7 @@ export function useMoodMap() {
     exploreTab,
     setExploreTab,
     handleExploreTabPress,
+    exploreData,
+    exploreLoading,
   };
 }

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Mascot from '../../../assets/svgs/mascot.svg'; // Your main SVG image
 import { MaterialIcons } from '@expo/vector-icons'; // Arrow icon
 import { useRouter } from 'expo-router';
+import {getaiMessage, HappinessChallenges} from '../../../services/apis';
+import { useSelector } from 'react-redux';
 
 export default function ChallengeScreen() {
     const router = useRouter();
@@ -11,6 +13,11 @@ export default function ChallengeScreen() {
     const [selectedOption, setSelectedOption] = useState(null); // Track selected option
     const [selectedMessage, setSelectedMessage] = useState(null); // Track selected message
     const [customMessage, setCustomMessage] = useState(''); // Track custom message
+    const [selectedFriendId, setSelectedFriendId] = useState(null);
+    const [selectedCommunityMemberId, setSelectedCommunityMemberId] = useState(null);
+    const [aiMessages, setAiMessages] = useState([]);
+    const [aiLoading, setAiLoading] = useState(false);
+    const userId = useSelector(state => state.auth.user_id); // your own user id
 
     // Start Challenge Screen
     const StartChallengeScreen = () => (
@@ -63,7 +70,10 @@ export default function ChallengeScreen() {
                                 styles.option,
                                 selectedOption === 'friend' && styles.selectedOption
                             ]}
-                            onPress={() => setSelectedOption('friend')}
+                            onPress={() => {
+                                setSelectedOption('friend');
+                                setSelectedFriendId('friend-user-id-123'); // TODO: Replace with real friend ID
+                            }}
                         >
                             <View style={styles.optionContent}>
                                 <View style={styles.optionLeft}>
@@ -92,7 +102,10 @@ export default function ChallengeScreen() {
                                 styles.option,
                                 selectedOption === 'community' && styles.selectedOption
                             ]}
-                            onPress={() => setSelectedOption('community')}
+                            onPress={() => {
+                                setSelectedOption('community');
+                                setSelectedCommunityMemberId('community-user-id-456'); // TODO: Replace with real community member ID
+                            }}
                         >
                             <View style={styles.optionContent}>
                                 <View style={styles.optionLeft}>
@@ -144,14 +157,28 @@ export default function ChallengeScreen() {
                             styles.nextButton,
                             selectedOption && styles.nextButtonActive
                         ]}
-                        disabled={!selectedOption}
-                        onPress={() => {
+                        disabled={!selectedOption || aiLoading}
+                        onPress={async () => {
+                            console.log('Next button pressed');
                             if (selectedOption) {
-                                setCurrentScreen('message');
+                                setAiLoading(true);
+                                try {
+                                    console.log('Calling getaiMessage...');
+                                    const data = await getaiMessage();
+                                    console.log('AI message API response:', data);
+                                    setAiMessages(data);
+                                } catch (error) {
+                                    console.log('Error fetching AI messages:', error);
+                                    Alert.alert('Error', 'Failed to load AI messages');
+                                } finally {
+                                    setAiLoading(false);
+                                    setCurrentScreen('message');
+                                }
                             }
                         }}
                     >
-                        <Text style={styles.nextButtonText}>Next ></Text>
+                        <Text style={styles.nextButtonText}>Next</Text>
+                        {aiLoading && <ActivityIndicator color="#fff" style={{ marginLeft: 8 }} />}
                     </TouchableOpacity>
                 </View>
             </LinearGradient>
@@ -160,11 +187,14 @@ export default function ChallengeScreen() {
 
     // Message Selection Screen
     const MessageSelectionScreen = () => {
-        const predefinedMessages = [
-            "You're stronger than you think.",
-            "I'm grateful you're in this world.",
-            "Today is better because of you."
-        ];
+        const predefinedMessages =
+            aiMessages && aiMessages.Messages && aiMessages.Messages.length > 0
+                ? aiMessages.Messages.map(m => m.message)
+                : [
+                    "You're stronger than you think.",
+                    "I'm grateful you're in this world.",
+                    "Today is better because of you."
+                ];
 
         return (
             <SafeAreaView style={styles.messageContainer}>
@@ -233,14 +263,7 @@ export default function ChallengeScreen() {
                                 (selectedMessage || customMessage) && styles.sendButtonActive
                             ]}
                             disabled={!selectedMessage && !customMessage}
-                            onPress={() => {
-                                const messageToSend = customMessage || selectedMessage;
-                                console.log('=== MESSAGE SENT ===');
-                                console.log('Recipient:', selectedOption);
-                                console.log('Message:', messageToSend);
-                                console.log('==================');
-                                setCurrentScreen('success');
-                            }}
+                            onPress={handleSend}
                         >
                             <Text style={styles.sendButtonText}>Send with Kindness</Text>
                             <MaterialIcons name="arrow-forward" size={20} color="#fff" style={styles.sendArrow} />
@@ -328,7 +351,7 @@ export default function ChallengeScreen() {
                             <TouchableOpacity 
                                 style={styles.returnButton}
                                 onPress={() => {
-                                    router.push('/chat'); // Navigate to chat screen/file
+                                    router.push('/chat/room'); // Navigate to chat screen/file
                                 }}
                             >
                                 <Text style={styles.returnButtonText}>Return to Chat</Text>
@@ -351,6 +374,71 @@ export default function ChallengeScreen() {
                 </LinearGradient>
             </SafeAreaView>
         );
+    };
+
+    const handleSend = async () => {
+      // Map UI selection to API senderType
+      let senderType = '';
+      if (selectedOption === 'friend') senderType = 'Friend';
+      else if (selectedOption === 'community') senderType = 'CommunityMember';
+      else if (selectedOption === 'yourself') senderType = 'YourSelf';
+      // For now, use your own userId for Yourself, or a dummy for others
+      let receiverId = '';
+      if (selectedOption === 'yourself') {
+        receiverId = userId;
+      } else if (selectedOption === 'friend') {
+        receiverId = selectedFriendId;
+      } else if (selectedOption === 'community') {
+        receiverId = selectedCommunityMemberId;
+      }
+
+      const payload = {
+        senderType,
+        message: customMessage || selectedMessage,
+        receiverId,
+      };
+
+      try {
+        const response = await HappinessChallenges(payload);
+        console.log('API response:', response);
+        if (response.status === 'success') {
+          Alert.alert(
+            'Success',
+            response.message,
+            [
+              {
+                text: 'OK',
+                onPress: () => setCurrentScreen('success')
+              }
+            ]
+          );
+        } else {
+          Alert.alert('Error', response.message || 'Something went wrong');
+        }
+      } catch (error) {
+        if (error.response && error.response.data) {
+          console.log('Backend error:', error.response.data);
+          let errorMsg = '';
+          if (typeof error.response.data === 'string') {
+            errorMsg = error.response.data;
+          } else if (error.response.data.detail) {
+            if (Array.isArray(error.response.data.detail)) {
+              // Only extract the msg property for display
+              errorMsg = error.response.data.detail.map((d) => d.msg).join('\n');
+            } else {
+              errorMsg = error.response.data.detail.msg || JSON.stringify(error.response.data.detail);
+            }
+          } else if (error.response.data.message) {
+            errorMsg = error.response.data.message;
+          } else {
+            errorMsg = JSON.stringify(error.response.data);
+          }
+          Alert.alert('Error', errorMsg);
+        } else {
+          console.log('API error:', error);
+          Alert.alert('Error', 'Failed to send happiness message');
+        }
+      }
     };
 
     // Return the appropriate screen based on current state

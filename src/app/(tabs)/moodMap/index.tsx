@@ -93,7 +93,12 @@ const MoodMapScreen: React.FC = () => {
     selectedUserPin,
     setSelectedUserPin,
     handleSendUserHug,
-    handleStartChat
+    handleStartChat,
+    showExploreSheet,
+    setShowExploreSheet,
+    exploreTab,
+    setExploreTab,
+    handleExploreTabPress,
   } = useMoodMap();
 
   // Local state
@@ -104,8 +109,6 @@ const MoodMapScreen: React.FC = () => {
   const [isSubmittingComment, setIsSubmittingComment] = React.useState(false);
   const [fetchedComments, setFetchedComments] = React.useState([]);
   const [isLoadingComments, setIsLoadingComments] = React.useState(false);
-  const [showExploreSheet, setShowExploreSheet] = React.useState(false);
-  const [exploreTab, setExploreTab] = React.useState<'Nearby' | 'Trending' | 'Mood-Specific'>('Nearby');
 
   // Fetch comments for selected location
   React.useEffect(() => {
@@ -721,12 +724,13 @@ const MoodMapScreen: React.FC = () => {
             <Text style={{ color: '#00796B', fontWeight: 'bold', fontSize: 17, letterSpacing: 0.2 }}>Explore</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity
+        {/* Remove the filter button from the header */}
+        {/* <TouchableOpacity
           style={styles.filterButton}
           onPress={() => setShowFilterModal(true)}
         >
           <Ionicons name="filter" size={24} color="#000" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {/* Loading Indicator */}
@@ -790,10 +794,10 @@ const MoodMapScreen: React.FC = () => {
                     alignItems: 'center',
                   }}
                   onPress={() => {
-                    setExploreTab(tab as any);
-                    if (tab === 'Nearby') {
-                      clearMoodFilter();
-                      setSelectedMood('');
+                    if (tab === 'Mood-Specific') {
+                      setShowFilterModal(true);
+                    } else {
+                      handleExploreTabPress(tab as any);
                     }
                   }}
                   activeOpacity={0.85}
@@ -822,7 +826,7 @@ const MoodMapScreen: React.FC = () => {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: '#1A3C3C', fontWeight: '600', fontSize: 16, lineHeight: 22 }}>
-                  You feel best after socializing—check out Sunbeam Café.
+                  You feel best after socializing—check out highlighted places nearby.
                 </Text>
               </View>
               <TouchableOpacity style={{ marginLeft: 8 }}>
@@ -841,7 +845,7 @@ const MoodMapScreen: React.FC = () => {
             }}>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: '#1A3C3C', fontSize: 15 }}>
-                  Looking for something new today? Try exploring trending calm spots nearby.
+                  Looking for something new today? Try exploring highlighted places nearby.
                 </Text>
               </View>
               <TouchableOpacity onPress={() => setShowExploreSheet(false)} style={{ marginLeft: 8 }}>
