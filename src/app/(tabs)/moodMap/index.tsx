@@ -93,7 +93,12 @@ const MoodMapScreen: React.FC = () => {
     selectedUserPin,
     setSelectedUserPin,
     handleSendUserHug,
-    handleStartChat
+    handleStartChat,
+    showExploreSheet,
+    setShowExploreSheet,
+    exploreTab,
+    setExploreTab,
+    handleExploreTabPress,
   } = useMoodMap();
 
   // Local state
@@ -697,13 +702,35 @@ const MoodMapScreen: React.FC = () => {
             value={searchInput}
             placeholder="Mood Map"
           />
+          {/* Explore Button directly below search input, matching width/alignment */}
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#E0F7FA',
+              borderRadius: 22,
+              paddingVertical: 12,
+              marginHorizontal: 16,
+              marginTop: 0,
+              marginBottom: 8,
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.08,
+              shadowRadius: 4,
+              elevation: 2,
+            }}
+            onPress={() => setShowExploreSheet(true)}
+            activeOpacity={0.85}
+          >
+            <Text style={{ color: '#00796B', fontWeight: 'bold', fontSize: 17, letterSpacing: 0.2 }}>Explore</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
+        {/* Remove the filter button from the header */}
+        {/* <TouchableOpacity
           style={styles.filterButton}
           onPress={() => setShowFilterModal(true)}
         >
           <Ionicons name="filter" size={24} color="#000" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {/* Loading Indicator */}
@@ -727,6 +754,107 @@ const MoodMapScreen: React.FC = () => {
       {/* Modals */}
       {renderFilterModal()}
       {renderLocationDetailModal()}
+
+      {/* Explore Bottom Sheet */}
+      <Modal
+        visible={showExploreSheet}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowExploreSheet(false)}
+      >
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.18)' }}>
+          <View style={{
+            backgroundColor: '#338C8C',
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingTop: 18,
+            paddingBottom: 32,
+            paddingHorizontal: 0,
+            minHeight: 320,
+            width: '100%',
+          }}>
+            {/* Drag handle */}
+            <View style={{ alignItems: 'center', marginBottom: 10 }}>
+              <View style={{ width: 40, height: 5, backgroundColor: '#B2DFDB', borderRadius: 3 }} />
+            </View>
+            {/* Tabs Row */}
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 18, gap: 10 }}>
+              {['Nearby', 'Trending', 'Mood-Specific'].map(tab => (
+                <TouchableOpacity
+                  key={tab}
+                  style={{
+                    backgroundColor: exploreTab === tab ? '#B2DFDB' : 'rgba(255,255,255,0.10)',
+                    paddingHorizontal: 18,
+                    paddingVertical: 8,
+                    borderRadius: 18,
+                    marginHorizontal: 2,
+                    borderWidth: exploreTab === tab ? 1.5 : 0,
+                    borderColor: exploreTab === tab ? '#338C8C' : 'transparent',
+                    minWidth: 90,
+                    alignItems: 'center',
+                  }}
+                  onPress={() => {
+                    if (tab === 'Mood-Specific') {
+                      setShowFilterModal(true);
+                    } else {
+                      handleExploreTabPress(tab as any);
+                    }
+                  }}
+                  activeOpacity={0.85}
+                >
+                  <Text style={{ color: exploreTab === tab ? '#338C8C' : '#E0F7FA', fontWeight: 'bold', fontSize: 15 }}>{tab}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {/* Suggestion Card */}
+            <View style={{
+              backgroundColor: '#A7E6E6',
+              borderRadius: 16,
+              padding: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginHorizontal: 18,
+              marginBottom: 10,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.06,
+              shadowRadius: 2,
+              elevation: 1,
+            }}>
+              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#FFE066', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                <Text style={{ fontSize: 20 }}>⭐</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#1A3C3C', fontWeight: '600', fontSize: 16, lineHeight: 22 }}>
+                  You feel best after socializing—check out highlighted places nearby.
+                </Text>
+              </View>
+              <TouchableOpacity style={{ marginLeft: 8 }}>
+                <Ionicons name="heart" size={22} color="#1A3C3C" />
+              </TouchableOpacity>
+            </View>
+            {/* Info Card */}
+            <View style={{
+              backgroundColor: '#B2DFDB',
+              borderRadius: 12,
+              padding: 13,
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginHorizontal: 18,
+              marginBottom: 2,
+            }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: '#1A3C3C', fontSize: 15 }}>
+                  Looking for something new today? Try exploring highlighted places nearby.
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowExploreSheet(false)} style={{ marginLeft: 8 }}>
+                <Ionicons name="close" size={20} color="#338C8C" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
