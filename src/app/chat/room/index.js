@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useMemo } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -7,7 +7,6 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StreamChat } from "stream-chat";
@@ -23,9 +22,9 @@ const moodData = [
   { mood: "Lonely", emoji: "😔", gradient: ["#2D6A78", "#3D8B99"] },
   { mood: "Anxious", emoji: "😟", gradient: ["#7A5CFA", "#4C2FBD"] },
   { mood: "Calm", emoji: "😌", gradient: ["#5DC2AF", "#3B8B7A"] },
-   { mood: "Grateful", emoji: "😌", gradient: ["#5DC2AF", "#3B8B7A"] },
-    { mood: "Sad", emoji: "😌", gradient:["#7A5CFA", "#4C2FBD"]  },
-    { mood: "Frustrated", emoji: "😌", gradient: ["#5DC2AF", "#3B8B7A"] },
+  { mood: "Grateful", emoji: "😌", gradient: ["#FFD166", "#FB8B24"] },
+  { mood: "Sad", emoji: "😢", gradient: ["#7A5CFA", "#4C2FBD"] },
+  { mood: "Frustrated", emoji: "😤", gradient: ["#FF6B6B", "#D64545"] },
 ];
 
 export default function GroupChannelListScreen() {
@@ -75,21 +74,26 @@ export default function GroupChannelListScreen() {
   };
 
   const getMoodStyle = (name) => {
-    console.log("getMoodStyle called with name:", name);
     const lower = name.toLowerCase();
     if (lower.includes("happy")) return moodData[0];
     if (lower.includes("lonely")) return moodData[1];
     if (lower.includes("anxious")) return moodData[2];
     if (lower.includes("calm")) return moodData[3];
-     if (lower.includes("grateful")) return moodData[4];
-      if (lower.includes("sad")) return moodData[4];
-       if (lower.includes("frustrated")) return moodData[4];
+    if (lower.includes("grateful")) return moodData[4];
+    if (lower.includes("sad")) return moodData[5];
+    if (lower.includes("frustrated")) return moodData[6];
     return moodData[0];
   };
 
   const renderMoodCard = ({ item }) => {
     const mood = getMoodStyle(item.data.name);
-    // console.log("Rendering mood card for item:", item.data.name, "with mood:", mood);
+
+    const totalMembers = Object.keys(item.state.members || {}).length;
+
+    const onlineCount = Object.values(item.state.members || {}).filter(
+      (member) => member.user?.online
+    ).length;
+
     return (
       <TouchableOpacity onPress={() => handleChannelSelect(item)} style={styles.cardWrapper}>
         <LinearGradient
@@ -103,7 +107,9 @@ export default function GroupChannelListScreen() {
           </View>
           <View>
             <Text style={styles.cardTitle}>Feelin’ {mood.mood}</Text>
-            <Text style={styles.cardSub}>{item.state.members.length} people chatting</Text>
+            <Text style={styles.cardSub}>
+               {onlineCount} people chatting
+            </Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </LinearGradient>
@@ -121,26 +127,26 @@ export default function GroupChannelListScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{paddingHorizontal:16 , flex: 1,}}>
-      <Text style={styles.appTitle}>Mynkl</Text>
-      <Text style={styles.title}>Mood-Based Chat Rooms</Text>
-      <Text style={styles.subtitle}>Connect with others in similar emotional states</Text>
+      <View style={{ paddingHorizontal: 16, flex: 1 }}>
+        <Text style={styles.appTitle}>Mynkl</Text>
+        <Text style={styles.title}>Mood-Based Chat Rooms</Text>
+        <Text style={styles.subtitle}>Connect with others in similar emotional states</Text>
 
-      <FlatList
-        data={channels}
-        renderItem={renderMoodCard}
-        keyExtractor={(item) => item.cid}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
+        <FlatList
+          data={channels}
+          renderItem={renderMoodCard}
+          keyExtractor={(item) => item.cid}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
 
-      <View style={styles.footerCard}>
-        <Text style={styles.footerText}>
-          How about a happiness challenge to lift your mood? <Text>😉</Text>
-        </Text>
-        <TouchableOpacity style={styles.footerButton}>
-          <Text style={styles.footerButtonText}>▶ Listen to uplifting playlist</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.footerCard}>
+          <Text style={styles.footerText}>
+            How about a happiness challenge to lift your mood? <Text>😉</Text>
+          </Text>
+          <TouchableOpacity style={styles.footerButton}>
+            <Text style={styles.footerButtonText}>▶ Listen to uplifting playlist</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -150,8 +156,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#5f3c3c",
-    padding: 20,
-    paddingHorizontal:16
+    paddingHorizontal: 16,
   },
   loading: {
     flex: 1,
@@ -177,7 +182,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardWrapper: {
-    marginTop:15,
+    marginTop: 15,
     marginVertical: 6,
   },
   card: {
@@ -211,7 +216,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     marginBottom: 25,
-  
   },
   footerText: {
     fontSize: 14,

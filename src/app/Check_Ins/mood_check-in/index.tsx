@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Slider from '@react-native-community/slider';
@@ -126,7 +127,15 @@ export default function MoodScreen() {
 
         {/* Action Buttons */}
         {data?.suggested_actions?.map((action, idx) => (
-          <TouchableOpacity key={idx} style={styles.actionBtn}>
+          <TouchableOpacity
+           onPress={()=>{
+             if (action?.type === "playlist") {
+                          Linking.openURL(action.data.url);
+                        } else {
+                          router.push(`/activities/${action?.data?.id}`);
+                        }
+           }}
+           key={idx} style={styles.actionBtn}>
             <Text style={{ fontSize: 20 }}>{action.emoji}</Text>
             <Text style={styles.btnText}>{action.description}</Text>
           </TouchableOpacity>

@@ -162,7 +162,7 @@ export default function MoodScreen() {
       )}
 
       <TextInput
-        placeholder="Add a note about your RSVP"
+        placeholder="Add a note"
         placeholderTextColor="#aaa"
         style={styles.input}
         value={notes}
@@ -177,7 +177,7 @@ export default function MoodScreen() {
         onPress={handleSubmit}
         disabled={loading}
       >
-        <Text style={styles.submitText}>Submit RSVP</Text>
+        <Text style={styles.submitText}>Submit</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );

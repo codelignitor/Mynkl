@@ -56,6 +56,7 @@ import Stressed from '../../assets/svgs/stressed-icon.svg';
 import Lonely from '../../assets/svgs/lonely-icon.svg';
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import AudioRecorderPlayer from "@/src/components/common/audioRecorder";
 
 export const unstable_settings = {
   initialRouteName: 'index',
@@ -79,6 +80,8 @@ export default function AddCheckIn() {
     AnonymousCheckIn,
     setAnonymousCheckIn
   } = useAddCheckIn();
+
+  const [isAudioRecording, setIsAudioRecording] = useState(false);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -115,8 +118,11 @@ export default function AddCheckIn() {
           contentContainerStyle={styles.moodList}
           showsHorizontalScrollIndicator={false}
         />
-
+       
         <View style={styles.noteContainer}>
+         
+         {isAudioRecording?
+          < AudioRecorderPlayer/>:
           <TextInput
             style={styles.textInput}
             multiline
@@ -126,9 +132,10 @@ export default function AddCheckIn() {
             value={text}
             onChangeText={setText}
           />
-          {/* <TouchableOpacity style={styles.voiceButton}>
+         }
+          <TouchableOpacity onPress={()=>setIsAudioRecording(!isAudioRecording)} style={styles.voiceButton}>
             <Text style={styles.voiceIcon}>🎙️</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
 
         <View style={styles.locationContainer}>

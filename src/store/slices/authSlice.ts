@@ -63,6 +63,7 @@ const authSlice = createSlice({
       state.username = action.payload.username;
       state.profileImage = action.payload.profileImage;
     },
+    
   },
 });
 

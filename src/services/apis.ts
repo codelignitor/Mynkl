@@ -56,18 +56,25 @@ export const checkIn = async (payload: CheckInPayload) => {
 
 // profile api
 export const updateUserProfile = async (payload) => {
-    const config = {
-        headers: {
-            'Content-Type': payload instanceof FormData ? 'multipart/form-data' : 'application/json'
-        }
-    };
-    
-    const response = await axiosInstance.post(`/virtual_hugs/profile/update-profile`, payload, config);
+  try {
+    const response = await axiosInstance.post(`/profile/update-profile`, payload, {
+      headers: payload instanceof FormData
+        ? {} // ✅ Let Axios auto-set Content-Type with boundary
+        : { 'Content-Type': 'application/json' },
+    });
+
     return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.log('❌ API Error:', error.response.data);
+    }
+    throw error;
+  }
 };
 
+
 export const updatedUserProfile = async (userId: string) => {
-  const response = await axiosInstance.get(`/virtual_hugs/profile/${userId}`)
+  const response = await axiosInstance.get(`profile/profile/${userId}`)
   return response.data;
 };
 

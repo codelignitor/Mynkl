@@ -40,6 +40,7 @@ export function useAddCheckIn() {
           mood: selectedMood?.emoji,
           text: text,
           location_opt_in: locationOptIn,
+          anonymous_checkin: AnonymousCheckIn,
         };
         // console.log("Submitted payload:", payload);
         const response = await checkIn(payload);

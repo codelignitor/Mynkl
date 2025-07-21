@@ -53,9 +53,7 @@ export default function MoodPatternScreen() {
 
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.chartContainer}>
-          <Text style={styles.chartLabel}>
-            Past {selectedRange === 'Last7Days' ? '7' : '30'} Days
-          </Text>
+        
 
           {/* Toggle */}
           <View style={styles.toggleContainer}>

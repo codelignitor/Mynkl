@@ -44,35 +44,50 @@ export const useEventCreationLogic = () => {
     console.log('Event Creation Data:', data);
   }, [params.data]);
 
-
-    const uploadImage = async (image) => {
-  const formData = new FormData();
-
-
-  formData?.append('file', image?.assets[0]?.uri ? {
-    uri: image.assets[0].uri,
-    type: image.assets[0].type ||   'image/jpeg',
-    name: image.assets[0].fileName || `image_${Date.now()}.jpg`,
-  } : image.assets[0]);
-  console.log('Uploading image:',JSON.stringify( formData));
-
+const uploadImage = async (image) => {
   try {
-   
+    const asset = image?.assets?.[0];
+
+    if (!asset?.uri) {
+      console.error('No image URI found');
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append('file', {
+      uri: asset.uri,
+      type: asset.type || 'image/jpeg',
+      name: asset.fileName || 'photo.jpg',
+    });
+
+    console.log('Uploading image:', asset.uri);
+
     const response = await fetch('http://13.50.228.222:8000/events/upload_image', {
       method: 'POST',
       headers: {
         'Content-Type': 'multipart/form-data',
+        // Add authorization here if needed:
+        // 'x-access-token': 'your_token',
       },
       body: formData,
     });
 
+    if (!response.ok) {
+      console.error('Server error:', response.status, response.statusText);
+      const errorText = await response.text();
+      throw new Error(errorText);
+    }
+
     const data = await response.json();
-    console.log('Uploaded image URL:', data.url);
-    return data.url; // Return the uploaded image URL
+    console.log('Uploaded image URL:', data?.url);
+    return data?.url;
   } catch (error) {
-    console.error('Upload failed:', error);
+    console.error('Upload failed:', error.message || error);
+    return null;
   }
 };
+
 
 
 const previewEventHandler = async () => {
