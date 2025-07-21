@@ -264,3 +264,17 @@ export const getVirtualHugsAISuggestions = async () => {
   const response = await axiosInstance.get(`/virtual_hugs/ai-suggestions` );
   return response.data;
 };
+
+
+//calm_spots
+export const saveReflection = async (payload) => {
+  const response = await axiosInstance.post(`/meditation/reflections`,payload);
+  return response.data;
+};
+
+export const MeditationsoptsNearby = async (lat: number, lon: number) => {
+  const response = await axiosInstance.get(`/meditation/spots/nearby`, { params: { lat, lon } });
+  return response.data;
+};
+
+

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import MoodMapView from '@/src/components/map/MoodMapView';
 import { styles } from './style';
+import { saveReflection, MeditationsoptsNearby } from '@/src/services/apis';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,68 +26,47 @@ export default function FindCalmSpotScreen() {
     const [reflectionText, setReflectionText] = useState('');
     type Spot = typeof spots[0];
     const [selectedMarker, setSelectedMarker] = useState<Spot | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
+    const [isLoadingNearbySpots, setIsLoadingNearbySpots] = useState(true); // Start with loading true
+    const [apiSpots, setApiSpots] = useState<any[]>([]);
 
-    const spots = [
-        {
-            id: 1,
-            title: 'Park bench area',
-            subtitle: 'Calm rating: High',
-            icon: 'tree',
-            iconFamily: 'FontAwesome5',
+    // Empty spots array - will be populated from API
+    const spots = apiSpots;
+
+    // Auto-fetch spots when component mounts
+    useEffect(() => {
+        handleFetchNearbySpots();
+    }, []);
+
+    // Function to map API spots to UI format
+    const mapApiSpotsToUIFormat = (apiSpots: any[]) => {
+        return apiSpots.map((spot, index) => ({
+            id: index + 1,
+            title: spot.name || 'Meditation Spot',
+            subtitle: `Total visits: ${spot.total_visits || 0} • Calm mood: ${spot.moods?.calm || 0}`,
+            icon: 'location',
+            iconFamily: 'Ionicons',
             backgroundColor: '#E8F5E9',
             iconColor: '#4CAF50',
             mapTitle: 'Calm',
-            mapSubtitle: 'Park',
+            mapSubtitle: spot.name || 'Peaceful',
             coordinate: {
-                latitude: 31.5204,
-                longitude: 74.3487,
+                latitude: spot.latitude || 0,
+                longitude: spot.longitude || 0,
             },
-            address: '320 Riverside Dr',
-            usersCount: 10,
+            address: spot.name || 'Meditation Location',
+            usersCount: spot.total_visits || 0,
             recommendedActivity: '10 minute mindful pause',
-        },
-        {
-            id: 2,
-            title: 'Riverside walk',
-            subtitle: 'User mood: Relaxed',
-            icon: 'water',
-            iconFamily: 'MaterialCommunityIcons',
-            backgroundColor: '#E3F2FD',
-            iconColor: '#2196F3',
-            mapTitle: 'Peaceful',
-            mapSubtitle: 'Peaceful',
-            coordinate: {
-                latitude: 31.5304,
-                longitude: 74.3587,
-            },
-            address: '320 Riverside Dr',
-            usersCount: 10,
-            recommendedActivity: '10 minute mindful pause',
-        },
-        {
-            id: 3,
-            title: 'Café quiet zone',
-            subtitle: 'Ideal for mindful breaks',
-            icon: 'coffee',
-            iconFamily: 'FontAwesome5',
-            backgroundColor: '#FFF3E0',
-            iconColor: '#FF9800',
-            mapTitle: 'Grounding',
-            mapSubtitle: 'Oakwood',
-            coordinate: {
-                latitude: 31.5104,
-                longitude: 74.3387,
-            },
-            address: '320 Riverside Dr',
-            usersCount: 10,
-            recommendedActivity: '10 minute mindful pause',
-        },
-    ];
+            // Keep original data for reference
+            originalData: spot
+        }));
+    };
 
-    // Default region centered on first spot
+    // Default region centered on first spot or fallback coordinates
     const defaultRegion = spots.length > 0 ? {
-      latitude: spots[0].coordinate.latitude,
-      longitude: spots[0].coordinate.longitude,
+      latitude: spots[0].coordinate?.latitude || 31.5204,
+      longitude: spots[0].coordinate?.longitude || 74.3487,
       latitudeDelta: 0.02,
       longitudeDelta: 0.02,
     } : {
@@ -94,6 +74,127 @@ export default function FindCalmSpotScreen() {
       longitude: 74.3487,
       latitudeDelta: 0.02,
       longitudeDelta: 0.02,
+    };
+
+    // Function to handle fetching nearby meditation spots
+    const handleFetchNearbySpots = async () => {
+        setIsLoadingNearbySpots(true);
+        try {
+            // Using default coordinates (you can replace with user's actual location)
+            const lat = 31.5204; // Default latitude
+            const lon = 74.3487; // Default longitude (changed to 'lon' to match API)
+            
+            console.log('Fetching nearby meditation spots for coordinates:', { lat, lon });
+            console.log('Individual values - lat:', lat, 'lon:', lon);
+            console.log('Types - lat:', typeof lat, 'lon:', typeof lon);
+            
+            // Check if the API function exists
+            console.log('MeditationsoptsNearby function:', typeof MeditationsoptsNearby);
+            
+            console.log('About to call API...');
+            
+            // Call API with correct parameter names (lat, lon)
+            const response = await MeditationsoptsNearby(lat, lon);
+            
+            console.log('API call completed');
+            console.log('Raw API response:', response);
+            console.log('Response type:', typeof response);
+            console.log('Response is undefined:', response === undefined);
+            console.log('Response is null:', response === null);
+            
+            if (response === undefined) {
+                console.error('🚨 API returned undefined - check your API function implementation');
+                console.log('Expected response format should be an array of spots');
+                setApiSpots([]);
+                return;
+            }
+            
+            console.log('✅ API Response - Nearby Meditation Spots:');
+            console.log('Full Response:', JSON.stringify(response, null, 2));
+            
+            // Handle undefined or null response
+            if (!response) {
+                console.warn('⚠️ API returned undefined or null response');
+                setApiSpots([]);
+                return;
+            }
+            
+            // Store the API response data
+            if (response) {
+                console.log('Processing API response...');
+                
+                // Log specific parts of the response if it has structure
+                if (typeof response === 'object') {
+                    console.log('Response keys:', Object.keys(response));
+                    
+                    if (response.data) {
+                        console.log('Response data:', response.data);
+                        const mappedSpots = mapApiSpotsToUIFormat(Array.isArray(response.data) ? response.data : []);
+                        setApiSpots(mappedSpots);
+                    }
+                    else if (response.spots) {
+                        console.log('Spots array:', response.spots);
+                        const mappedSpots = mapApiSpotsToUIFormat(Array.isArray(response.spots) ? response.spots : []);
+                        setApiSpots(mappedSpots);
+                    }
+                    else if (Array.isArray(response)) {
+                        console.log('Number of spots found:', response.length);
+                        response.forEach((spot, index) => {
+                            console.log(`Spot ${index + 1}:`, spot);
+                        });
+                        const mappedSpots = mapApiSpotsToUIFormat(response);
+                        setApiSpots(mappedSpots);
+                        console.log('Mapped spots for UI:', mappedSpots);
+                    }
+                    else {
+                        console.warn('⚠️ Response is an object but not in expected format');
+                        setApiSpots([]);
+                    }
+                }
+                else {
+                    console.warn('⚠️ Response is not an object:', typeof response);
+                    setApiSpots([]);
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ Error fetching nearby meditation spots:', error);
+            
+            // Log more detailed error information with safe handling
+            if (error.response) {
+                console.error('Error response status:', error.response.status);
+                console.error('Error response data:');
+                
+                // Safe logging of error details
+                if (error.response.data && error.response.data.detail) {
+                    console.error('API Validation Errors:');
+                    if (Array.isArray(error.response.data.detail)) {
+                        error.response.data.detail.forEach((err, index) => {
+                            console.error(`Error ${index + 1}:`);
+                            console.error('  Field:', err.loc ? err.loc.join('.') : 'unknown');
+                            console.error('  Message:', err.msg || 'No message');
+                            console.error('  Type:', err.type || 'No type');
+                            console.error('  Input:', err.input);
+                        });
+                    }
+                } else {
+                    console.error('Error data:', JSON.stringify(error.response.data, null, 2));
+                }
+                
+                // Suggest fixes based on the error
+                if (error.response.status === 422) {
+                    console.log('💡 Suggestion: The API is expecting additional required fields.');
+                    console.log('Check your API documentation for required parameters like:');
+                    console.log('- user_id, radius, limit, etc.');
+                }
+            } else if (error.request) {
+                console.error('Error request:', error.request);
+            } else {
+                console.error('Error message:', error.message);
+            }
+        } finally {
+            setIsLoadingNearbySpots(false);
+        }
     };
 
     const renderIcon = (iconName: string, iconFamily: string, color: string, size: number = 24) => {
@@ -151,12 +252,35 @@ export default function FindCalmSpotScreen() {
             { emoji: '😞', label: 'Down', value: 'down' },
         ];
 
+        const handleSaveReflection = async () => {
+            if (!selectedMood || !reflectionText.trim()) return;
+            setIsSaving(true);
+            try {
+                const payload = {
+                    mood: selectedMood,
+                    reflection_text: reflectionText.trim(),
+                };
+                console.log('Payload:', payload); // Log the payload
+                const response = await saveReflection(payload);
+                if (response && response.message) {
+                    console.log(response.message);
+                }
+            } catch (error) {
+                console.log('Error saving reflection:', error);
+            } finally {
+                setIsSaving(false);
+                setShowReflection(false);
+                setShowDirections(false);
+                setShowMap(false);
+            }
+        };
+
         return (
             <SafeAreaView style={styles.reflectionScreenContainer}>
                 <StatusBar barStyle="dark-content" backgroundColor="#FFF9F2" />
                 
                 <View style={styles.reflectionContent}>
-                    <Text style={styles.reflectionTitle}>How do you feel{'\n'}after your visit?</Text>
+                    <Text style={styles.reflectionTitle}>How do you feel{ '\n' }after your visit?</Text>
                     
                     <View style={styles.moodsContainer}>
                         {moods.map((mood) => (
@@ -191,15 +315,11 @@ export default function FindCalmSpotScreen() {
                     </View>
 
                     <TouchableOpacity 
-                        style={styles.saveReflectionButton}
-                        onPress={() => {
-                            // Handle save reflection
-                            setShowReflection(false);
-                            setShowDirections(false);
-                            setShowMap(false);
-                        }}
+                        style={[styles.saveReflectionButton, (!selectedMood || !reflectionText.trim() || isSaving) && { opacity: 0.5 }]}
+                        onPress={handleSaveReflection}
+                        disabled={!selectedMood || !reflectionText.trim() || isSaving}
                     >
-                        <Text style={styles.saveReflectionButtonText}>Save Reflection</Text>
+                        <Text style={styles.saveReflectionButtonText}>{isSaving ? 'Saving...' : 'Save Reflection'}</Text>
                         <Ionicons name="arrow-forward" size={20} color="white" style={{ marginLeft: 8 }} />
                     </TouchableOpacity>
                 </View>
@@ -374,22 +494,98 @@ export default function FindCalmSpotScreen() {
                     <Text style={styles.subtitle}>to pause and breathe today.</Text>
 
                     <View style={styles.spotsContainer}>
-                        {spots.map((spot) => (
-                            <TouchableOpacity
-                                key={spot.id}
-                                style={[styles.spotCard, { backgroundColor: spot.backgroundColor }]}
-                                activeOpacity={0.8}
-                            >
-                                <View style={styles.iconContainer}>
-                                    {renderIcon(spot.icon, spot.iconFamily, spot.iconColor)}
-                                </View>
-                                <View style={styles.textContainer}>
-                                    <Text style={styles.spotTitle}>{spot.title}</Text>
-                                    <Text style={styles.spotSubtitle}>{spot.subtitle}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
+                        {isLoadingNearbySpots ? (
+                            <View style={{ 
+                                backgroundColor: '#F5F5F5', 
+                                padding: 20, 
+                                borderRadius: 12, 
+                                alignItems: 'center',
+                                marginBottom: 20 
+                            }}>
+                                <Ionicons name="sync" size={48} color="#4CAF50" />
+                                <Text style={{ 
+                                    fontSize: 16, 
+                                    color: '#666', 
+                                    marginTop: 10, 
+                                    textAlign: 'center' 
+                                }}>
+                                    Loading meditation spots...
+                                </Text>
+                            </View>
+                        ) : spots.length === 0 ? (
+                            <View style={{ 
+                                backgroundColor: '#F5F5F5', 
+                                padding: 20, 
+                                borderRadius: 12, 
+                                alignItems: 'center',
+                                marginBottom: 20 
+                            }}>
+                                <Ionicons name="location-outline" size={48} color="#999" />
+                                <Text style={{ 
+                                    fontSize: 16, 
+                                    color: '#666', 
+                                    marginTop: 10, 
+                                    textAlign: 'center' 
+                                }}>
+                                    No meditation spots found
+                                </Text>
+                                <Text style={{ 
+                                    fontSize: 14, 
+                                    color: '#999', 
+                                    marginTop: 5, 
+                                    textAlign: 'center' 
+                                }}>
+                                    Try refreshing or check your location
+                                </Text>
+                            </View>
+                        ) : (
+                            spots.map((spot) => (
+                                <TouchableOpacity
+                                    key={spot.id}
+                                    style={[
+                                        styles.spotCard,
+                                        { backgroundColor: spot.backgroundColor || '#F0F0F0' },
+                                        selectedSpot && selectedSpot.id === spot.id && { borderWidth: 2, borderColor: '#4CAF50' }
+                                    ]}
+                                    activeOpacity={0.8}
+                                    onPress={() => setSelectedSpot(spot)}
+                                >
+                                    <View style={styles.iconContainer}>
+                                        {spot.icon && spot.iconFamily ? 
+                                            renderIcon(spot.icon, spot.iconFamily, spot.iconColor || '#4CAF50') :
+                                            <Ionicons name="location" size={24} color="#4CAF50" />
+                                        }
+                                    </View>
+                                    <View style={styles.textContainer}>
+                                        <Text style={styles.spotTitle}>{spot.title || spot.name || 'Meditation Spot'}</Text>
+                                        <Text style={styles.spotSubtitle}>{spot.subtitle || spot.description || 'Peaceful location'}</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            ))
+                        )}
                     </View>
+
+                    {/* Refresh Button (replaces the old fetch button) */}
+                    <TouchableOpacity 
+                        style={{ 
+                            backgroundColor: isLoadingNearbySpots ? '#ccc' : '#4CAF50', 
+                            padding: 12, 
+                            borderRadius: 8, 
+                            alignItems: 'center', 
+                            marginVertical: 10,
+                            flexDirection: 'row',
+                            justifyContent: 'center'
+                        }}
+                        onPress={handleFetchNearbySpots}
+                        disabled={isLoadingNearbySpots}
+                    >
+                        {isLoadingNearbySpots && (
+                            <Ionicons name="sync" size={16} color="white" style={{ marginRight: 8 }} />
+                        )}
+                        <Text style={{ color: 'white', fontWeight: '500' }}>
+                            {isLoadingNearbySpots ? 'Loading...' : 'Refresh Spots'}
+                        </Text>
+                    </TouchableOpacity>
 
                     <TouchableOpacity
                         style={styles.mapButton}
