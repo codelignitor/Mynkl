@@ -7,281 +7,567 @@ import {
   StyleSheet,
   Dimensions,
   Alert,
+  Image,
+  ActivityIndicator,
+  StatusBar,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useEventDetail } from '../../activities/[activityId]/useEventDetail';
+import { submitFeedback } from '../../../services/apis';
+import Slider from '@react-native-community/slider';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const moods = [
-  { icon: 'happy-outline', mood: 'Happy' },
-  { icon: 'sad-outline', mood: 'Sad' },
-  { icon: 'sad-outline', mood: 'Upset' },
-  { icon: 'happy-outline', mood: 'Excited' },
+  { emoji: '😊', mood: 'Happy' },
+  { emoji: '🙂', mood: 'Good' },
+  { emoji: '😐', mood: 'Okay' },
+  { emoji: '☹️', mood: 'Sad' },
 ];
+
+// Type definitions based on the actual API response
+interface EventDetails {
+  id?: string;
+  name: string;
+  description: string;
+  event_image: string | null;
+  event_datetime: string;
+  location: {
+    name: string;
+    lat: number;
+    lng: number;
+  };
+  mood_tag: string;
+  max_attendees: number;
+  type: string;
+  anonymous_check_ins: boolean;
+  feedback: boolean;
+  joined_event: boolean;
+  journaling_prompts: boolean;
+  list_of_users: any[];
+  music_playlist: boolean;
+  privacy_settings: boolean;
+  visibility: boolean;
+  virtual_hug: boolean;
+}
 
 export default function MoodScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  const { event_id, title, lat, lng, location, image, date, time } = params;
+  const { event_id, title, lat, lng, location, image, date, time, activity_id, description } = params;
 
-  const [selectedMood, setSelectedMood] = useState(null);
+  // Use the event detail hook to fetch data
+  const { loading: eventLoading, eventDetails } = useEventDetail();
+
+  const [selectedMood, setSelectedMood] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (__DEV__) {
       console.log('Received Parameters:', params);
+      console.log('Event Details:', eventDetails);
     }
-  }, []);
+  }, [params, eventDetails]);
 
-  const getFeeling = (mood) => {
+  const getFeeling = (mood: string): string => {
     switch (mood) {
-      case 'happy':
-      case 'upset':
+      case 'Happy':
         return 'good';
-      case 'excited':
+      case 'Good':
         return 'better';
-      case 'sad':
-        return 'best';
+      case 'Okay':
+        return 'okay';
+      case 'Sad':
+        return 'sad';
       default:
         return 'good';
     }
   };
 
   const handleSubmit = async () => {
+    console.log('🚀 Add to Calendar button pressed!');
+    console.log('📊 Current state:', {
+      selectedMood: selectedMood !== null ? moods[selectedMood] : null,
+      notes: notes,
+      loading: loading,
+      event_id: event_id,
+      activity_id: activity_id,
+      eventDetailsId: eventDetails?.id
+    });
+
     if (selectedMood === null) {
+      console.log('❌ No mood selected, showing alert');
       Alert.alert('Required', 'Please select your mood');
       return;
     }
 
-    setLoading(true); // show loader right away
+    console.log('✅ Mood selected, proceeding with submission');
+    setLoading(true);
 
-    const feeling = getFeeling(moods[selectedMood].mood.toLowerCase());
+    const feeling = getFeeling(moods[selectedMood].mood);
+    console.log('🎭 Feeling mapped:', moods[selectedMood].mood, '->', feeling);
+
+    // Get the activity_id from the route params or event details
+    const activityId = event_id || activity_id || (eventDetails as any)?.id;
+    
+    if (!activityId) {
+      Alert.alert('Error', 'Activity ID is missing. Please try again.');
+      setLoading(false);
+      return;
+    }
 
     const payload = {
       feeling,
       note: notes.trim(),
-      activity_id: event_id || '',
+      activity_id: activityId,
     };
 
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NDI0ZWNjOC1iYzEwLTRiMWMtOWU4Ny0wNTU3YmE2MDU3YWQiLCJleHAiOjE3NTE1NDE2MTZ9.bg_9zk9rzmdInRSnwwkE28vmc1WXdYBud0qEEyuTNHQ'; // use env-safe way in real apps
+    console.log('📦 Payload prepared:', payload);
 
     try {
-      const response = await fetch('https://2ae4-110-39-39-254.ngrok-free.app/activity/activity-feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      console.log('🌐 Making API request using submitFeedback function...');
+      
+      const response = await submitFeedback(payload);
 
-      let json;
-      try {
-        json = await response.json();
-      } catch {
-        const text = await response.text();
-        json = { message: text };
-      }
+      console.log('📡 API Response:', response);
 
       if (__DEV__) {
-        console.log('API response:', json);
+        console.log('API response:', response);
       }
 
-      Alert.alert(response.ok ? 'Success' : 'Error', json.message || 'No response message');
+      Alert.alert('Success', response.message || 'Feedback submitted successfully!');
 
-      if (response.ok) {
-        router.push({
-          pathname: `/activities/${event_id}`,
-          params: {
-            event_id,
-            title,
-            lat,
-            lng,
-            location,
-            image,
-            date,
-            time,
-            mood: moods[selectedMood].mood,
-            notes: notes.trim(),
-          },
-        });
+      console.log('✅ Success! Navigating to activity page...');
+      const eventDetailsTyped = eventDetails as any;
+      const navigationParams = {
+        event_id: activityId,
+        title: eventDetailsTyped?.name || title,
+        lat: eventDetailsTyped?.location?.lat || lat,
+        lng: eventDetailsTyped?.location?.lng || lng,
+        location: eventDetailsTyped?.location?.name || location,
+        image: eventDetailsTyped?.event_image || image,
+        date: eventDetailsTyped?.event_datetime ? new Date(eventDetailsTyped.event_datetime).toLocaleDateString() : date,
+        time: eventDetailsTyped?.event_datetime ? new Date(eventDetailsTyped.event_datetime).toLocaleTimeString() : time,
+        mood: moods[selectedMood].mood,
+        notes: notes.trim(),
+      };
+      console.log('🧭 Navigation params:', navigationParams);
+      
+      router.push({
+        pathname: `/activities/${activityId}` as any,
+        params: navigationParams,
+      });
+    } catch (error: any) {
+      console.error('🚨 API Error:', error);
+      
+      // Handle validation errors (422 status)
+      if (error.response?.status === 422) {
+        const errorData = error.response.data;
+        let errorMessage = 'Validation error occurred.';
+        
+        // Try to extract validation error message
+        if (errorData?.detail && Array.isArray(errorData.detail)) {
+          errorMessage = errorData.detail.map((err: any) => err.msg || err.message).join(', ');
+        } else if (errorData?.message) {
+          errorMessage = errorData.message;
+        } else if (typeof errorData === 'string') {
+          errorMessage = errorData;
+        }
+        
+        Alert.alert('Validation Error', errorMessage);
+      } else {
+        Alert.alert('Error', 'Could not submit feedback. Please try again.');
       }
-    } catch (error) {
-      console.error('Fetch Error:', error);
-      Alert.alert('Error', 'Could not connect to server.');
     } finally {
+      console.log('🏁 Request completed, setting loading to false');
       setLoading(false);
     }
   };
 
+  // Function to format date from ISO string
+  const formatDateTime = (isoString: string) => {
+    if (!isoString) return null;
+    const date = new Date(isoString);
+    return {
+      date: date.toLocaleDateString('en-US', { 
+        weekday: 'long',
+        month: 'long', 
+        day: 'numeric'
+      }),
+      time: date.toLocaleTimeString([], { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      })
+    };
+  };
+
+  // Get event data from either params or fetched eventDetails
+  const getEventData = () => {
+    if (eventDetails && typeof eventDetails === 'object') {
+      const eventDetailsTyped = eventDetails as EventDetails;
+      const dateTime = formatDateTime(eventDetailsTyped.event_datetime);
+      return {
+        title: eventDetailsTyped.name,
+        description: eventDetailsTyped.description,
+        image: eventDetailsTyped.event_image,
+        location: eventDetailsTyped.location?.name,
+        date: dateTime?.date || 'Today',
+        time: dateTime?.time || '8:00 PM',
+        moodTag: eventDetailsTyped.mood_tag,
+        maxAttendees: eventDetailsTyped.max_attendees,
+        type: eventDetailsTyped.type,
+      };
+    }
+    
+    // Fallback to params if eventDetails not available
+    return {
+      title: title || 'Event',
+      description,
+      image,
+      location,
+      date: date || 'Today',
+      time: time || '8:00 PM',
+    };
+  };
+
+  const eventData = getEventData();
+
   return (
-    <SafeAreaView style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={28} color="#fff" />
-      </TouchableOpacity>
-
-      <Text style={styles.heading}>How are you{'\n'}feeling now?</Text>
-
-      {title && (
-        <View style={styles.eventInfo}>
-          <Text style={styles.eventTitle}>{title}</Text>
-          {date && time && <Text style={styles.eventDateTime}>{date} - {time}</Text>}
-          {location && <Text style={styles.eventLocation}>{location}</Text>}
-        </View>
-      )}
-
-      <Text style={styles.emoji}>😊</Text>
-
-      <View style={styles.moodRow}>
-        {moods.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => setSelectedMood(index)}
-            style={[
-              styles.moodIcon,
-              selectedMood === index && styles.selectedMood,
-            ]}
-          >
-            <Ionicons
-              name={item.icon}
-              size={24}
-              color={selectedMood === index ? '#fff' : '#aaa'}
-            />
-          </TouchableOpacity>
-        ))}
+    <ScrollView 
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      bounces={true}
+    >
+      <StatusBar barStyle="light-content" backgroundColor="#1a2332" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.appName}>mynkl</Text>
       </View>
 
-      {selectedMood !== null && (
-        <Text style={styles.selectedMoodText}>
-          Selected: {moods[selectedMood].mood}
+      {/* Main Content */}
+      <View style={styles.content}>
+        <Text style={styles.mainTitle}>
+          You're almost set{'\n'}to join 🎉
         </Text>
-      )}
 
-      <TextInput
-        placeholder="Add a note"
-        placeholderTextColor="#aaa"
-        style={styles.input}
-        value={notes}
-        onChangeText={setNotes}
-        multiline
-      />
+        {/* Event Card */}
+        {eventLoading ? (
+          <View style={styles.eventCard}>
+            <ActivityIndicator size="large" color="#fff" />
+            <Text style={styles.loadingText}>Loading event details...</Text>
+          </View>
+        ) : (
+          <View style={styles.eventCard}>
+            {eventData.image && (
+              <Image
+                source={{ uri: eventData.image }}
+                style={styles.eventImage}
+                resizeMode="cover"
+              />
+            )}
+            <View style={styles.eventInfo}>
+              <Text style={styles.eventTitle}>{eventData.title}</Text>
+              <Text style={styles.eventDateTime}>
+                {eventData.date} • {eventData.time}
+              </Text>
+            </View>
+          </View>
+        )}
 
-      {loading && <Text style={{ color: '#fff', marginBottom: 10 }}>Submitting...</Text>}
+        {/* Status */}
+        <View style={styles.statusContainer}>
+          <Ionicons name="checkmark-circle" size={24} color="#4CAF50" />
+          <Text style={styles.statusText}>You're going</Text>
+        </View>
 
-      <TouchableOpacity
-        style={[styles.submitButton, loading && { opacity: 0.5 }]}
-        onPress={handleSubmit}
-        disabled={loading}
-      >
-        <Text style={styles.submitText}>Submit</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+        {/* Mood Question */}
+        <Text style={styles.moodQuestion}>
+          How are you feeling about this event?
+        </Text>
+
+        {/* Mood Slider */}
+        <View style={{ width: width * 0.8, alignItems: 'center', marginBottom: 20 }}>
+          <Slider
+            style={{ width: '100%', height: 40 }}
+            minimumValue={0}
+            maximumValue={3}
+            step={1}
+            value={selectedMood !== null ? selectedMood : 1}
+            onValueChange={setSelectedMood}
+            minimumTrackTintColor="#6EC6CA"
+            maximumTrackTintColor="#B0BEC5"
+            thumbTintColor="#FFD700"
+          />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginTop: 8 }}>
+            <Text style={{ fontSize: 18 }}>{moods[0].emoji}</Text>
+            <Text style={{ fontSize: 18 }}>{moods[1].emoji}</Text>
+            <Text style={{ fontSize: 18 }}>{moods[2].emoji}</Text>
+            <Text style={{ fontSize: 18 }}>{moods[3].emoji}</Text>
+          </View>
+        </View>
+
+        {/* Selected Mood Display */}
+        {selectedMood !== null && (
+          <Text style={styles.selectedMoodText}>
+            Selected: {moods[selectedMood].mood}
+          </Text>
+        )}
+
+        {/* Notes Input */}
+        <TextInput
+          placeholder="Add a note about your RSVP (optional)"
+          placeholderTextColor="#aaa"
+          style={styles.notesInput}
+          value={notes}
+          onChangeText={(text) => {
+            console.log('📝 Notes updated:', text);
+            setNotes(text);
+          }}
+          multiline
+          numberOfLines={3}
+        />
+
+        {/* Add to Calendar Button with Submit Functionality */}
+        <TouchableOpacity 
+          style={[
+            styles.calendarButton, 
+            loading && styles.calendarButtonLoading,
+            selectedMood === null && styles.calendarButtonDisabled
+          ]}
+          onPress={handleSubmit}
+          disabled={loading || selectedMood === null}
+        >
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#fff" />
+              <Text style={styles.calendarButtonText}>Submitting...</Text>
+            </View>
+          ) : (
+            <Text style={styles.calendarButtonText}>
+              {selectedMood === null ? 'Select your mood first' : 'Add to Calendar & Submit RSVP'}
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Bottom Actions */}
+        <View style={styles.bottomActions}>
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="mail" size={20} color="#4CAF50" />
+            <Text style={styles.actionButtonText}>App download</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.actionButton}>
+            <Ionicons name="share" size={20} color="#4CAF50" />
+            <Text style={styles.actionButtonText}>Share</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Footer Text */}
+        <Text style={styles.footerText}>
+          You'll receive a reminder 30 minutes before the event starts.
+        </Text>
+      </View>
+    </ScrollView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1b2a38',
+    backgroundColor: '#1a2332',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  header: {
+    paddingTop: 60,
     paddingHorizontal: 20,
-    paddingTop: 40,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  appName: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '600',
+    letterSpacing: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
     alignItems: 'center',
   },
-  backButton: {
-    marginTop: 30,
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    zIndex: 10,
-  },
-  heading: {
+  mainTitle: {
     color: '#fff',
     fontSize: 32,
+    fontWeight: '700',
     textAlign: 'center',
+    marginBottom: 30,
+    lineHeight: 40,
+  },
+  eventCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    width: width * 0.9,
     marginBottom: 20,
-    fontWeight: '600',
-    marginTop: 10,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  eventImage: {
+    width: '100%',
+    height: 120,
   },
   eventInfo: {
-    backgroundColor: '#2d3d4f',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    width: width * 0.9,
-    alignItems: 'center',
+    padding: 20,
   },
   eventTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    color: '#1a2332',
+    fontSize: 24,
+    fontWeight: '700',
     marginBottom: 8,
-    textAlign: 'center',
   },
   eventDateTime: {
-    color: '#bdc3c7',
-    fontSize: 14,
-    marginBottom: 4,
-    textAlign: 'center',
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '500',
   },
-  eventLocation: {
-    color: '#bdc3c7',
-    fontSize: 14,
-    textAlign: 'center',
+  loadingText: {
+    color: '#fff',
+    fontSize: 16,
+    marginTop: 10,
   },
-  emoji: {
-    fontSize: 60,
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  statusText: {
+    color: '#4CAF50',
+    fontSize: 18,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  moodQuestion: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
     marginBottom: 20,
+    lineHeight: 24,
   },
-  moodRow: {
+  moodContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: width * 0.8,
     marginBottom: 20,
   },
-  moodIcon: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    backgroundColor: '#2d3d4f',
-    alignItems: 'center',
+  moodButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFD700',
     justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
-  selectedMood: {
-    backgroundColor: '#e47b6a',
+  selectedMoodButton: {
+    backgroundColor: '#FFA500',
+    transform: [{ scale: 1.1 }],
+  },
+  moodEmoji: {
+    fontSize: 28,
   },
   selectedMoodText: {
-    color: '#3498db',
+    color: '#4CAF50',
     fontSize: 16,
+    fontWeight: '600',
     marginBottom: 15,
-    fontWeight: '500',
   },
-  input: {
-    width: width * 0.8,
-    minHeight: 60,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+  notesInput: {
+    width: width * 0.9,
+    minHeight: 80,
+    borderRadius: 12,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: '#2d3d4f',
     color: '#fff',
     marginBottom: 20,
     textAlignVertical: 'top',
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#3d4d5f',
   },
-  submitButton: {
+  calendarButton: {
+    backgroundColor: '#2E5984',
+    paddingVertical: 16,
+    paddingHorizontal: 40,
+    borderRadius: 12,
     width: width * 0.8,
-    height: 45,
-    backgroundColor: '#3498db',
-    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 30,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  calendarButtonLoading: {
+    opacity: 0.7,
+  },
+  calendarButtonDisabled: {
+    backgroundColor: '#555',
+    opacity: 0.6,
+  },
+  calendarButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  submitText: {
-    color: '#fff',
+  bottomActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: width * 0.6,
+    marginBottom: 20,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  actionButtonText: {
+    color: '#4CAF50',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
+    marginLeft: 8,
+  },
+  footerText: {
+    color: '#bbb',
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 20,
+    marginBottom: 40,
   },
 });

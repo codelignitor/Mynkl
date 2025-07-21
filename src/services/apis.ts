@@ -118,6 +118,11 @@ export const getEvents = async () => {
   return response.data;
 };
 
+export const uploadImage = async (payload) => {
+  const response = await axiosInstance.post(`/events/upload_image`, payload);
+  return response.data;
+};
+
 export const getMapSearchResults = async (params: MapSearchParams) => {
   const { query, lat, lng, radius, limit, mood } = params;
 
@@ -149,10 +154,6 @@ export const getCheckInAiAnalysis = async () => {
   return response.data;
 };
 
-export const highlightedPlaces = async (payload) => {
-  const response = await axiosInstance.post(`/home/places`, payload);
-  return response.data;
-};
 export const getAiActivitySuggestions = async (token: string) => {
   try {
     const response = await axiosInstance.get('/activity/AI-Suggestions', {
@@ -204,6 +205,27 @@ export const submitComments = async (payload) => {
   return response.data;
 };
 
+//happiness challenge api
+export const HappinessChallenges = async (payload) => {
+  const response = await axiosInstance.post(`/happiness/send-challenge`, payload);
+  return response.data;
+};
+
+export const getaiMessage = async () => {
+  const response = await axiosInstance.get(`/happiness/ai-messages`);
+  return response.data;
+};
+
+export const getLocation = async (lat?: number, lng?: number) => {
+  const params: any = {};
+  if (lat !== undefined && lng !== undefined) {
+    params.lat = lat;
+    params.lng = lng;
+  }
+  const response = await axiosInstance.get(`/home/places/suggestions`, { params });
+  return response.data;
+};
+
 export const submitJournal = async (payload) => {
   const response = await axiosInstance.post(`/home/journal`, payload);
   return response.data;
@@ -231,7 +253,10 @@ export const sendHug = async (payload) => {
   return response.data;
 };
 
-
+export const submitFeedback = async (payload) => {
+  const response = await axiosInstance.post(`/activity/activity-feedback`, payload);
+  return response.data;
+};
 
 
 
@@ -248,5 +273,15 @@ export const getVirtualHugsAISuggestions = async () => {
 };
 
 
+//calm_spots
+export const saveReflection = async (payload) => {
+  const response = await axiosInstance.post(`/meditation/reflections`,payload);
+  return response.data;
+};
+
+export const MeditationsoptsNearby = async (lat: number, lon: number) => {
+  const response = await axiosInstance.get(`/meditation/spots/nearby`, { params: { lat, lon } });
+  return response.data;
+};
 
 

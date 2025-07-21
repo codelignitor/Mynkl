@@ -14,6 +14,8 @@ import { useRouter } from "expo-router";
 import { AppContext } from "../../../contexts/AppContext";
 import { useSelector } from "react-redux";
 import { chatApiKey } from "../../../../chatConfig";
+import Mascot from "../../../assets/svgs/mascot.svg";
+import Holding from "../../../assets/svgs/hoalding.svg";
 
 const client = StreamChat.getInstance(chatApiKey);
 
@@ -129,8 +131,14 @@ export default function GroupChannelListScreen() {
     <SafeAreaView style={styles.container}>
       <View style={{ paddingHorizontal: 16, flex: 1 }}>
         <Text style={styles.appTitle}>Mynkl</Text>
-        <Text style={styles.title}>Mood-Based Chat Rooms</Text>
-        <Text style={styles.subtitle}>Connect with others in similar emotional states</Text>
+
+        <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10, marginBottom: 16 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Mood-Based Chat Rooms</Text>
+            <Text style={styles.subtitle}>Connect with others in similar emotional states</Text>
+          </View>
+          <Mascot width={112} height={112} style={{ marginLeft: 10 }} />
+        </View>
 
         <FlatList
           data={channels}
@@ -139,13 +147,19 @@ export default function GroupChannelListScreen() {
           contentContainerStyle={{ paddingBottom: 20 }}
         />
 
-        <View style={styles.footerCard}>
-          <Text style={styles.footerText}>
-            How about a happiness challenge to lift your mood? <Text>😉</Text>
-          </Text>
-          <TouchableOpacity style={styles.footerButton}>
-            <Text style={styles.footerButtonText}>▶ Listen to uplifting playlist</Text>
-          </TouchableOpacity>
+        <View style={styles.footerWrapper}>
+          <View style={styles.svgCircle}>
+            <Holding width={98} height={98} style={{ transform: [{ rotate: "-15deg" }] }} />
+          </View>
+
+          <View style={styles.footerCard}>
+            <Text style={styles.footerText}>
+              How about a happiness challenge to lift your mood? <Text>😉</Text>
+            </Text>
+            <TouchableOpacity style={styles.footerButton}>
+              <Text style={styles.footerButtonText}>▶ Listen to uplifting playlist</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -156,6 +170,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#5f3c3c",
+    padding: 20,
     paddingHorizontal: 16,
   },
   loading: {
@@ -211,11 +226,25 @@ const styles = StyleSheet.create({
     fontSize: 26,
     color: "#fff",
   },
+  footerWrapper: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 25,
+    paddingRight: 8,
+  },
+  svgCircle: {
+    width: 50,
+    height: 56,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+    marginTop: 6,
+  },
   footerCard: {
+    flex: 1,
     backgroundColor: "#fff",
     padding: 16,
     borderRadius: 16,
-    marginBottom: 25,
   },
   footerText: {
     fontSize: 14,
