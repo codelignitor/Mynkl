@@ -704,24 +704,11 @@ const MoodMapScreen: React.FC = () => {
           />
           {/* Explore Button directly below search input, matching width/alignment */}
           <TouchableOpacity
-            style={{
-              backgroundColor: '#E0F7FA',
-              borderRadius: 22,
-              paddingVertical: 12,
-              marginHorizontal: 16,
-              marginTop: 0,
-              marginBottom: 8,
-              alignItems: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.08,
-              shadowRadius: 4,
-              elevation: 2,
-            }}
+            style={styles.exploreButton}
             onPress={() => setShowExploreSheet(true)}
             activeOpacity={0.85}
           >
-            <Text style={{ color: '#00796B', fontWeight: 'bold', fontSize: 17, letterSpacing: 0.2 }}>Explore</Text>
+            <Text style={styles.exploreButtonText}>Explore</Text>
           </TouchableOpacity>
         </View>
         {/* Remove the filter button from the header */}
@@ -755,44 +742,28 @@ const MoodMapScreen: React.FC = () => {
       {renderFilterModal()}
       {renderLocationDetailModal()}
 
-      {/* Explore Bottom Sheet */}
+      {/*Modal */}
       <Modal
         visible={showExploreSheet}
         animationType="slide"
-        transparent
+        transparent={true}
         onRequestClose={() => setShowExploreSheet(false)}
       >
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.18)' }}>
-          <View style={{
-            backgroundColor: '#338C8C',
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            paddingTop: 18,
-            paddingBottom: 32,
-            paddingHorizontal: 0,
-            minHeight: 320,
-            width: '100%',
-          }}>
+        <View style={styles.exploreModalOverlay} pointerEvents="box-none">
+          <View style={styles.exploreModalSheet}>
             {/* Drag handle */}
-            <View style={{ alignItems: 'center', marginBottom: 10 }}>
+            <View style={styles.exploreSheetHandle}>
               <View style={{ width: 40, height: 5, backgroundColor: '#B2DFDB', borderRadius: 3 }} />
             </View>
             {/* Tabs Row */}
-            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 18, gap: 10 }}>
+            <View style={styles.exploreTabsRow}>
               {['Nearby', 'Trending', 'Mood-Specific'].map(tab => (
                 <TouchableOpacity
                   key={tab}
-                  style={{
-                    backgroundColor: exploreTab === tab ? '#B2DFDB' : 'rgba(255,255,255,0.10)',
-                    paddingHorizontal: 18,
-                    paddingVertical: 8,
-                    borderRadius: 18,
-                    marginHorizontal: 2,
-                    borderWidth: exploreTab === tab ? 1.5 : 0,
-                    borderColor: exploreTab === tab ? '#338C8C' : 'transparent',
-                    minWidth: 90,
-                    alignItems: 'center',
-                  }}
+                  style={[
+                    styles.exploreTabButton,
+                    exploreTab === tab && styles.exploreTabButtonSelected
+                  ]}
                   onPress={() => {
                     if (tab === 'Mood-Specific') {
                       setShowFilterModal(true);
@@ -802,53 +773,35 @@ const MoodMapScreen: React.FC = () => {
                   }}
                   activeOpacity={0.85}
                 >
-                  <Text style={{ color: exploreTab === tab ? '#338C8C' : '#E0F7FA', fontWeight: 'bold', fontSize: 15 }}>{tab}</Text>
+                  <Text style={[
+                    styles.exploreTabText,
+                    exploreTab === tab && styles.exploreTabTextSelected
+                  ]}>{tab}</Text>
                 </TouchableOpacity>
               ))}
             </View>
             {/* Suggestion Card */}
-            <View style={{
-              backgroundColor: '#A7E6E6',
-              borderRadius: 16,
-              padding: 16,
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginHorizontal: 18,
-              marginBottom: 10,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.06,
-              shadowRadius: 2,
-              elevation: 1,
-            }}>
-              <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#FFE066', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+            <View style={styles.exploreSuggestionCard}>
+              <View style={styles.exploreSuggestionIcon}>
                 <Text style={{ fontSize: 20 }}>⭐</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: '#1A3C3C', fontWeight: '600', fontSize: 16, lineHeight: 22 }}>
+                <Text style={styles.exploreSuggestionText}>
                   You feel best after socializing—check out highlighted places nearby.
                 </Text>
               </View>
-              <TouchableOpacity style={{ marginLeft: 8 }}>
+              <TouchableOpacity style={styles.exploreSuggestionHeart}>
                 <Ionicons name="heart" size={22} color="#1A3C3C" />
               </TouchableOpacity>
             </View>
             {/* Info Card */}
-            <View style={{
-              backgroundColor: '#B2DFDB',
-              borderRadius: 12,
-              padding: 13,
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginHorizontal: 18,
-              marginBottom: 2,
-            }}>
+            <View style={styles.exploreInfoCard}>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: '#1A3C3C', fontSize: 15 }}>
+                <Text style={styles.exploreInfoText}>
                   Looking for something new today? Try exploring highlighted places nearby.
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => setShowExploreSheet(false)} style={{ marginLeft: 8 }}>
+              <TouchableOpacity onPress={() => setShowExploreSheet(false)} style={styles.exploreInfoClose}>
                 <Ionicons name="close" size={20} color="#338C8C" />
               </TouchableOpacity>
             </View>
