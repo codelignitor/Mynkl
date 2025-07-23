@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import styles from './style';
 
 const user = {
   name: 'Lauren',
@@ -51,128 +52,5 @@ const AIMatchingScreen = () => {
     </LinearGradient>
   );
 };
-
-const styles = StyleSheet.create({
-  gradient: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    paddingTop: 36,
-    paddingHorizontal: 20,
-  },
-  header: {
-    marginTop: 20,
-    color: '#b3b3b3',
-    fontSize: 22,
-    fontWeight: '600',
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  title: {
-    color: '#fff',
-    fontSize: 30,
-    fontWeight: 'bold',
-    marginBottom: 24,
-    letterSpacing: 0.5,
-  },
-  avatarContainer: {
-    position: 'relative',
-    width: 200,
-    height: 240,
-    marginBottom: 18,
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 230,
-    height: 250,
-    borderRadius: 24,
-    resizeMode: 'cover',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.08)',
-  },
-  nameOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingVertical: 10,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    alignItems: 'center',
-  },
-  nameText: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: 'bold',
-    letterSpacing: 0.5,
-  },
-  tagsRow: {
-    marginTop: 40,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 22,
-    gap: 0,
-  },
-  tag: {
-    backgroundColor: 'rgba(30, 120, 90, 0.55)',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginHorizontal: 5,
-  },
-  tagText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '500',
-    letterSpacing: 0.5,
-  },
-  icebreakerLabel: {
-    color: '#1ecbe1',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginBottom: 4,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    alignSelf: 'center',
-  },
-  icebreakerQuestion: {
-    color: '#fff',
-    fontSize: 21,
-    textAlign: 'center',
-    marginBottom: 32,
-    fontWeight: '700',
-    lineHeight: 28,
-    alignSelf: 'center',
-  },
-  button: {
-    width: '100%',
-    backgroundColor: 'rgba(23, 92, 71, 0.85)',
-    borderRadius: 14,
-    paddingVertical: 18,
-    alignItems: 'center',
-    marginBottom: 0,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.10,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: 1,
-  },
-  backButton: {
-    position: 'absolute',
-    top: 36,
-    left: 20,
-    zIndex: 10,
-    padding: 6,
-  },
-});
 
 export default AIMatchingScreen;
