@@ -725,12 +725,12 @@ const MoodMapScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
         {/* Remove the filter button from the header */}
-        {/* <TouchableOpacity
+        <TouchableOpacity
           style={styles.filterButton}
           onPress={() => setShowFilterModal(true)}
         >
           <Ionicons name="filter" size={24} color="#000" />
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
 
       {/* Loading Indicator */}

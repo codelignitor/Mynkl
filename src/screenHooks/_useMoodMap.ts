@@ -3,6 +3,7 @@ import debounce from 'lodash.debounce';
 import { getMapSearchResults, getLocation } from '@/src/services/apis';
 import * as Location from 'expo-location';
 import Toast from 'react-native-toast-message';
+import { router } from 'expo-router';
 
 export interface Hug {
   id: string;
@@ -275,31 +276,33 @@ export function useMoodMap() {
   };
 
   const handleCheckIn = async () => {
-    if (!selectedLocationDetail) return;
+    setShowLocationDetail(false)
+    router.push('/addCheckIn')
+    // if (!selectedLocationDetail) return;
 
-    try {
-      console.log('Checking in at:', selectedLocationDetail.name);
+    // try {
+    //   console.log('Checking in at:', selectedLocationDetail.name);
       
-      Toast.show({
-        type: 'success',
-        text1: 'Check-in Successful!',
-        text2: `${userName} checked in at ${selectedLocationDetail.name}`,
-      });
+    //   Toast.show({
+    //     type: 'success',
+    //     text1: 'Check-in Successful!',
+    //     text2: `${userName} checked in at ${selectedLocationDetail.name}`,
+    //   });
 
-      // Update check-in count
-      setLocationCheckIns(prev => ({
-        ...prev,
-        count: prev.count + 1
-      }));
+    //   // Update check-in count
+    //   setLocationCheckIns(prev => ({
+    //     ...prev,
+    //     count: prev.count + 1
+    //   }));
 
-    } catch (error) {
-      console.error('Error checking in:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Check-in Failed',
-        text2: 'Please try again later.',
-      });
-    }
+    // } catch (error) {
+    //   console.error('Error checking in:', error);
+    //   Toast.show({
+    //     type: 'error',
+    //     text1: 'Check-in Failed',
+    //     text2: 'Please try again later.',
+    //   });
+    // }
   };
 
   const handleSendHug = async () => {
@@ -437,22 +440,41 @@ export function useMoodMap() {
   const debouncedSearch = useMemo(
     () =>
       debounce(async (query: string) => {
-        const dataToSearch = activeFilters.length > 0 ? filteredMapData : mapData;
-        
-        if (!query.trim() || !dataToSearch || dataToSearch.length === 0) {
-          setMoodData(dataToSearch ?? []);
-          return;
+        try {
+           setLoading(true);
+         const response = await getMapSearchResults({
+          query: query,
+          lat: mapRegion.latitude,
+          lng: mapRegion.longitude,
+          // mood: 'happy',
+        });
+         const fetchedData = response || [];
+         setMapData(fetchedData);
+        setFilteredMapData(fetchedData);
+        setMoodData(fetchedData);
+        } catch (error) {
+          
         }
+        finally{
+          setLoading(false);
+        }
+        
+        // const dataToSearch = activeFilters.length > 0 ? filteredMapData : mapData;
+        
+        // if (!query.trim() || !dataToSearch || dataToSearch.length === 0) {
+        //   setMoodData(dataToSearch ?? []);
+        //   return;
+        // }
 
-        setSelectedMood('');
-        const filtered = (dataToSearch ?? []).filter((item: any) =>
-          item.name?.toLowerCase().includes(query.toLowerCase())
-        );
+        // setSelectedMood('');
+        // const filtered = (dataToSearch ?? []).filter((item: any) =>
+        //   item.name?.toLowerCase().includes(query.toLowerCase())
+        // );
 
-        console.log('Search Results:', filtered.length, 'items found for query:', query);
-        setMoodData(filtered);
-      }, 500),
-    [mapData, filteredMapData, activeFilters]
+        // console.log('Search Results:', filtered.length, 'items found for query:', query);
+        // setMoodData(filtered);
+      }, 1000),
+    []
   );
 
   const handleMoodSelection = (name: string) => {
@@ -504,7 +526,7 @@ export function useMoodMap() {
         // const realPlaces = await getPlacesNearLocation(mapRegion.latitude, mapRegion.longitude);
         // const realEvents = await getEventsNearLocation(mapRegion.latitude, mapRegion.longitude);
         
-        console.log('Map Data fetched:', fetchedData.length);
+        // console.log('Map Data fetched:', fetchedData.length);
         
         setMapData(fetchedData);
         setFilteredMapData(fetchedData);
@@ -531,16 +553,16 @@ export function useMoodMap() {
     
     debouncedSearch(searchInput);
     return () => debouncedSearch.cancel();
-  }, [searchInput, mapData, filteredMapData, activeFilters, debouncedSearch]);
+  }, [searchInput]);
 
   // Debug logging for state changes
-  useEffect(() => {
-    console.log('Active filters changed:', activeFilters);
-  }, [activeFilters]);
+  // useEffect(() => {
+  //   console.log('Active filters changed:', activeFilters);
+  // }, [activeFilters]);
 
-  useEffect(() => {
-    console.log('Mood data updated:', moodData.length, 'items');
-  }, [moodData]);
+  // useEffect(() => {
+  //   console.log('Mood data updated:', moodData.length, 'items');
+  // }, [moodData]);
 
   return {
     hugs,

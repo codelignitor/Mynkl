@@ -50,18 +50,22 @@ export const updateHugSettings = async (payload: {
 
 
 export const checkIn = async (payload: CheckInPayload) => {
-  const response = await axiosInstance.post(`/home/check-in`, payload);
+  const response = await axiosInstance.post(`/home/check-in`, payload,{
+        headers: {
+        
+          'Content-Type': 'multipart/form-data',
+        },});
   return response.data;
 };
 
 // profile api
 export const updateUserProfile = async (payload) => {
   try {
-    const response = await axiosInstance.post(`/profile/update-profile`, payload, {
-      headers: payload instanceof FormData
-        ? {} // ✅ Let Axios auto-set Content-Type with boundary
-        : { 'Content-Type': 'application/json' },
-    });
+    const response = await axiosInstance.post(`/profile/update-profile`, payload,{
+       headers: {
+        'Content-Type': 'multipart/form-data',
+      }}
+    );
 
     return response.data;
   } catch (error) {

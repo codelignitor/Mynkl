@@ -8,6 +8,7 @@ import {
   Switch,
   FlatList,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from "./index.style";
@@ -78,10 +79,25 @@ export default function AddCheckIn() {
     setLocationOptIn,
     handleSubmit,
     AnonymousCheckIn,
-    setAnonymousCheckIn
+    setAnonymousCheckIn,
+    recordedUri, 
+    setRecordedUri,
+    isAudioRecording, 
+    setIsAudioRecording
   } = useAddCheckIn();
 
-  const [isAudioRecording, setIsAudioRecording] = useState(false);
+
+  if (isloading) {
+   return   <SafeAreaView style={styles.container}>
+       <Header style={{ backgroundColor: '#A7E2E0' }} title="Check-In" showBack={true} rightChildren={
+        <TouchableOpacity onPress={() => router.push('/checkIns')}>
+          <Ionicons name='reload' size={24} color="black" />
+        </TouchableOpacity>
+      } />
+      <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
+      </SafeAreaView>
+    
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -122,7 +138,7 @@ export default function AddCheckIn() {
         <View style={styles.noteContainer}>
          
          {isAudioRecording?
-          < AudioRecorderPlayer/>:
+          < AudioRecorderPlayer recordedUri={recordedUri} setRecordedUri={setRecordedUri}   />:
           <TextInput
             style={styles.textInput}
             multiline

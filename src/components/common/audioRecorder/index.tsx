@@ -9,10 +9,10 @@ import {
 import LottieView from 'lottie-react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function AudioRecorderPlayer() {
+export default function AudioRecorderPlayer({recordedUri, setRecordedUri}) {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
-  const [recordedUri, setRecordedUri] = useState<string | null>(null);
+  
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -68,9 +68,24 @@ export default function AudioRecorderPlayer() {
 
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
+
+      // Get full details of the recording file
+      let fileInfo = null;
+      if (uri) {
+        fileInfo = await Audio.Sound.createAsync({ uri });
+      }
+
       setRecordedUri(uri || null);
       setRecording(null);
       setIsRecording(false);
+
+      // Log or use the details as needed
+      if (uri && fileInfo) {
+        console.log('Recording details:', {
+          uri,
+          ...fileInfo,
+        });
+      }
     } catch (error) {
       console.error('Failed to stop recording:', error);
     }

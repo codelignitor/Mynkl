@@ -55,7 +55,9 @@ const LoginForm = ({ onLoginSuccess }) => {
 
     try {
       let url = isLogin 
-        ? 'http://13.50.228.222:8000/auth/login'
+      
+        ? 'http://18.199.96.45:8000/auth/login' 
+       
         : 'http://13.50.228.222:8000/users/register';
       
       const requestBody = isLogin 

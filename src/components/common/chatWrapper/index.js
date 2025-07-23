@@ -11,9 +11,10 @@ const client = StreamChat.getInstance(chatApiKey);
 export const ChatWrapper = ({ children }) => {
   const user_id = useSelector((state) => state.auth.user_id) || "dummy-id";
   const username = useSelector((state) => state.auth.username) || "Dummy User";
-  const profileImage = useSelector((state) => state.auth.profile_image) || null;
+  const profileImage = useSelector((state) => state.auth.profile_picture) || null;
   const streamToken = useSelector((state) => state.auth.stream_token) ;
   const [isReady, setIsReady] = useState(false);
+
 
   
 
@@ -27,6 +28,7 @@ export const ChatWrapper = ({ children }) => {
       }
 
       try {
+        console.log("Connecting to Stream Chat..." , user_id, username, profileImage);
         await client.connectUser(
           { id: user_id, name: username , image: profileImage },
           streamToken 

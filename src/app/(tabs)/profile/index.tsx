@@ -22,7 +22,7 @@ import axios from 'axios';
 const ProfileScreen = () => {
     const dispatch = useDispatch();
     const username = useSelector((state: RootState) => state.auth.username);
-    const profileImage = useSelector((state: RootState) => state.auth.profileImage);
+    const profileImage = useSelector((state: RootState) => state.auth.profile_picture);
     const userId = useSelector((state: RootState) => state.auth.user_id);
 
     const [isEditing, setIsEditing] = useState(false);

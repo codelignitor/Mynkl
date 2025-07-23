@@ -20,10 +20,10 @@ const screenWidth = Dimensions.get('window').width;
 
 export default function MoodPatternScreen() {
   const router = useRouter();
-  const { isLoading, moodPattern } = useMoodPattern();
+  const { isLoading, moodPattern , changeGraphHandler ,sevenDaysData, thirtyDaysData, selectedTime } = useMoodPattern();
   const [selectedRange, setSelectedRange] = useState<'Last7Days' | 'Last30Days'>('Last30Days');
 
-  const moodData = moodPattern?.[selectedRange] ?? [];
+  const moodData = selectedRange === 'Last7Days' ? sevenDaysData : thirtyDaysData;
 
   const chartLabels = moodData.map((item) =>
     item?.X ? moment(item.X).format('DD') : ''
@@ -133,6 +133,19 @@ export default function MoodPatternScreen() {
           )}
         </View>
 
+        {/* Time Tags */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tagsScrollContainer}
+        >
+          {moodPattern?.TimeBasedFiltering?.Last7Days?.map((tag, index) => (
+            <TouchableOpacity onPress={()=>{changeGraphHandler(tag?.time)}} key={index} style={[ styles.tagButton , tag?.time === selectedTime && { backgroundColor: '#facc15' }]}>
+              <Text style={styles.tagText}>{tag?.time}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         {/* Mood Insight Box */}
         <View style={styles.insightBox}>
           <Text style={styles.insightEmoji}>😊</Text>
@@ -156,24 +169,18 @@ export default function MoodPatternScreen() {
               console.log("Opening playlist link");
                           Linking.openURL(moodPattern?.activity?.data?.link);
           }
+          else{
+          
+                          router.push(`/activities/${moodPattern?.activity?.data?.id}`);
+                       
+          }
           }}
         >
           <MaterialIcons name="lightbulb" size={20} color="#000" />
           <Text style={styles.tipText}>Creativity improves your mood.</Text>
         </TouchableOpacity>
 
-        {/* Time Tags */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tagsScrollContainer}
-        >
-          {moodPattern?.TimeBasedFiltering?.map((tag, index) => (
-            <TouchableOpacity key={index} style={styles.tagButton}>
-              <Text style={styles.tagText}>{tag?.time}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        
 
         {/* Correlation Tags */}
         <Text style={styles.correlationTitle}>Mood Correlation Tags</Text>

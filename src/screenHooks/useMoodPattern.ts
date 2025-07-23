@@ -102,8 +102,9 @@ export function useMoodPattern() {
     const dispatch = useDispatch();
 
     const [moodPattern , setMoodPattern] = useState<Object>(null);
-    
-   
+    const [sevenDaysData , setSevenDaysData] = useState<any>([]);
+    const [thirtyDaysData , setThirtyDaysData] = useState<any>([]);
+    const [selectedTime , setSelectedTime] = useState<string | null>(null);  
     const [isLoading , setIsLoading] = useState<boolean>(false);
        
     const getMoodPattern = async () => {
@@ -111,6 +112,8 @@ export function useMoodPattern() {
             setIsLoading(true);
             const response = await  getAiMoodPattern ();
             setMoodPattern(response);
+            setSevenDaysData(response?.Last7Days || []);
+            setThirtyDaysData(response?.Last30Days || []);
 
 
            
@@ -127,12 +130,29 @@ export function useMoodPattern() {
     const moveToScreen = (screen:any) => {
     router.push(screen);
   };
-  
+
+  const changeGraphHandler = (time:string) => {
+    
+     if( time !== selectedTime) {
+      
+    const sevenDays = moodPattern?.TimeBasedFiltering?.Last7Days?.find((item: any) => item?.time === time)?.graph || [];
+    const thirtyDays = moodPattern?.TimeBasedFiltering?.Last30Days?.find((item: any) => item?.time === time)?.graph || [];
+    setSevenDaysData(sevenDays);
+    setThirtyDaysData(thirtyDays);
+    setSelectedTime(time)
+     }
+    else {
+        setSevenDaysData(moodPattern?.Last7Days || []);
+        setThirtyDaysData(moodPattern?.Last30Days || []);
+        setSelectedTime(null);
+   
+  }
+}
     useEffect(() => {
     getMoodPattern();
    
     }
     , []);
 
-    return {isLoading , moodPattern  };
+    return {isLoading , moodPattern , changeGraphHandler  , sevenDaysData, thirtyDaysData, selectedTime};
 }
