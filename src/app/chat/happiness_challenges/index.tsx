@@ -1,23 +1,45 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, TextInput, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, TextInput, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Mascot from '../../../assets/svgs/mascot.svg'; // Your main SVG image
 import { MaterialIcons } from '@expo/vector-icons'; // Arrow icon
 import { useRouter } from 'expo-router';
-import {getaiMessage, HappinessChallenges} from '../../../services/apis';
+import {getaiMessage, HappinessChallenges, getUsers} from '../../../services/apis';
 import { useSelector } from 'react-redux';
+
+type User = {
+  id: string;
+  name: string;
+  profile_pic?: string;
+  // add more fields if needed
+};
 
 export default function ChallengeScreen() {
     const router = useRouter();
     const [currentScreen, setCurrentScreen] = useState('start'); // 'start', 'happiness', 'message', or 'success'
-    const [selectedOption, setSelectedOption] = useState(null); // Track selected option
+    const [selectedOption, setSelectedOption] = useState<string | null>(null); // Track selected option
     const [selectedMessage, setSelectedMessage] = useState(null); // Track selected message
     const [customMessage, setCustomMessage] = useState(''); // Track custom message
-    const [selectedFriendId, setSelectedFriendId] = useState(null);
-    const [selectedCommunityMemberId, setSelectedCommunityMemberId] = useState(null);
+    const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
+    const [selectedCommunityMemberId, setSelectedCommunityMemberId] = useState<string | null>(null);
     const [aiMessages, setAiMessages] = useState([]);
     const [aiLoading, setAiLoading] = useState(false);
     const userId = useSelector(state => state.auth.user_id); // your own user id
+    const [users, setUsers] = useState<User[]>([]);
+    const [showFriendList, setShowFriendList] = useState(false);
+    const [showCommunityList, setShowCommunityList] = useState(false);
+
+    useEffect(() => {
+      const fetchUsers = async () => {
+        try {
+          const data = await getUsers();
+          setUsers(data?.list || []);
+        } catch (e) {
+          // handle error
+        }
+      };
+      fetchUsers();
+    }, []);
 
     // Start Challenge Screen
     const StartChallengeScreen = () => (
@@ -47,149 +69,215 @@ export default function ChallengeScreen() {
     );
 
     // Happiness Challenge Screen
-    const HappinessChallengeScreen = () => (
-        <SafeAreaView style={styles.happinessContainer}>
-            <StatusBar barStyle="light-content" backgroundColor="#035776" />
-            <LinearGradient
-                colors={['#035776', '#003750']}
-                style={styles.happinessGradient}
-            >
-                <View style={styles.happinessContent}>
-                    {/* Header */}
-                    <View style={styles.happinessHeader}>
-                        <Text style={styles.happinessTitle}>Happiness</Text>
-                        <Text style={styles.happinessTitle}>Challenge</Text>
-                        <Text style={styles.happinessSubtitle}>Who do you want to send{'\n'}positivity to?</Text>
-                    </View>
+    const HappinessChallengeScreen = () => {
+        const friends = users; // or filter if you have a way to distinguish
+        const communityMembers = users; // or filter if you have a way to distinguish
 
-                    {/* Options */}
-                    <View style={styles.optionsContainer}>
-                        {/* Friend Option */}
-                        <TouchableOpacity 
-                            style={[
-                                styles.option,
-                                selectedOption === 'friend' && styles.selectedOption
-                            ]}
-                            onPress={() => {
-                                setSelectedOption('friend');
-                                setSelectedFriendId('friend-user-id-123'); // TODO: Replace with real friend ID
-                            }}
-                        >
-                            <View style={styles.optionContent}>
-                                <View style={styles.optionLeft}>
-                                    <Text style={styles.optionTitle}>Friend</Text>
-                                    <Text style={styles.optionSubtitle}>Emma or Jack</Text>
-                                </View>
-                                <View style={styles.avatarContainer}>
-                                    <View style={[styles.avatar, styles.avatar1]}>
-                                        <Text style={styles.avatarText}>👩🏻</Text>
-                                    </View>
-                                    <View style={[styles.avatar, styles.avatar2]}>
-                                        <Text style={styles.avatarText}>👨🏻</Text>
-                                    </View>
-                                </View>
-                            </View>
-                            {selectedOption === 'friend' && (
-                                <View style={styles.checkmark}>
-                                    <MaterialIcons name="check" size={20} color="#fff" />
-                                </View>
-                            )}
-                        </TouchableOpacity>
+        return (
+            <SafeAreaView style={styles.happinessContainer}>
+                <StatusBar barStyle="light-content" backgroundColor="#035776" />
+                <LinearGradient
+                    colors={['#035776', '#003750']}
+                    style={styles.happinessGradient}
+                >
+                    <View style={styles.happinessContent}>
+                        {/* Header */}
+                        <View style={styles.happinessHeader}>
+                            <Text style={styles.happinessTitle}>Happiness</Text>
+                            <Text style={styles.happinessTitle}>Challenge</Text>
+                            <Text style={styles.happinessSubtitle}>Who do you want to send{'\n'}positivity to?</Text>
+                        </View>
 
-                        {/* Community Member Option */}
-                        <TouchableOpacity 
-                            style={[
-                                styles.option,
-                                selectedOption === 'community' && styles.selectedOption
-                            ]}
-                            onPress={() => {
-                                setSelectedOption('community');
-                                setSelectedCommunityMemberId('community-user-id-456'); // TODO: Replace with real community member ID
-                            }}
-                        >
-                            <View style={styles.optionContent}>
-                                <View style={styles.optionLeft}>
-                                    <Text style={styles.optionTitle}>Community</Text>
-                                    <Text style={styles.optionTitle}>Member</Text>
-                                    <Text style={styles.optionSubtitle}>Community member</Text>
-                                </View>
-                                <View style={styles.singleAvatarContainer}>
-                                    <View style={[styles.avatar, styles.avatar3]}>
-                                        <Text style={styles.avatarText}>👦🏾</Text>
+                        {/* Options */}
+                        <View style={styles.optionsContainer}>
+                            {/* Friend Option */}
+                            <TouchableOpacity 
+                                style={[
+                                    styles.option,
+                                    selectedOption === 'friend' && styles.selectedOption
+                                ]}
+                                onPress={() => {
+                                    setSelectedOption('friend');
+                                    setShowFriendList(true);
+                                }}
+                            >
+                                <View style={styles.optionContent}>
+                                    <View style={styles.optionLeft}>
+                                        <Text style={styles.optionTitle}>Friend</Text>
+                                        <Text style={styles.optionSubtitle}>Emma or Jack</Text>
+                                    </View>
+                                    <View style={styles.avatarContainer}>
+                                        <View style={[styles.avatar, styles.avatar1]}>
+                                            <Text style={styles.avatarText}>👩🏻</Text>
+                                        </View>
+                                        <View style={[styles.avatar, styles.avatar2]}>
+                                            <Text style={styles.avatarText}>👨🏻</Text>
+                                        </View>
                                     </View>
                                 </View>
-                            </View>
-                            {selectedOption === 'community' && (
-                                <View style={styles.checkmark}>
-                                    <MaterialIcons name="check" size={20} color="#fff" />
-                                </View>
-                            )}
-                        </TouchableOpacity>
+                                {selectedOption === 'friend' && (
+                                    <View style={styles.checkmark}>
+                                        <MaterialIcons name="check" size={20} color="#fff" />
+                                    </View>
+                                )}
+                            </TouchableOpacity>
 
-                        {/* Yourself Option */}
+                            {/* Community Member Option */}
+                            <TouchableOpacity 
+                                style={[
+                                    styles.option,
+                                    selectedOption === 'community' && styles.selectedOption
+                                ]}
+                                onPress={() => {
+                                    setSelectedOption('community');
+                                    setShowCommunityList(true);
+                                }}
+                            >
+                                <View style={styles.optionContent}>
+                                    <View style={styles.optionLeft}>
+                                        <Text style={styles.optionTitle}>Community</Text>
+                                        <Text style={styles.optionTitle}>Member</Text>
+                                        <Text style={styles.optionSubtitle}>Community member</Text>
+                                    </View>
+                                    <View style={styles.singleAvatarContainer}>
+                                        <View style={[styles.avatar, styles.avatar3]}>
+                                            <Text style={styles.avatarText}>👦🏾</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                                {selectedOption === 'community' && (
+                                    <View style={styles.checkmark}>
+                                        <MaterialIcons name="check" size={20} color="#fff" />
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+
+                            {/* Yourself Option */}
+                            <TouchableOpacity 
+                                style={[
+                                    styles.option,
+                                    selectedOption === 'yourself' && styles.selectedOption
+                                ]}
+                                onPress={() => {
+                                    setSelectedOption('yourself');
+                                    setSelectedFriendId(null);
+                                    setSelectedCommunityMemberId(null);
+                                    console.log('Selected Yourself:', userId);
+                                }}
+                            >
+                                <View style={styles.optionContent}>
+                                    <View style={styles.optionLeft}>
+                                        <Text style={styles.optionTitle}>Yourself</Text>
+                                        <Text style={styles.optionSubtitle}>Yourself</Text>
+                                    </View>
+                                    <View style={styles.singleAvatarContainer}>
+                                        <Text style={styles.emojiAvatar}>😌</Text>
+                                    </View>
+                                </View>
+                                {selectedOption === 'yourself' && (
+                                    <View style={styles.checkmark}>
+                                        <MaterialIcons name="check" size={20} color="#fff" />
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Next Button */}
                         <TouchableOpacity 
                             style={[
-                                styles.option,
-                                selectedOption === 'yourself' && styles.selectedOption
+                                styles.nextButton,
+                                selectedOption && styles.nextButtonActive
                             ]}
-                            onPress={() => setSelectedOption('yourself')}
-                        >
-                            <View style={styles.optionContent}>
-                                <View style={styles.optionLeft}>
-                                    <Text style={styles.optionTitle}>Yourself</Text>
-                                    <Text style={styles.optionSubtitle}>Yourself</Text>
-                                </View>
-                                <View style={styles.singleAvatarContainer}>
-                                    <Text style={styles.emojiAvatar}>😌</Text>
-                                </View>
-                            </View>
-                            {selectedOption === 'yourself' && (
-                                <View style={styles.checkmark}>
-                                    <MaterialIcons name="check" size={20} color="#fff" />
-                                </View>
-                            )}
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Next Button */}
-                    <TouchableOpacity 
-                        style={[
-                            styles.nextButton,
-                            selectedOption && styles.nextButtonActive
-                        ]}
-                        disabled={!selectedOption || aiLoading}
-                        onPress={async () => {
-                            console.log('Next button pressed');
-                            if (selectedOption) {
-                                setAiLoading(true);
-                                try {
-                                    console.log('Calling getaiMessage...');
-                                    const data = await getaiMessage();
-                                    console.log('AI message API response:', data);
-                                    setAiMessages(data);
-                                } catch (error) {
-                                    console.log('Error fetching AI messages:', error);
-                                    Alert.alert('Error', 'Failed to load AI messages');
-                                } finally {
-                                    setAiLoading(false);
-                                    setCurrentScreen('message');
+                            disabled={!selectedOption || aiLoading}
+                            onPress={async () => {
+                                console.log('Next button pressed');
+                                if (selectedOption) {
+                                    setAiLoading(true);
+                                    try {
+                                        console.log('Calling getaiMessage...');
+                                        const data = await getaiMessage();
+                                        console.log('AI message API response:', data);
+                                        setAiMessages(data);
+                                    } catch (error) {
+                                        console.log('Error fetching AI messages:', error);
+                                        Alert.alert('Error', 'Failed to load AI messages');
+                                    } finally {
+                                        setAiLoading(false);
+                                        setCurrentScreen('message');
+                                    }
                                 }
-                            }
-                        }}
-                    >
-                        <Text style={styles.nextButtonText}>Next</Text>
-                        {aiLoading && <ActivityIndicator color="#fff" style={{ marginLeft: 8 }} />}
-                    </TouchableOpacity>
-                </View>
-            </LinearGradient>
-        </SafeAreaView>
-    );
+                            }}
+                        >
+                            <Text style={styles.nextButtonText}>Next</Text>
+                            {aiLoading && <ActivityIndicator color="#fff" style={{ marginLeft: 8 }} />}
+                        </TouchableOpacity>
+                    </View>
+                </LinearGradient>
+                {showFriendList && (
+                    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 100}}>
+                        <View style={{backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '80%', maxHeight: '70%'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 18, marginBottom: 10}}>Select a Friend</Text>
+                            <ScrollView style={{maxHeight: 300}}>
+                                {friends.length === 0 && <Text>No friends found.</Text>}
+                                {friends.map(friend => (
+                                    <TouchableOpacity
+                                        key={friend.id}
+                                        style={{padding: 10, borderBottomWidth: 1, borderBottomColor: '#eee'}} 
+                                        onPress={() => {
+                                            setSelectedFriendId(friend.id);
+                                            setSelectedCommunityMemberId(null); // clear community
+                                            setSelectedOption('friend');
+                                            setShowFriendList(false);
+                                            console.log('Selected Friend:', friend.name, friend.id);
+                                        }}
+                                    >
+                                        <Text>{friend.name}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                            <TouchableOpacity onPress={() => setShowFriendList(false)} style={{marginTop: 10, alignSelf: 'flex-end'}}>
+                                <Text style={{color: '#007AFF'}}>Close</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+                {showCommunityList && (
+                    <View style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 100}}>
+                        <View style={{backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '80%', maxHeight: '70%'}}>
+                            <Text style={{fontWeight: 'bold', fontSize: 18, marginBottom: 10}}>Select a Community Member</Text>
+                            <ScrollView style={{maxHeight: 300}}>
+                                {communityMembers.length === 0 && <Text>No community members found.</Text>}
+                                {communityMembers.map(member => (
+                                    <TouchableOpacity
+                                        key={member.id}
+                                        style={{padding: 10, borderBottomWidth: 1, borderBottomColor: '#eee'}} 
+                                        onPress={() => {
+                                            setSelectedCommunityMemberId(member.id);
+                                            setSelectedFriendId(null); // clear friend
+                                            setSelectedOption('community');
+                                            setShowCommunityList(false);
+                                            console.log('Selected Community Member:', member.name, member.id);
+                                        }}
+                                    >
+                                        <Text>{member.name}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </ScrollView>
+                            <TouchableOpacity onPress={() => setShowCommunityList(false)} style={{marginTop: 10, alignSelf: 'flex-end'}}>
+                                <Text style={{color: '#007AFF'}}>Close</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+            </SafeAreaView>
+        );
+    };
 
     // Message Selection Screen
     const MessageSelectionScreen = () => {
         const predefinedMessages =
-            aiMessages && aiMessages.Messages && aiMessages.Messages.length > 0
-                ? aiMessages.Messages.map(m => m.message)
+            aiMessages && (aiMessages as any).Messages && (aiMessages as any).Messages.length > 0
+                ? (aiMessages as any).Messages.map((m: any) => m.message)
                 : [
                     "You're stronger than you think.",
                     "I'm grateful you're in this world.",
@@ -211,7 +299,7 @@ export default function ChallengeScreen() {
 
                         {/* Predefined Messages */}
                         <View style={styles.messagesContainer}>
-                            {predefinedMessages.map((message, index) => (
+                            {predefinedMessages.map((message: any, index: number) => (
                                 <TouchableOpacity
                                     key={index}
                                     style={[
@@ -319,9 +407,9 @@ export default function ChallengeScreen() {
                             style={[
                                 styles.confettiElement,
                                 {
-                                    top: element.top,
-                                    left: element.left,
-                                    right: element.right,
+                                    top: element.top ? parseFloat(element.top) : undefined,
+                                    left: element.left ? parseFloat(element.left) : undefined,
+                                    right: element.right ? parseFloat(element.right) : undefined,
                                     transform: element.rotation ? [{ rotate: element.rotation }] : undefined,
                                 }
                             ]}
@@ -387,9 +475,9 @@ export default function ChallengeScreen() {
       if (selectedOption === 'yourself') {
         receiverId = userId;
       } else if (selectedOption === 'friend') {
-        receiverId = selectedFriendId;
+        receiverId = selectedFriendId || ''; // Ensure it's a string
       } else if (selectedOption === 'community') {
-        receiverId = selectedCommunityMemberId;
+        receiverId = selectedCommunityMemberId || ''; // Ensure it's a string
       }
 
       const payload = {
@@ -416,22 +504,23 @@ export default function ChallengeScreen() {
           Alert.alert('Error', response.message || 'Something went wrong');
         }
       } catch (error) {
-        if (error.response && error.response.data) {
-          console.log('Backend error:', error.response.data);
+        const err = error as any;
+        if (err.response && err.response.data) {
+          console.log('Backend error:', err.response.data);
           let errorMsg = '';
-          if (typeof error.response.data === 'string') {
-            errorMsg = error.response.data;
-          } else if (error.response.data.detail) {
-            if (Array.isArray(error.response.data.detail)) {
+          if (typeof err.response.data === 'string') {
+            errorMsg = err.response.data;
+          } else if (err.response.data.detail) {
+            if (Array.isArray(err.response.data.detail)) {
               // Only extract the msg property for display
-              errorMsg = error.response.data.detail.map((d) => d.msg).join('\n');
+              errorMsg = err.response.data.detail.map((d: any) => d.msg).join('\n');
             } else {
-              errorMsg = error.response.data.detail.msg || JSON.stringify(error.response.data.detail);
+              errorMsg = err.response.data.detail.msg || JSON.stringify(err.response.data.detail);
             }
-          } else if (error.response.data.message) {
-            errorMsg = error.response.data.message;
+          } else if (err.response.data.message) {
+            errorMsg = err.response.data.message;
           } else {
-            errorMsg = JSON.stringify(error.response.data);
+            errorMsg = JSON.stringify(err.response.data);
           }
           Alert.alert('Error', errorMsg);
         } else {
