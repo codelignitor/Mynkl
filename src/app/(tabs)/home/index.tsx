@@ -154,7 +154,7 @@ const MoodMapScreen = () => {
             style={styles.squareCard}
             ref={squareRef}
             onLayout={handleSquareLayout}
-            onPress={updateOpenToTalkHandler}
+            onPress={() => router.push('/Opentotalk/ready_to_chat')}
           >
             <Text style={styles.statusCardTitle}>Open to Talk</Text>
             <View style={styles.singleDotContainer}>

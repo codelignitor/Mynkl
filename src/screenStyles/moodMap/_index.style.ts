@@ -750,13 +750,37 @@ export const styles = StyleSheet.create({
         fontWeight: '600',
     },
     
-    // ========== EXPLORE BOTTOM SHEET STYLES ==========
+    // ========== Modal ==========
+    exploreModalOverlay: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        backgroundColor: 'transparent',
+    },
+    exploreModalSheet: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: '32%',
+        backgroundColor: '#338C8C',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        paddingHorizontal: 0,
+        width: '100%',
+        // Shadow for iOS
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        // Elevation for Android
+        elevation: 10,
+    },
     exploreSheetContainer: {
         backgroundColor: '#338C8C',
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         paddingTop: 18,
-        paddingBottom: 32,
+        paddingBottom: 10,
         paddingHorizontal: 0,
         minHeight: 320,
         width: '100%',
@@ -812,7 +836,7 @@ export const styles = StyleSheet.create({
     },
     exploreSuggestionIcon: {
         width: 32,
-        height: 32,
+        height: 42,
         borderRadius: 16,
         backgroundColor: '#FFE066',
         alignItems: 'center',
@@ -845,6 +869,26 @@ export const styles = StyleSheet.create({
     },
     exploreInfoClose: {
         marginLeft: 8,
+    },
+    exploreButton: {
+        backgroundColor: '#E0F7FA',
+        borderRadius: 22,
+        paddingVertical: 12,
+        marginHorizontal: 16,
+        marginTop: 0,
+        marginBottom: 8,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    exploreButtonText: {
+        color: '#00796B',
+        fontWeight: 'bold',
+        fontSize: 17,
+        letterSpacing: 0.2,
     },
     
 });
