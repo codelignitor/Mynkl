@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Image, Platform } from 'react-native';
 import LottieView from 'lottie-react-native';
+import { ss } from '../../utils/scale';
 
 const emojiMap = {
   happy: require('../../assets/images/happy-icon.png'),
@@ -12,20 +13,20 @@ const emojiMap = {
 };
 
 const imageSizes = {
-  happy: { width: 68, height: 68 },
-  calm: { width: 73, height: 73 },
-  stressed: { width: 78, height: 78 },
-  lonely: { width: 83, height: 83 },
-  alone: { width: 83, height: 83 },
-  sad: { width: 83, height: 83 },
+  happy: { width: ss(68), height: ss(68) },
+  calm: { width: ss(73), height: ss(73) },
+  stressed: { width: ss(78), height: ss(78) },
+  lonely: { width: ss(83), height: ss(83) },
+  alone: { width: ss(83), height: ss(83) },
+  sad: { width: ss(83), height: ss(83) },
 };
 
 const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count }) => {
   const key = emoji?.toLowerCase();
   const source = emojiMap[key];
   const size = Platform.OS === 'android'
-    ? { width: 44, height: 44 }
-    : imageSizes[key] || { width: 44, height: 44 };
+    ? { width: ss(44), height: ss(44) }
+    : imageSizes[key] || { width: ss(44), height: ss(44) };
 
   const highlightStyle = count > 1 ? styles.highlight : null;
 

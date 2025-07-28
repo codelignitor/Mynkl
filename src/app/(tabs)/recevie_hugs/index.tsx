@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons'; // ← Added Ionicons
 import { receiveHugsList } from '@/src/services/apis';
 import { router } from 'expo-router';
+import hugsLogo from '../../../assets/images/hugs_logo.png';
 
 const PendingHugsDetailScreen = ({ onBack }) => {
 
@@ -177,7 +178,7 @@ export default function PendingHugsScreen() {
           <Text style={styles.heart}>💗</Text>
           <TouchableOpacity onPress={handleHugImagePress}>
             <Image
-              source={{ uri: 'https://cdn-icons-png.flaticon.com/512/12173/12173945.png' }}
+              source={hugsLogo}
               style={styles.hugImage}
             />
           </TouchableOpacity>
