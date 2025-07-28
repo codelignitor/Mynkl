@@ -9,6 +9,7 @@ import {
   FlatList,
   SafeAreaView,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from "./index.style";
@@ -107,6 +108,8 @@ export default function AddCheckIn() {
         </TouchableOpacity>
       } />
 
+      <ScrollView>
+
       <View style={styles.contentContainer}>
         <Text style={styles.title}>How are you feeling?</Text>
 
@@ -167,6 +170,7 @@ export default function AddCheckIn() {
             style={styles.switch}
           />
         </View>
+        
 
  <View style={styles.locationContainer}>
           <View style={styles.locationContent}>
@@ -181,6 +185,7 @@ export default function AddCheckIn() {
             style={styles.switch}
           />
         </View>
+       
 
         <LinearGradient
           colors={['#E91E63', '#3F51B5']}
@@ -193,6 +198,7 @@ export default function AddCheckIn() {
           </TouchableOpacity>
         </LinearGradient>
       </View>
+       </ScrollView>
     </SafeAreaView>
   );
 }

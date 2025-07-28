@@ -73,26 +73,26 @@ const MoodMapView = ({
           const emojiIcon = emojiMap[location.mood] || emojiMap['happy'];
 
           // Android-specific: use icon prop and scale image manually
-          if (Platform.OS === 'android') {
-            const resolved = resolveAssetSource(require('../../assets/images/happy-icon.png'));
+          // if (Platform.OS === 'android') {
+          //   const resolved = resolveAssetSource(require('../../assets/images/happy-icon.png'));
 
-            return (
-              <Marker
-                key={location.id}
-                coordinate={{
-                  latitude: location.latitude,
-                  longitude: location.longitude,
-                }}
-                onPress={() => onSelectMarker(location)}
-                icon={{
-                  uri: resolved.uri,
-                  width: isSelected ? 60 : 40,
-                  height: isSelected ? 60 : 40,
-                  scale: 1,
-                }}
-              />
-            );
-          }
+          //   return (
+          //     <Marker
+          //       key={location.id}
+          //       coordinate={{
+          //         latitude: location.latitude,
+          //         longitude: location.longitude,
+          //       }}
+          //       onPress={() => onSelectMarker(location)}
+          //       icon={{
+          //         uri: resolved.uri,
+          //         width: isSelected ? 60 : 40,
+          //         height: isSelected ? 60 : 40,
+          //         scale: 1,
+          //       }}
+          //     />
+          //   );
+          // }
 
           // iOS: use custom MapMarker component
           return (

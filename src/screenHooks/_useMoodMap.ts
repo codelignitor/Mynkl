@@ -441,11 +441,24 @@ export function useMoodMap() {
     () =>
       debounce(async (query: string) => {
         try {
+
+
            setLoading(true);
+
+          
+                   const { status } = await Location.requestForegroundPermissionsAsync();
+                   if (status !== 'granted') {
+                     console.warn('Permission to access location was denied');
+                     return;
+                   }
+           
+                   const location = await Location.getCurrentPositionAsync({});
+                  
+                
          const response = await getMapSearchResults({
           query: query,
-          lat: mapRegion.latitude,
-          lng: mapRegion.longitude,
+          lat: location.coords.latitude,
+          lng: location.coords.longitude,
           // mood: 'happy',
         });
          const fetchedData = response || [];

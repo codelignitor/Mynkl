@@ -223,7 +223,7 @@ export default function ChannelScreen() {
               title="Songs to Feel Good"
               subtitle="Curated playlist"
               color="#bdb2ff"
-              onPress={() => router.push("chat/happiness_challenge")}
+              onPress={() => Linking.openURL('https://open.spotify.com/playlist/7wDZ5nB0Wb1tcoloILplN8')}
             />
           </ScrollView>
         )}

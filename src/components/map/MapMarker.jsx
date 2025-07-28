@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Image, Platform } from 'react-native';
 import LottieView from 'lottie-react-native';
+import { ss } from '@/src/constants/ss';
 
 const emojiMap = {
   happy: require('../../assets/images/happy-icon.png'),
@@ -37,6 +38,20 @@ const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count }) =
   const highlightStyle = count > 1 ? styles.highlight : null;
 
   if (!source) return null;
+
+  if (Platform.OS === 'android') {
+    return (
+      <View style={[size, { backgroundColor }, highlightStyle ,{overflow: 'visible' ,alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,}]}>
+        <Image
+          source={source}
+         style={{ width: ss(38), height: ss(38), display: "flex" }}
+          resizeMode="contain"
+        />
+      </View>
+    );
+  }
 
   return (
     <View>

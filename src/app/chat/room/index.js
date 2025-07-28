@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
+  Linking,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StreamChat } from "stream-chat";
@@ -156,7 +157,8 @@ export default function GroupChannelListScreen() {
             <Text style={styles.footerText}>
               How about a happiness challenge to lift your mood? <Text>😉</Text>
             </Text>
-            <TouchableOpacity style={styles.footerButton}>
+            <TouchableOpacity style={styles.footerButton} onPress={()=>  Linking.openURL('https://open.spotify.com/playlist/7wDZ5nB0Wb1tcoloILplN8')
+                      }>
               <Text style={styles.footerButtonText}>▶ Listen to uplifting playlist</Text>
             </TouchableOpacity>
           </View>
