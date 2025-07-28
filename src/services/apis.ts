@@ -288,4 +288,23 @@ export const MeditationsoptsNearby = async (lat: number, lon: number) => {
   return response.data;
 };
 
+//open_to_talk
+export const openToTalk = async (payload) => {
+  const response = await axiosInstance.post(`/open_to_talk`,payload);
+  return response.data;
+};
 
+export const opentotalkFeedback = async (payload) => {
+  const response = await axiosInstance.post(`/open_to_talk/feedback`,payload);
+  return response.data;
+};
+
+export const opentotalkInsights = async () => {
+  const response = await axiosInstance.get(`/open_to_talk/insights`);
+  return response.data;
+};
+
+export const insightTips = async () => {
+  const response = await axiosInstance.get(`/open_to_talk/mood-insight-tip`);
+  return response.data;
+};

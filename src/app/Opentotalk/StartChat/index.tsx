@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Switch, TouchableOpacity } from 'react-native';
 import { MaterialIcons, FontAwesome, Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import styles from './style';
 import { useReadyToChat, options as chatOptions } from '../../../screenHooks/_useReadytochat';
+import { openToTalk, insightTips } from '../../../services/apis';
 
 const iconMap = {
   text: { Icon: MaterialIcons, iconName: 'textsms' },
@@ -14,7 +15,6 @@ const iconMap = {
 };
 
 const OpenToTalkScreen = () => {
-  const router = useRouter();
   const {
     isOpen,
     setIsOpen,
@@ -25,7 +25,48 @@ const OpenToTalkScreen = () => {
     showStatusToast,
     selectedLabel,
     options,
+    loading,
+    startChat,
   } = useReadyToChat();
+
+  // State for insight tip
+  const [insightTip, setInsightTip] = useState('');
+  const [tipLoading, setTipLoading] = useState(true);
+  const [tipError, setTipError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTip = async () => {
+      setTipLoading(true);
+      setTipError(null);
+      try {
+        console.log('Calling insightTips API...');
+        const res = await insightTips();
+        console.log('insightTips API response:', res);
+        if (res && res.tip) {
+          setInsightTip(res.tip);
+        } else if (typeof res === 'string') {
+          setInsightTip(res);
+        } else {
+          setInsightTip('No tip available.');
+        }
+      } catch (err) {
+        console.log('insightTips API error:', err);
+        setTipError('Failed to load insight tip.');
+      } finally {
+        setTipLoading(false);
+      }
+    };
+    fetchTip();
+  }, []);
+
+  const router = useRouter();
+
+  const handleStartWith = async () => {
+    const response = await startChat();
+    if (response) {
+      router.push('/Opentotalk/AI_matches');
+    }
+  };
 
   return (
     <LinearGradient
@@ -42,7 +83,12 @@ const OpenToTalkScreen = () => {
           <Text style={styles.toggleLabel}>Open to Talk</Text>
           <Switch
             value={isOpen}
-            onValueChange={setIsOpen}
+            onValueChange={(value) => {
+              setIsOpen(value);
+              if (value) {
+                showStatusToast(status);
+              }
+            }}
             trackColor={{ false: '#444', true: '#1ed760' }}
             thumbColor={isOpen ? '#fff' : '#888'}
           />
@@ -55,14 +101,17 @@ const OpenToTalkScreen = () => {
               status === 'available' && styles.statusOptionSelected
             ]}
             onPress={() => {
+              if (!isOpen) return;
               setStatus('available');
               showStatusToast('available');
             }}
+            disabled={!isOpen}
           >
-            <Text style={{ fontSize: 18 }}>🟢</Text>
+            <Text style={{ fontSize: 18, opacity: isOpen ? 1 : 0.5 }}>🟢</Text>
             <Text style={[
               styles.statusLabel,
-              status === 'available' && styles.statusLabelSelected
+              status === 'available' && styles.statusLabelSelected,
+              !isOpen && { opacity: 0.5 }
             ]}>Available</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -71,14 +120,17 @@ const OpenToTalkScreen = () => {
               status === 'away' && styles.statusOptionSelected
             ]}
             onPress={() => {
+              if (!isOpen) return;
               setStatus('away');
               showStatusToast('away');
             }}
+            disabled={!isOpen}
           >
-            <Text style={{ fontSize: 18 }}>🟡</Text>
+            <Text style={{ fontSize: 18, opacity: isOpen ? 1 : 0.5 }}>🟡</Text>
             <Text style={[
               styles.statusLabel,
-              status === 'away' && styles.statusLabelSelected
+              status === 'away' && styles.statusLabelSelected,
+              !isOpen && { opacity: 0.5 }
             ]}>Away</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -87,20 +139,33 @@ const OpenToTalkScreen = () => {
               status === 'busy' && styles.statusOptionSelected
             ]}
             onPress={() => {
+              if (!isOpen) return;
               setStatus('busy');
               showStatusToast('busy');
             }}
+            disabled={!isOpen}
           >
-            <Text style={{ fontSize: 18 }}>🔴</Text>
+            <Text style={{ fontSize: 18, opacity: isOpen ? 1 : 0.5 }}>🔴</Text>
             <Text style={[
               styles.statusLabel,
-              status === 'busy' && styles.statusLabelSelected
+              status === 'busy' && styles.statusLabelSelected,
+              !isOpen && { opacity: 0.5 }
             ]}>Busy</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.upbeatMsg}>
-          {`You seem upbeat today—try ${selectedLabel}!`}
-        </Text>
+        {/* Insight Tip */}
+        <View style={{ marginBottom: 12 }}>
+          {tipLoading ? (
+            <Text style={{ color: '#fff', textAlign: 'center' }}>Loading tip...</Text>
+          ) : tipError ? (
+            <Text style={{ color: 'red', textAlign: 'center' }}>{tipError}</Text>
+          ) : (
+            <Text style={{ color: '#fff', textAlign: 'center' }}>{insightTip}</Text>
+          )}
+        </View>
+        {/* <Text style={styles.upbeatMsg}>
+          {`You seem upbeat today—try `}
+        </Text> */}
         <View style={styles.optionsRow}>
           {chatOptions.map(({ key, label }) => {
             const isSelected = selectedOption === key;
@@ -123,10 +188,11 @@ const OpenToTalkScreen = () => {
         <View style={styles.moodInsightCard}>
           <TouchableOpacity
             style={styles.startButton}
-            onPress={() => router.push('/Opentotalk/AI_matches')}
+            onPress={handleStartWith}
+            disabled={loading}
           >
             <Text style={styles.startButtonText}>
-              {`Start With ${selectedLabel.charAt(0).toUpperCase() + selectedLabel.slice(1)}`}
+              {loading ? 'Starting...' : `Start With ${selectedLabel.charAt(0).toUpperCase() + selectedLabel.slice(1)}`}
             </Text>
           </TouchableOpacity>
         </View>

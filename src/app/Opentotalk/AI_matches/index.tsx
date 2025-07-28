@@ -22,7 +22,8 @@ const AIMatchingScreen = () => {
       style={styles.gradient}
     >
       <View style={styles.container}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.backButton} 
+        onPress={() => router.push('/Opentotalk/StartChat')}>
           <Ionicons name="arrow-back" size={28} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.header}>mynkl</Text>
@@ -45,7 +46,7 @@ const AIMatchingScreen = () => {
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>Start Chat</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, { marginTop: 12 }] }>
+        <TouchableOpacity style={[styles.button, { marginTop: 12 }]} onPress={() => router.replace('/Opentotalk/feedback')}>
           <Text style={styles.buttonText}>Find Next Match</Text>
         </TouchableOpacity>
       </View>
