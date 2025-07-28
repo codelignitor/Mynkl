@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   safetyAdvice: {
-    marginTop: 10,
+    // marginTop: 10,
     color: '#b3b3b3',
     fontSize: 16,
     // textAlign: 'center',
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   NextBtn:{
-    marginTop: 20,
+    // marginTop: 20,
     color: '#fff',
     fontWeight: '600',
     fontSize: 16,
@@ -182,6 +182,23 @@ const styles = StyleSheet.create({
     top: 18,
     left: 10,
     zIndex: 10,
+  },
+  SubmitBtn: {
+    // backgroundColor: '#fff',
+    color: '#fff',
+    textAlign: 'center',
+    paddingVertical: 14,
+    borderRadius: 8,
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginTop: 16,
+    marginBottom: 8,
+    // Add shadow for elevation
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 2,
+    // elevation: 2,
   },
 });
 

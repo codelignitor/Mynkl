@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Image, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import styles from './style';
 import { Ionicons } from '@expo/vector-icons';
 import { useFeedbackScreen, avatarUrl } from '../../../screenHooks/_usefeedback';
+import { opentotalkFeedback } from '../../../services/apis';
 
 const FeedbackScreen = () => {
   const {
@@ -13,6 +14,33 @@ const FeedbackScreen = () => {
     setNote,
     router,
   } = useFeedbackScreen();
+
+  // Local state for toggles
+  const [sendFriendRequest, setSendFriendRequest] = React.useState(false);
+  const [reportUser, setReportUser] = React.useState(false);
+  const [blockUser, setBlockUser] = React.useState(false);
+
+  // Dummy receiver_id
+  const receiver_id = '3fa85f64-5717-4562-b3fc-2c963f66afa6';
+
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        receiver_id,
+        mood: selectedMood || '',
+        feedback_text: note || '',
+        send_friend_request: sendFriendRequest,
+        report_user: reportUser,
+        block_user: blockUser,
+      };
+      const res = await opentotalkFeedback(payload);
+      console.log('Feedback API response:', res);
+      Alert.alert('Success', (res as any).message || 'Feedback submitted successfully.');
+      // Optionally navigate or reset state here
+    } catch (err) {
+      Alert.alert('Error', err?.message || 'Failed to submit feedback.');
+    }
+  };
 
   return (
     <LinearGradient
@@ -65,8 +93,8 @@ const FeedbackScreen = () => {
           <Image source={{ uri: avatarUrl }} style={styles.avatar} />
           <View style={{ flex: 1 }}>
             <Text style={styles.chemistryText}>You and Julia had strong chemistry!</Text>
-            <TouchableOpacity style={styles.friendRequestBtn} activeOpacity={0.85}>
-              <Text style={styles.friendRequestText}>Send Friend Request</Text>
+            <TouchableOpacity style={styles.friendRequestBtn} activeOpacity={0.85} onPress={() => setSendFriendRequest((v) => !v)}>
+              <Text style={styles.friendRequestText}>Send Friend Request{sendFriendRequest ? ' ✓' : ''}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -76,11 +104,11 @@ const FeedbackScreen = () => {
           <Text style={styles.reportBlockLabel}>Report/Block Options</Text>
           <Text style={styles.safetyAdvice}>For safety advice att oin corderation.</Text>
           <View style={styles.reportBlockRow}>
-            <TouchableOpacity>
-              <Text style={styles.reportBlockBtn}>Report</Text>
+            <TouchableOpacity onPress={() => setReportUser((v) => !v)}>
+              <Text style={styles.reportBlockBtn}>Report{reportUser ? ' ✓' : ''}</Text>
             </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.reportBlockBtn}>Block</Text>
+            <TouchableOpacity onPress={() => setBlockUser((v) => !v)}>
+              <Text style={styles.reportBlockBtn}>Block{blockUser ? ' ✓' : ''}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -88,6 +116,9 @@ const FeedbackScreen = () => {
         onPress={() => router.push('/Opentotalk/Insights')}
         >
             <Text style={styles.NextBtn}>Next</Text>
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Text style={styles.SubmitBtn} onPress={handleSubmit}>Submit</Text>
         </TouchableOpacity>
       </View>
     </LinearGradient>

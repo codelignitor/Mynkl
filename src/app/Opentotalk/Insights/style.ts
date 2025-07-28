@@ -7,10 +7,11 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   container: {
-    flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: 32,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 18,
     alignItems: 'center',
+    // flex: 1, // Removed to allow ScrollView to scroll
   },
   header: {
     marginTop: 30,

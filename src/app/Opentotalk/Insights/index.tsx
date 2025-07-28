@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
@@ -19,9 +19,9 @@ const InsightsScreen = () => {
       locations={[0, 0.4, 0.8, 1]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
-      style={styles.gradient}
+      style={{ flex: 1 }}
     >
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         {/* Back Button */}
         <TouchableOpacity
           style={styles.backButton}
@@ -93,7 +93,7 @@ const InsightsScreen = () => {
           />
           <Text style={styles.reportText}>Report/Block Options</Text>
         </View>
-      </View>
+      </ScrollView>
     </LinearGradient>
   );
 };
