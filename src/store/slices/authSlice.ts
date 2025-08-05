@@ -6,7 +6,7 @@ interface AuthState {
   open_to_talk_status: boolean;
   user_id: string | null;
   username: string | null;
-  profileImage?: string | null; // ✅ Added this
+  profile_picture?: string | null; // ✅ Added this
   mode: string | null;
   stream_token?: string | null;
 }
@@ -17,7 +17,7 @@ const initialState: AuthState = {
   open_to_talk_status: false,
   user_id: null,
   username: null,
-  profileImage: null, // ✅ Initialized here too
+  profile_picture: null, // ✅ Initialized here too
   mode: null,
   stream_token: null,
 };
@@ -33,6 +33,7 @@ const authSlice = createSlice({
       state.user_id = action.payload.user_id;
       state.username = action.payload.username;
       state.stream_token = action.payload.stream_token || null;
+      state.profile_picture = action.payload.profile_picture;
     },
     isUserLoggedIn: (state) => {
       state.isUserLoggedIn = true;
@@ -53,16 +54,18 @@ const authSlice = createSlice({
       state.profileImage = null; // ✅ Clear profileImage on logout
       state.stream_token = null;
     },
-    getHomeDetail: (state, action: PayloadAction<{ open_to_talk_status: boolean, user_id: string, username: string, mode: string }>) => {
+    getHomeDetail: (state, action: PayloadAction<{ open_to_talk_status: boolean, user_id: string, username: string, mode: string ,profileImage: string | null }>) => {
       state.open_to_talk_status = action.payload.open_to_talk_status;
       state.user_id = action.payload.user_id;
       state.username = action.payload.username;
       state.mode = action.payload.mode;
+       state.profile_picture = action.payload.profile_picture;
     },
     setProfile: (state, action: PayloadAction<{ username: string; profileImage: string }>) => {
       state.username = action.payload.username;
-      state.profileImage = action.payload.profileImage;
+      state.profile_picture = action.payload.profile_picture;
     },
+    
   },
 });
 

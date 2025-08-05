@@ -6,7 +6,7 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  Switch, // <-- added for toggle
+  Switch,
 } from "react-native";
 import {
   Channel,
@@ -14,6 +14,7 @@ import {
   MessageList,
   useAttachmentPickerContext,
   useChannelContext,
+  useChatContext,
 } from "stream-chat-expo";
 import { router } from "expo-router";
 import { AppContext } from "../../../../contexts/AppContext";
@@ -25,8 +26,8 @@ export default function ChannelScreen() {
   const { channel } = useContext(AppContext);
   const { setTopInset } = useAttachmentPickerContext();
   const headerHeight = useHeaderHeight();
+  const { client } = useChatContext();
 
-  // 🔁 Add toggle state
   const [showMoodButtons, setShowMoodButtons] = useState(false);
 
   useEffect(() => {
@@ -41,25 +42,21 @@ export default function ChannelScreen() {
     );
   }
 
-  // Get online members from channel
   const members = Object.values(channel?.state?.members || {});
-  const onlineMembers = members.filter(
-    (m) => m.user?.online === true
-  );
-  console.log("Online members:", onlineMembers?.length);
+  const onlineMembers = members.filter((m) => m.user?.online === true);
+  const currentUser = client.user;
 
   const CustomChannelHeader = () => {
     const { channel } = useChannelContext();
     const moodTitle = channel?.data?.name || "Feeling Lonely";
-    const onlineCount = Object.keys(channel?.state?.members || {}).length;
-    // const topEmoji = "😊";
+    const memberKeys = channel?.state?.members ? Object.keys(channel.state.members) : [];
+    const onlineCount = memberKeys.length;
 
     return (
       <View
         style={{
           paddingTop: 30,
           backgroundColor: "#284d66",
-          // paddingBottom: 10,
           borderBottomLeftRadius: 30,
           borderBottomRightRadius: 30,
         }}
@@ -77,25 +74,52 @@ export default function ChannelScreen() {
               name="chevron-back"
               size={28}
               color="white"
-              onPress={() => router.push("../../chat_comments")} 
+              onPress={() => router.push("../../chat_comments")}
               style={{ padding: 5 }}
             />
-            <Text
-              style={{
-                fontSize: 24,
-                fontWeight: "bold",
-                color: "white",
-                marginLeft: 10,
-              }}
-            >
-              {moodTitle}
-            </Text>
+            <View>
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: "bold",
+                  color: "white",
+                  marginLeft: 10,
+                }}
+              >
+                {moodTitle}
+              </Text>
+
+              {currentUser && (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 6,
+                    marginLeft: 10,
+                  }}
+                >
+                  <Image
+                    source={{ uri: currentUser.image || "https://placehold.co/48x48" }}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      marginRight: 8,
+                      borderWidth: 1,
+                      borderColor: "#fff",
+                    }}
+                  />
+                  <Text style={{ color: "white", fontSize: 16 }}>
+                    {currentUser.name || currentUser.id}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
-          {/* <Text style={{ fontSize: 36 }}>{topEmoji}</Text> */}
         </View>
 
         <Text style={{ color: "white", fontSize: 14, marginLeft: 20 }}>
-          {onlineMembers?.length} online now
+          {onlineMembers.length} online now
         </Text>
 
         <View
@@ -106,7 +130,6 @@ export default function ChannelScreen() {
             marginLeft: 20,
           }}
         >
-          {/* Text Bubble */}
           <View
             style={{
               backgroundColor: "white",
@@ -121,11 +144,9 @@ export default function ChannelScreen() {
             </Text>
           </View>
 
-          {/* Mascot SVG */}
           <Mascot width={112} height={112} style={{ marginLeft: 60 }} />
         </View>
 
-        {/* 🔘 Toggle Mood Button */}
         <View
           style={{
             marginTop: 10,
@@ -148,8 +169,9 @@ export default function ChannelScreen() {
     );
   };
 
-  const MoodButton = ({ icon, title, subtitle, color }) => (
+  const MoodButton = ({ icon, title, subtitle, color , onPress }) => (
     <TouchableOpacity
+    onPress={onPress}
       style={{
         backgroundColor: color,
         padding: 15,
@@ -174,45 +196,43 @@ export default function ChannelScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f5f5f5" }}>
-      {channel ? (
-        <Channel channel={channel} keyboardVerticalOffset={headerHeight}>
+      <Channel channel={channel} keyboardVerticalOffset={headerHeight}>
+        <CustomChannelHeader />
+
+        {showMoodButtons && (
           <ScrollView
             style={{ backgroundColor: "#0f2027", flexGrow: 0 }}
-          // contentContainerStyle={{ paddingBottom: 10 }}
+            contentContainerStyle={{ paddingBottom: 10 }}
           >
-            <CustomChannelHeader />
-
-            {/* ✅ Conditional Mood Buttons */}
-            {showMoodButtons && (
-              <>
-                <MoodButton
-                  icon="😊"
-                  title="Happiness Challenge"
-                  subtitle="Send a friend a positive message"
-                  color="#ffe066"
-                />
-                <MoodButton
-                  icon="🧘"
-                  title="Meditation Spot Nearby"
-                  subtitle="Curated playlist"
-                  color="#a8dadc"
-                />
-                <MoodButton
-                  icon="🎵"
-                  title="Songs to Feel Good"
-                  subtitle="Curated playlist"
-                  color="#bdb2ff"
-                />
-              </>
-            )}
+            <MoodButton
+              icon="😊"
+              title="Happiness Challenge"
+              subtitle="Send a friend a positive message"
+              color="#ffe066"
+              onPress={() => router.push("chat/happiness_challenges")}
+            />
+            <MoodButton
+              icon="🧘"
+              title="Meditation Spot Nearby"
+              subtitle="Curated playlist"
+              color="#a8dadc"
+                onPress={() => router.push("chat/calm_spot")}
+            />
+            <MoodButton
+              icon="🎵"
+              title="Songs to Feel Good"
+              subtitle="Curated playlist"
+              color="#bdb2ff"
+              onPress={() => Linking.openURL('https://open.spotify.com/playlist/7wDZ5nB0Wb1tcoloILplN8')}
+            />
           </ScrollView>
+        )}
 
-          <View style={{ flex: 1 }}>
-            <MessageList />
-            <MessageInput giphyActive={false} setGiphyActive={false} />
-          </View>
-        </Channel>
-      ) : null}
+        <View style={{ flex: 1 }}>
+          <MessageList />
+          <MessageInput />
+        </View>
+      </Channel>
     </SafeAreaView>
   );
-} 
+}

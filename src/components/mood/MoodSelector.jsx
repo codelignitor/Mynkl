@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { styles } from '../../screenStyles/styles';
 import SectionHeader from '../common/SectionHeader';
 import Happy from '../../assets/svgs/happy-icon.svg';
@@ -13,7 +13,11 @@ import Frustrated from '../../assets/svgs/frustrated.svg';
 const MoodSelector = ({ moods, selectedMood, handleMoodSelection }) => {
   return (
     <View style={styles.section}>
-      <View style={styles.moodCirclesContainer}>
+      <ScrollView 
+        contentContainerStyle={[styles.moodCirclesContainer, { justifyContent: 'flex-start' }]}
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+      >
         {moods.map((mood) => (
           <TouchableOpacity
             key={mood.id}
@@ -28,17 +32,14 @@ const MoodSelector = ({ moods, selectedMood, handleMoodSelection }) => {
             >
               {mood.name === 'Happy' && <Happy width={78} height={78}/>}
               {mood.name === 'Calm' && <Calm width={93} height={93}/>}
-               {mood.name === 'Stressed' && <Stressed width={83} height={83}/>}
-                {mood.name === 'Lonely' && <Lonely width={103} height={103}/>}
-                {mood.name === 'Grateful' && <Grateful width={83} height={75}/>}
-                {mood.name === 'Sad' && <Sad width={85} height={83}/>}
-                {mood.name === 'Frustrated' && <Frustrated width={68} height={75}/>}
-                
-              {/* <Text style={styles.moodEmoji}>{mood.emoji}</Text> */}
-              
+              {mood.name === 'Stressed' && <Stressed width={83} height={83}/>}
+              {mood.name === 'Lonely' && <Lonely width={103} height={103}/>}
+              {mood.name === 'Grateful' && <Grateful width={83} height={75}/>}
+              {mood.name === 'Sad' && <Sad width={85} height={83}/>}
+              {mood.name === 'Frustrated' && <Frustrated width={68} height={75}/>}
             </View>
             <Text 
-            numberOfLines={1}
+              numberOfLines={1}
               style={[
                 styles.moodName,
                 selectedMood === mood.id && styles.selectedMoodName
@@ -48,16 +49,7 @@ const MoodSelector = ({ moods, selectedMood, handleMoodSelection }) => {
             </Text>
           </TouchableOpacity>
         ))}
-        
-        {/* Voice Input Button */}
-        {/* <TouchableOpacity
-          style={styles.moodCircleWrapper}
-        >
-          <View style={styles.moodCircle}>
-            <Text style={styles.moodEmoji}>🎤</Text>
-          </View>
-        </TouchableOpacity> */}
-      </View>
+      </ScrollView>
     </View>
   );
 };

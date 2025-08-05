@@ -20,6 +20,7 @@
       "bundleIdentifier": "com.mynkl"
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "ACCESS_FINE_LOCATION"
       ],

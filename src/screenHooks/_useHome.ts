@@ -73,18 +73,15 @@ export function useHome() {
         }
     }
 
-       const handleSubmitAddCheckin = (mood) => {try {
+       const handleSubmitAddCheckin = async (mood) => {try {
           
           
+               const formData = new FormData();
+        formData.append('mood', mood?.name);
            
-             const payload = {
-              mood: mood?.name,
-             
-            
-            };
             // console.log("Submitted payload:", payload);
-            const response =checkIn(payload);
-             if(response.status === 200){
+            const response = await checkIn(formData);
+             if(response){
             Toast.show({
               type: "success",
               text1: "Check-in successful",

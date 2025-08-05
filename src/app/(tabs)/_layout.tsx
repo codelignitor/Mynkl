@@ -48,6 +48,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) =>  <Ionicons name="map-sharp" size={24} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="recevie_hugs/index"
+        options={{
+          title: 'Hugs',
+          tabBarIcon: ({ color }) => <Ionicons name="chatbox" size={24} color={color} />,
+        }}
+      />
        <Tabs.Screen
         name="hugs/index"
         options={{

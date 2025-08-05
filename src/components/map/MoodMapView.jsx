@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, Platform, ActivityIndicator, Image } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapMarker from './MapMarker';
 import { styles } from '../../screenStyles/styles';
+import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 
 const mapStyle = [
   {
@@ -23,14 +24,22 @@ const mapStyle = [
     elementType: 'labels.icon',
     stylers: [{ visibility: 'off' }],
   },
- 
- 
   {
     featureType: 'poi.park',
     stylers: [{ visibility: 'off' }],
-  }
+  },
 ];
 
+const emojiMap = {
+  happy: require('../../assets/images/happy-icon.png'),
+  calm: require('../../assets/images/calm-icon.png'),
+  stressed: require('../../assets/images/stressed-icon.png'),
+  lonely: require('../../assets/images/lonely-icon.png'),
+  alone: require('../../assets/images/lonely-icon.png'),
+  sad: require('../../assets/images/sad-icon.png'),
+  grateful: require('../../assets/images/grateful-icon.png'),
+  frustrated: require('../../assets/images/frustrated.png'),
+};
 
 const MoodMapView = ({
   mapRegion,
@@ -39,75 +48,74 @@ const MoodMapView = ({
   currentEmoji,
   backgroundColor,
   mapContainerStyle,
-  callback
+  callback,
 }) => {
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
 
-  // console.log("MoodMapView Props", mapRegion); 
-
   const onSelectMarker = (location) => {
     setSelectedMarkerId(location.id);
-   callback(location);
-  }
+    callback(location);
+  };
 
-  // Memoized MapView key to force rerender when locations change
   const mapKey = useMemo(() => JSON.stringify(currentLocations), [currentLocations]);
-// console.log("MapKey",currentLocations)
+
   return (
     <View style={[styles.mapContainer, mapContainerStyle]}>
-      {/* { !currentLocations?.length   && (
-  <View style={styles.loadingOverlay}>
-    <Text>{currentLocations?.length }</Text>
-    <ActivityIndicator size="large" color="#000" />
-  </View>
-)} */}
+      <MapView
+        key={mapKey}
+        customMapStyle={mapStyle}
+        style={styles.map}
+        provider={PROVIDER_GOOGLE}
+        region={mapRegion}
+      >
+        {currentLocations?.map((location) => {
+          const isSelected = selectedMarkerId === location.id;
+          const emojiIcon = emojiMap[location.mood] || emojiMap['happy'];
 
-     
-        <MapView
-          key={mapKey} 
-          customMapStyle={mapStyle}
-          style={styles.map}
-          provider={PROVIDER_GOOGLE}
-          region={mapRegion}
-        >
-          {currentLocations?.map((location) => {
-            const isSelected = selectedMarkerId === location.id;
+          // Android-specific: use icon prop and scale image manually
+          // if (Platform.OS === 'android') {
+          //   const resolved = resolveAssetSource(require('../../assets/images/happy-icon.png'));
 
-            return (
-              <Marker
-                key={location.id}
-                coordinate={{
-                  latitude: location.latitude,
-                  longitude: location.longitude,
-                }}
-                title={location.name}
-                description={location.description}
-                onPress={()=>onSelectMarker(location)}
-              >
-                <MapMarker
+          //   return (
+          //     <Marker
+          //       key={location.id}
+          //       coordinate={{
+          //         latitude: location.latitude,
+          //         longitude: location.longitude,
+          //       }}
+          //       onPress={() => onSelectMarker(location)}
+          //       icon={{
+          //         uri: resolved.uri,
+          //         width: isSelected ? 60 : 40,
+          //         height: isSelected ? 60 : 40,
+          //         scale: 1,
+          //       }}
+          //     />
+          //   );
+          // }
+
+          // iOS: use custom MapMarker component
+          return (
+            <Marker
+              key={location.id}
+              coordinate={{
+                latitude: location.latitude,
+                longitude: location.longitude,
+              }}
+              onPress={() => onSelectMarker(location)}
+            >
+              <MapMarker
                 count={location.count}
-                  emoji={location.mood }
-                  backgroundColor={backgroundColor}
-                  // markerStyle={{
-                  //   width: isSelected ? 70 : 50,
-                  //   height: isSelected ? 70 : 50,
-                  //   borderRadius: isSelected ? 35 : 25,
-                  // }}
-                  emojiStyle={{
-                    fontSize: isSelected ? 50 : 30,
-                  }}
-                />
-              </Marker>
-            );
-          })}
-        </MapView>
-      {/* ) : (
-        <View style={styles.mapPlaceholder}>
-          <Text style={styles.placeholderText}>
-            Select a mood below to see recommended places
-          </Text>
-        </View>
-      )} */}
+                emoji={location.mood}
+                backgroundColor={backgroundColor}
+                emojiStyle={{
+                  fontSize: isSelected ? 50 : 30,
+                }}
+              />
+            </Marker>
+          );
+        })}
+      </MapView>
     </View>
   );
 };

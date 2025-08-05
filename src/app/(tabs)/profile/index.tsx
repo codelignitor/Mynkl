@@ -3,7 +3,7 @@ import { logout, setProfile } from '@/src/store/slices/authSlice';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { updateUserProfile, updatedUserProfile } from '../../../services/apis'; // adjust path as needed
+import {  updatedUserProfile } from '../../../services/apis'; // adjust path as needed
 import {
     View,
     Button,
@@ -17,11 +17,12 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
 
 const ProfileScreen = () => {
     const dispatch = useDispatch();
     const username = useSelector((state: RootState) => state.auth.username);
-    const profileImage = useSelector((state: RootState) => state.auth.profileImage);
+    const profileImage = useSelector((state: RootState) => state.auth.profile_picture);
     const userId = useSelector((state: RootState) => state.auth.user_id);
 
     const [isEditing, setIsEditing] = useState(false);
@@ -100,50 +101,48 @@ const ProfileScreen = () => {
         }
     };
 
-    const handleSave = async () => {
-        if (!editedUsername.trim()) {
-            Alert.alert("Error", "Username cannot be empty");
-            return;
-        }
+   const handleSave = async () => {
+  if (!editedUsername.trim()) {
+    Alert.alert("Error", "Username cannot be empty");
+    return;
+  }
 
-        setIsLoading(true);
-        try {
-            const formData = new FormData();
-            formData.append('username', editedUsername.trim());
+  setIsLoading(true);
 
-            if (editedProfileImage) {
-                formData.append('profileImage', {
-                    uri: editedProfileImage,
-                    type: 'image/jpeg',
-                    name: 'profile.jpg'
-                });
-            }
+  try {
+    const formData = new FormData();
 
-            // 🔍 Debug log: show full FormData contents
-            console.log('📦 Full FormData contents:');
-            for (let [key, value] of formData.entries()) {
-                if (typeof value === 'object') {
-                    console.log(`🔹 ${key}:`, {
-                        uri: value.uri,
-                        type: value.type,
-                        name: value.name,
-                    });
-                } else {
-                    console.log(`🔹 ${key}: ${value}`);
-                }
-            }
+    // 👇 Important: value must be string
+    formData.append('username', editedUsername.trim());
 
-            const response = await updateUserProfile(formData);
-            console.log('✅ Profile updated:', response);
-            setIsEditing(false);
-            Alert.alert("Success", "Profile updated successfully!");
-        } catch (error) {
-            console.log('❌ Error updating profile:', error);
-            Alert.alert("Error", "Failed to update profile.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    if (editedProfileImage) {
+      formData.append('profile_picture', {
+        uri: editedProfileImage,
+        type: 'image/png', // or 'image/jpeg'
+        name: 'profile.png',
+      });
+    }
+
+    // 🚀 Send via Axios
+    const response = await axios.post('http://13.50.228.222:8000/profile/update-profile', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5MjVhM2Q3MC0xMTA4LTQ4MDYtYTVlMi03ZjE1NDBkNDQwOTQiLCJleHAiOjE3NTM2ODI1NjZ9.Iw5jzzCecHlXYOlZpEHBwQEp8KWVbRy6YdEiWr5KuDw`, // Replace with real token
+      },
+    });
+
+    console.log('✅ Success:', response.data);
+    Alert.alert('Success', 'Profile updated successfully');
+    setIsEditing(false);
+  } catch (error) {
+    console.log('❌ API Error:', error?.response?.data || error.message);
+    Alert.alert('Error', 'Failed to update profile.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
     console.log(editedProfileImage);
     return (
         <View style={styles.container}>

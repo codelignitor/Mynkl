@@ -8,11 +8,11 @@ import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://13.50.228.222:8000',
-  //  baseURL: 'https://02d8-2404-3100-1c19-5ff6-f65f-2baa-6484-7521.ngrok-free.app/',
+    baseURL: 'http://18.199.96.45:8000',
+  //  baseURL: 'https://f538f0def9ae.ngrok-free.app/',
 
 
-  timeout: 10000,
+ // timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -57,11 +57,22 @@ axiosInstance.interceptors.response.use(
 
     // Bad request
 
-    Toast.show({
-      type: 'error',
-      text1: 'Error',
-      text2: error.response.data.detail || error.response.data.detail[0].msg || 'Something went wrong',
-    });
+   let errorDetail = error?.response?.data?.detail;
+
+let msg = 'Something went wrong';
+
+if (Array.isArray(errorDetail)) {
+  msg = errorDetail[0]?.msg || message;
+} else if (typeof errorDetail === 'string') {
+  msg = errorDetail;
+}
+
+Toast.show({
+  type: 'error',
+  text1: 'Error',
+  text2: msg,
+});
+    
 
 
     return Promise.reject(error);

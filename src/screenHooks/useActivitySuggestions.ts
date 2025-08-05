@@ -90,7 +90,7 @@ export function useActivitySuggestions() {
     const getActivitySuggestions = async () => {
         try { 
             setIsLoading(true);
-            setSuggestedActivities(data);
+            // setSuggestedActivities(data);
             
             const response = await  getAiActivitySuggestions (token);
             setSuggestedActivities(response);

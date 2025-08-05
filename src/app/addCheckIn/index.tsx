@@ -8,6 +8,8 @@ import {
   Switch,
   FlatList,
   SafeAreaView,
+  ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from "./index.style";
@@ -56,6 +58,7 @@ import Stressed from '../../assets/svgs/stressed-icon.svg';
 import Lonely from '../../assets/svgs/lonely-icon.svg';
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import AudioRecorderPlayer from "@/src/components/common/audioRecorder";
 
 export const unstable_settings = {
   initialRouteName: 'index',
@@ -75,8 +78,27 @@ export default function AddCheckIn() {
     setSelectedMood,
     setText,
     setLocationOptIn,
-    handleSubmit
+    handleSubmit,
+    AnonymousCheckIn,
+    setAnonymousCheckIn,
+    recordedUri, 
+    setRecordedUri,
+    isAudioRecording, 
+    setIsAudioRecording
   } = useAddCheckIn();
+
+
+  if (isloading) {
+   return   <SafeAreaView style={styles.container}>
+       <Header style={{ backgroundColor: '#A7E2E0' }} title="Check-In" showBack={true} rightChildren={
+        <TouchableOpacity onPress={() => router.push('/checkIns')}>
+          <Ionicons name='reload' size={24} color="black" />
+        </TouchableOpacity>
+      } />
+      <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
+      </SafeAreaView>
+    
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -85,6 +107,8 @@ export default function AddCheckIn() {
           <Ionicons name='reload' size={24} color="black" />
         </TouchableOpacity>
       } />
+
+      <ScrollView>
 
       <View style={styles.contentContainer}>
         <Text style={styles.title}>How are you feeling?</Text>
@@ -113,8 +137,11 @@ export default function AddCheckIn() {
           contentContainerStyle={styles.moodList}
           showsHorizontalScrollIndicator={false}
         />
-
+       
         <View style={styles.noteContainer}>
+         
+         {isAudioRecording?
+          < AudioRecorderPlayer recordedUri={recordedUri} setRecordedUri={setRecordedUri}   />:
           <TextInput
             style={styles.textInput}
             multiline
@@ -124,9 +151,10 @@ export default function AddCheckIn() {
             value={text}
             onChangeText={setText}
           />
-          {/* <TouchableOpacity style={styles.voiceButton}>
+         }
+          <TouchableOpacity onPress={()=>setIsAudioRecording(!isAudioRecording)} style={styles.voiceButton}>
             <Text style={styles.voiceIcon}>🎙️</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
 
         <View style={styles.locationContainer}>
@@ -142,6 +170,7 @@ export default function AddCheckIn() {
             style={styles.switch}
           />
         </View>
+        
 
  <View style={styles.locationContainer}>
           <View style={styles.locationContent}>
@@ -156,6 +185,7 @@ export default function AddCheckIn() {
             style={styles.switch}
           />
         </View>
+       
 
         <LinearGradient
           colors={['#E91E63', '#3F51B5']}
@@ -168,6 +198,7 @@ export default function AddCheckIn() {
           </TouchableOpacity>
         </LinearGradient>
       </View>
+       </ScrollView>
     </SafeAreaView>
   );
 }

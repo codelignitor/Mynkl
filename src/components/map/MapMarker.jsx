@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, Image, Platform } from 'react-native';
 import LottieView from 'lottie-react-native';
-import { ss } from '../../utils/scale';
+import { ss } from '@/src/constants/ss';
+
 
 const emojiMap = {
   happy: require('../../assets/images/happy-icon.png'),
@@ -10,15 +11,22 @@ const emojiMap = {
   lonely: require('../../assets/images/lonely-icon.png'),
   alone: require('../../assets/images/lonely-icon.png'),
   sad: require('../../assets/images/sad-icon.png'),
+  grateful:require('../../assets/images/grateful-icon.png'),
+  frustrated:require('../../assets/images/frustrated.png'),
+
+
+
 };
 
 const imageSizes = {
-  happy: { width: ss(68), height: ss(68) },
-  calm: { width: ss(73), height: ss(73) },
-  stressed: { width: ss(78), height: ss(78) },
-  lonely: { width: ss(83), height: ss(83) },
-  alone: { width: ss(83), height: ss(83) },
-  sad: { width: ss(83), height: ss(83) },
+  happy: { width: 68, height: 68 },
+  calm: { width: 73, height: 73 },
+  stressed: { width: 78, height: 78 },
+  lonely: { width: 83, height: 83 },
+  alone: { width: 83, height: 83 },
+  sad: { width: 83, height: 83 },
+  grateful:{ width: 83, height: 83 },
+  frustrated:{ width: 73, height: 73 },
 };
 
 const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count }) => {
@@ -31,6 +39,20 @@ const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count }) =
   const highlightStyle = count > 1 ? styles.highlight : null;
 
   if (!source) return null;
+
+  if (Platform.OS === 'android') {
+    return (
+      <View style={[size, { backgroundColor }, highlightStyle ,{overflow: 'visible' ,alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,}]}>
+        <Image
+          source={source}
+         style={{ width: ss(38), height: ss(38), display: "flex" }}
+          resizeMode="contain"
+        />
+      </View>
+    );
+  }
 
   return (
     <View>

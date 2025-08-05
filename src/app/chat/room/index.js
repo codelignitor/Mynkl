@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
+  Linking,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StreamChat } from "stream-chat";
@@ -24,6 +25,9 @@ const moodData = [
   { mood: "Lonely", emoji: "😔", gradient: ["#2D6A78", "#3D8B99"] },
   { mood: "Anxious", emoji: "😟", gradient: ["#7A5CFA", "#4C2FBD"] },
   { mood: "Calm", emoji: "😌", gradient: ["#5DC2AF", "#3B8B7A"] },
+  { mood: "Grateful", emoji: "😌", gradient: ["#FFD166", "#FB8B24"] },
+  { mood: "Sad", emoji: "😢", gradient: ["#7A5CFA", "#4C2FBD"] },
+  { mood: "Frustrated", emoji: "😤", gradient: ["#FF6B6B", "#D64545"] },
 ];
 
 export default function GroupChannelListScreen() {
@@ -78,11 +82,21 @@ export default function GroupChannelListScreen() {
     if (lower.includes("lonely")) return moodData[1];
     if (lower.includes("anxious")) return moodData[2];
     if (lower.includes("calm")) return moodData[3];
+    if (lower.includes("grateful")) return moodData[4];
+    if (lower.includes("sad")) return moodData[5];
+    if (lower.includes("frustrated")) return moodData[6];
     return moodData[0];
   };
 
   const renderMoodCard = ({ item }) => {
     const mood = getMoodStyle(item.data.name);
+
+    const totalMembers = Object.keys(item.state.members || {}).length;
+
+    const onlineCount = Object.values(item.state.members || {}).filter(
+      (member) => member.user?.online
+    ).length;
+
     return (
       <TouchableOpacity onPress={() => handleChannelSelect(item)} style={styles.cardWrapper}>
         <LinearGradient
@@ -96,7 +110,9 @@ export default function GroupChannelListScreen() {
           </View>
           <View>
             <Text style={styles.cardTitle}>Feelin’ {mood.mood}</Text>
-            <Text style={styles.cardSub}>{item.state.members.length} people chatting</Text>
+            <Text style={styles.cardSub}>
+               {onlineCount} people chatting
+            </Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </LinearGradient>
@@ -141,7 +157,8 @@ export default function GroupChannelListScreen() {
             <Text style={styles.footerText}>
               How about a happiness challenge to lift your mood? <Text>😉</Text>
             </Text>
-            <TouchableOpacity style={styles.footerButton}>
+            <TouchableOpacity style={styles.footerButton} onPress={()=>  Linking.openURL('https://open.spotify.com/playlist/7wDZ5nB0Wb1tcoloILplN8')
+                      }>
               <Text style={styles.footerButtonText}>▶ Listen to uplifting playlist</Text>
             </TouchableOpacity>
           </View>

@@ -8,6 +8,7 @@ import {
   Dimensions,
   SafeAreaView,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
@@ -19,15 +20,15 @@ const screenWidth = Dimensions.get('window').width;
 
 export default function MoodPatternScreen() {
   const router = useRouter();
-  const { isLoading, moodPattern } = useMoodPattern();
+  const { isLoading, moodPattern , changeGraphHandler ,sevenDaysData, thirtyDaysData, selectedTime } = useMoodPattern();
   const [selectedRange, setSelectedRange] = useState<'Last7Days' | 'Last30Days'>('Last30Days');
 
-  const moodData = moodPattern?.[selectedRange] ?? [];
+  const moodData = selectedRange === 'Last7Days' ? sevenDaysData : thirtyDaysData;
 
   const chartLabels = moodData.map((item) =>
     item?.X ? moment(item.X).format('DD') : ''
   );
-  const chartValues = moodData.map((item) => item?.Y ?? 0);
+  const chartValues = moodData.map((item) => item?.score ?? 0);
 
  if (isLoading) {
     return (
@@ -52,9 +53,7 @@ export default function MoodPatternScreen() {
 
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.chartContainer}>
-          <Text style={styles.chartLabel}>
-            Past {selectedRange === 'Last7Days' ? '7' : '30'} Days
-          </Text>
+        
 
           {/* Toggle */}
           <View style={styles.toggleContainer}>
@@ -134,6 +133,19 @@ export default function MoodPatternScreen() {
           )}
         </View>
 
+        {/* Time Tags */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tagsScrollContainer}
+        >
+          {moodPattern?.TimeBasedFiltering?.Last7Days?.map((tag, index) => (
+            <TouchableOpacity onPress={()=>{changeGraphHandler(tag?.time)}} key={index} style={[ styles.tagButton , tag?.time === selectedTime && { backgroundColor: '#facc15' }]}>
+              <Text style={styles.tagText}>{tag?.time}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         {/* Mood Insight Box */}
         <View style={styles.insightBox}>
           <Text style={styles.insightEmoji}>😊</Text>
@@ -149,23 +161,26 @@ export default function MoodPatternScreen() {
         </View>
 
         {/* Tip Button */}
-        <TouchableOpacity style={styles.tipButton}>
+        <TouchableOpacity 
+          style={styles.tipButton}
+          onPress={()=>{
+            
+             if (moodPattern?.activity?.type === "playlist") {
+              console.log("Opening playlist link");
+                          Linking.openURL(moodPattern?.activity?.data?.link);
+          }
+          else{
+          
+                          router.push(`/activities/${moodPattern?.activity?.data?.id}`);
+                       
+          }
+          }}
+        >
           <MaterialIcons name="lightbulb" size={20} color="#000" />
           <Text style={styles.tipText}>Creativity improves your mood.</Text>
         </TouchableOpacity>
 
-        {/* Time Tags */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tagsScrollContainer}
-        >
-          {moodPattern?.TimeBasedFiltering?.map((tag, index) => (
-            <TouchableOpacity key={index} style={styles.tagButton}>
-              <Text style={styles.tagText}>{tag?.time}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        
 
         {/* Correlation Tags */}
         <Text style={styles.correlationTitle}>Mood Correlation Tags</Text>
@@ -180,13 +195,14 @@ export default function MoodPatternScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
-        <TouchableOpacity
+       
+      </ScrollView>
+       <TouchableOpacity
           style={styles.reflectButton}
           onPress={() => router.push('/mood-screen')}
         >
           <Text style={styles.reflectButtonText}>Reflect Today</Text>
         </TouchableOpacity>
-      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -300,6 +316,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 20,
   },
+   nextButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#facc15',
+    padding: 14,
+    borderRadius: 10,
+    marginBottom: 20,
+    marginTop:20,
+    marginHorizontal:20,
+    justifyContent:'center'
+  },
   tipText: {
     marginLeft: 10,
     fontSize: 14,
@@ -307,6 +334,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tagsScrollContainer: { paddingVertical: 10, gap: 10 },
+  nextText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#000',
+    fontWeight: '500',
+    textAlign:'center',
+  },
+ 
   tagButton: {
     backgroundColor: '#fff7ed',
     borderRadius: 20,
