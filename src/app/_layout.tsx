@@ -61,11 +61,11 @@ export default function RootLayout() {
        
       {/** Only render ChatWrapper if stream token exists and user is logged in */}
       { store.getState().auth.stream_token ? (
-        <ChatWrapper>
-          <AppProvider>
+        // <ChatWrapper>
+        //   <AppProvider>
         <MainLayout />
-          </AppProvider>
-          </ChatWrapper>
+          // </AppProvider>
+          // </ChatWrapper>
       ) : (
        
           <MainLayout />

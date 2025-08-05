@@ -76,7 +76,7 @@ const HugReceivedScreen = () => {
         <View style={styles.mainContent}>
           <View style={styles.hugIconContainer}>
             <Image
-              source={require('../../../assets/images/HugLogo1.jpg')}
+              source={require('../../assets/images/HugLogo1.jpg')}
               style={styles.hugImage}
             />
           </View>

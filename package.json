@@ -22,11 +22,12 @@
     "@react-native-community/netinfo": "11.4.1",
     "@react-native-community/slider": "^4.5.6",
     "@react-native-firebase/app": "^22.4.0",
+    "@react-native-firebase/in-app-messaging": "^22.4.0",
+    "@react-native-firebase/messaging": "^22.4.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/native-stack": "^7.3.12",
     "@reduxjs/toolkit": "^2.8.2",
-   
     "axios": "^1.9.0",
     "expo": "53.0.9",
     "expo-av": "~15.1.4",
