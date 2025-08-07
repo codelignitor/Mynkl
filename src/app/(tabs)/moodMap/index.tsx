@@ -20,7 +20,7 @@ import MoodMapView from '@/src/components/map/MoodMapView';
 import SearchInput from '@/src/components/common/searchInput';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Location from 'expo-location';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { submitComments, getComments } from '@/src/services/apis';
 
 // Import SVG components
@@ -54,13 +54,13 @@ const MOOD_SVG_COMPONENTS = {
 };
 
 // Function to get SVG component by mood ID
-const getMoodSvgById = (moodId) => {
+const getMoodSvgById = (moodId: string) => {
   const mood = MOOD_FILTER_OPTIONS.find(mood => mood.id === moodId);
   return mood ? mood.SvgComponent : HappyIcon; // Default to happy icon
 };
 
 // Function to get SVG component by mood name
-const getMoodSvgByName = (moodName) => {
+const getMoodSvgByName = (moodName: string) => {
   const mood = MOOD_FILTER_OPTIONS.find(mood => mood.name.toLowerCase() === moodName?.toLowerCase());
   return mood ? mood.SvgComponent : HappyIcon; // Default to happy icon
 };
@@ -90,6 +90,7 @@ const MoodMapScreen: React.FC = () => {
     handleSendHug,
     handleOpenToTalk,
     addComment,
+    refreshLocationDetails,
     selectedUserPin,
     setSelectedUserPin,
     handleSendUserHug,
@@ -107,8 +108,17 @@ const MoodMapScreen: React.FC = () => {
   const [newComment, setNewComment] = React.useState('');
   const [selectedLocationMood, setSelectedLocationMood] = React.useState<string | null>(null);
   const [isSubmittingComment, setIsSubmittingComment] = React.useState(false);
-  const [fetchedComments, setFetchedComments] = React.useState([]);
+  const [fetchedComments, setFetchedComments] = React.useState<any[]>([]);
   const [isLoadingComments, setIsLoadingComments] = React.useState(false);
+
+  // Refresh location details when returning from addCheckIn screen
+  useFocusEffect(
+    React.useCallback(() => {
+      if (selectedLocationDetail) {
+        refreshLocationDetails();
+      }
+    }, [selectedLocationDetail, refreshLocationDetails])
+  );
 
   // Fetch comments for selected location
   // React.useEffect(() => {
@@ -245,7 +255,7 @@ const MoodMapScreen: React.FC = () => {
     setSelectedMood(moodId);
     // Find the mood name from the MOOD_FILTER_OPTIONS
     const moodObj = MOOD_FILTER_OPTIONS.find(mood => mood.id === moodId);
-    const moodName = moodObj?.name === 'Lonely' ? 'alone' : moodObj?.name;
+    const moodName = moodObj?.name === 'Lonely' ? 'alone' : moodObj?.name || '';
     handleMoodSelection(moodName);
   }, [selectedMood, setSelectedMood, handleMoodSelection]);
 
@@ -369,53 +379,7 @@ const MoodMapScreen: React.FC = () => {
     </View>
   ), []);
 
-  const renderMoodItem = React.useCallback(({ item }: { item: any }) => {
-    const isSelected = selectedLocationMood === item.id;
-    const SvgComponent = MOOD_SVG_COMPONENTS[item.name];
 
-    return (
-      <TouchableOpacity
-        style={[
-          styles.moodDisplayItem,
-          isSelected && styles.moodDisplayItemSelected
-        ]}
-        onPress={() => handleLocationMoodSelect(item.id)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.moodImageContainer}>
-          {SvgComponent ? (
-            <SvgComponent
-              width={isSelected ? 35 : 30}
-              height={isSelected ? 35 : 30}
-              style={[
-                styles.moodImage,
-                isSelected && styles.moodImageSelected
-              ]}
-            />
-          ) : (
-            <Text style={[
-              styles.moodDisplayEmoji,
-              isSelected && styles.moodDisplayEmojiSelected
-            ]}>
-              {item.emoji}
-            </Text>
-          )}
-        </View>
-
-        <Text style={[
-          styles.moodDisplayName,
-          isSelected && styles.moodDisplayNameSelected
-        ]}>
-          {item.name}
-        </Text>
-        {isSelected && (
-          <View style={styles.moodSelectedIndicator}>
-            <Ionicons name="checkmark-circle" size={16} color="#40E0D0" />
-          </View>
-        )}
-      </TouchableOpacity>
-    );
-  }, [selectedLocationMood, handleLocationMoodSelect]);
 
   // Component renders
   const renderFilterModal = () => (
@@ -483,134 +447,130 @@ const MoodMapScreen: React.FC = () => {
           <Text style={styles.locationDetailTitle}>MoodMap</Text>
         </View>
 
-        {selectedLocationDetail && (
-          <ScrollView
-            style={styles.locationDetailContent}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.locationDetailScrollContent}
-          >
-            {/* Location Card */}
-            <View style={styles.locationCard}>
-              <View style={styles.locationHeader}>
-                <Ionicons name="location-outline" size={20} color="#666" />
-                <Text style={styles.locationName}>{selectedLocationDetail.name}</Text>
-              </View>
+                 {selectedLocationDetail && (
+           <FlatList
+             style={styles.locationDetailContent}
+             showsVerticalScrollIndicator={false}
+             contentContainerStyle={styles.locationDetailScrollContent}
+             data={[{ key: 'content' }]}
+             renderItem={() => (
+               <>
+                 {/* Location Card */}
+                 <View style={styles.locationCard}>
+                   <View style={styles.locationHeader}>
+                     <Ionicons name="location-outline" size={20} color="#666" />
+                     <Text style={styles.locationName}>{selectedLocationDetail.name}</Text>
+                   </View>
 
-              <View style={styles.moodRow}>
-                <Text style={styles.moodEmoji}>{selectedLocationDetail.moodEmoji}</Text>
-                <Text style={styles.moodLabel}>{selectedLocationDetail.mood}</Text>
-              </View>
+                   <View style={styles.moodRow}>
+                     <Text style={styles.moodEmoji}>{selectedLocationDetail.moodEmoji}</Text>
+                     <Text style={styles.moodLabel}>{selectedLocationDetail.mood}</Text>
+                   </View>
 
-              <View style={styles.checkInInfo}>
-                <Text style={styles.checkInText}>
-                  Check-ins: {locationCheckIns.count} in the last hour
-                </Text>
-                <Text style={styles.checkInBreakdown}>
-                  → {locationCheckIns.breakdown}
-                </Text>
-              </View>
-            </View>
+                   <View style={styles.checkInInfo}>
+                     <Text style={styles.checkInText}>
+                       Check-ins: {locationCheckIns.count} in the last hour
+                     </Text>
+                     <Text style={styles.checkInBreakdown}>
+                       → {locationCheckIns.breakdown}
+                     </Text>
+                   </View>
+                 </View>
 
-            {/* Virtual Hugs Card */}
-            <View style={styles.virtualHugsCard}>
-              <View style={styles.virtualHugsHeader}>
-                <Text style={styles.hugEmoji}>🤗</Text>
-                <Text style={styles.virtualHugsTitle}>Virtual Hugs</Text>
-              </View>
-              <Text style={styles.virtualHugsDesc}>
-                Send a group hug to everyone checked in here
-              </Text>
-              <View style={styles.hugButtonRow}>
-                <TouchableOpacity style={styles.sendHugButton} onPress={handleSendHug}>
-                  <Text style={styles.sendHugButtonText}>Send a hug</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.openToTalkButton} onPress={handleOpenToTalk}>
-                  <Text style={styles.openToTalkButtonText}>Open to Talk</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+                 {/* Virtual Hugs Card */}
+                 <View style={styles.virtualHugsCard}>
+                   <View style={styles.virtualHugsHeader}>
+                     <Text style={styles.hugEmoji}>🤗</Text>
+                     <Text style={styles.virtualHugsTitle}>Virtual Hugs</Text>
+                   </View>
+                   <Text style={styles.virtualHugsDesc}>
+                     Send a group hug to everyone checked in here
+                   </Text>
+                   <View style={styles.hugButtonRow}>
+                     <TouchableOpacity style={styles.sendHugButton} onPress={handleSendHug}>
+                       <Text style={styles.sendHugButtonText}>Send a hug</Text>
+                     </TouchableOpacity>
+                     <TouchableOpacity style={styles.openToTalkButton} onPress={handleOpenToTalk}>
+                       <Text style={styles.openToTalkButtonText}>Open to Talk</Text>
+                     </TouchableOpacity>
+                   </View>
+                 </View>
 
-            {/* Moods Card */}
-            <View style={styles.moodsCard}>
-              <View style={styles.moodsHeader}>
-                {MOOD_SVG_COMPONENTS['Happy'] ? (
-                  <HappyIcon width={24} height={24} style={styles.moodsHeaderImage} />
-                ) : (
-                  <Text style={styles.moodsEmoji}>😊</Text>
-                )}
-                <Text style={styles.moodsTitle}>Available Moods</Text>
-              </View>
-              <FlatList
-                data={moodsData}
-                renderItem={renderMoodItem}
-                keyExtractor={item => item.id.toString()}
-                numColumns={3}
-                style={styles.moodsList}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.moodsListContent}
-                scrollEnabled
-                nestedScrollEnabled
-              />
-            </View>
+                 {/* Comments Card */}
+                 <View style={styles.commentsCard}>
+                   <Text style={styles.commentsTitle}>💬 Comments</Text>
 
-            {/* Comments Card */}
-            <View style={styles.commentsCard}>
-              <Text style={styles.commentsTitle}>💬 Comments</Text>
+                   {isLoadingComments ? (
+                     <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+                       <ActivityIndicator size="small" color="#40E0D0" />
+                       <Text style={{ marginTop: 8, color: '#666', fontSize: 14 }}>Loading comments...</Text>
+                     </View>
+                   ) : (
+                     <View style={{ maxHeight: 250 }}>
+                       <FlatList
+                         data={fetchedComments}
+                         renderItem={renderCommentItem}
+                         keyExtractor={(item, index) => String(item.id) || String(index)}
+                         showsVerticalScrollIndicator={true}
+                         scrollEnabled={true}
+                         nestedScrollEnabled={true}
+                         ListEmptyComponent={
+                           <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
+                             No comments yet. Be the first to comment!
+                           </Text>
+                         }
+                       />
+                     </View>
+                   )}
 
-              {isLoadingComments ? (
-                <View style={styles.commentsLoading}>
-                  <ActivityIndicator size="small" color="#40E0D0" />
-                  <Text style={styles.loadingText}>Loading comments...</Text>
-                </View>
-              ) : (
-                <View style={{ maxHeight: 250 }}>
-                  <FlatList
-                    data={fetchedComments}
-                    renderItem={renderCommentItem}
-                    keyExtractor={(item, index) => String(item.id) || String(index)}
-                    showsVerticalScrollIndicator={true}
-                    scrollEnabled={true}
-                    nestedScrollEnabled={true}
-                    ListEmptyComponent={
-                      <Text style={styles.noCommentsText}>
-                        No comments yet. Be the first to comment!
-                      </Text>
-                    }
-                  />
-                </View>
-              )}
+                   <View style={styles.addCommentContainer}>
+                     <TextInput
+                       style={styles.commentInput}
+                       placeholder="Add a comment..."
+                       value={newComment}
+                       onChangeText={setNewComment}
+                       multiline
+                       editable={!isSubmittingComment}
+                     />
+                     <TouchableOpacity
+                       style={[
+                         styles.addCommentButton,
+                         isSubmittingComment && { opacity: 0.5 }
+                       ]}
+                       onPress={handleAddComment}
+                       disabled={!newComment.trim() || isSubmittingComment}
+                     >
+                       {isSubmittingComment ? (
+                         <ActivityIndicator size="small" color="#FFFFFF" />
+                       ) : (
+                         <Text style={styles.addCommentButtonText}>Post</Text>
+                       )}
+                     </TouchableOpacity>
+                   </View>
+                 </View>
 
-              <View style={styles.addCommentContainer}>
-                <TextInput
-                  style={styles.commentInput}
-                  placeholder="Add a comment..."
-                  value={newComment}
-                  onChangeText={setNewComment}
-                  multiline
-                  editable={!isSubmittingComment}
-                />
-                <TouchableOpacity
-                  style={[
-                    styles.addCommentButton,
-                    isSubmittingComment && { opacity: 0.5 }
-                  ]}
-                  onPress={handleAddComment}
-                  disabled={!newComment.trim() || isSubmittingComment}
-                >
-                  {isSubmittingComment ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <Text style={styles.addCommentButtonText}>Post</Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <TouchableOpacity style={styles.checkInButton} onPress={handleCheckIn}>
-              <Text style={styles.checkInButtonText}>Check in</Text>
-            </TouchableOpacity>
-          </ScrollView>
-        )}
+                 <TouchableOpacity 
+                   style={styles.checkInButton} 
+                   onPress={() => {
+                     // Navigate to addCheckIn screen with location data
+                     router.push({
+                       pathname: '/addCheckIn',
+                       params: {
+                         locationName: selectedLocationDetail?.name || '',
+                         latitude: selectedLocationDetail?.latitude || mapRegion.latitude,
+                         longitude: selectedLocationDetail?.longitude || mapRegion.longitude,
+                         mood: selectedLocationDetail?.mood || selectedMood || 'happy'
+                       }
+                     });
+                   }}
+                 >
+                   <Text style={styles.checkInButtonText}>Check in</Text>
+                 </TouchableOpacity>
+               </>
+             )}
+             keyExtractor={() => 'content'}
+           />
+         )}
       </SafeAreaView>
     </Modal>
   );
@@ -724,15 +684,15 @@ const MoodMapScreen: React.FC = () => {
       {loading && <ActivityIndicator size="large" style={styles.loadingIndicator} />}
 
       {/* Map - Updated with SVG component prop */}
-      <MoodMapView
-        callback={callBackMapHandler}
-        mapContainerStyle={styles.mapContainerStyle}
-        mapRegion={mapRegion}
-        selectedMood={selectedMood}
-        currentLocations={moodData}
-        currentSvgComponent={currentSvgComponent}
-        backgroundColor={undefined}
-      />
+             <MoodMapView
+         callback={callBackMapHandler}
+         mapContainerStyle={styles.mapContainerStyle}
+         mapRegion={mapRegion}
+         selectedMood={selectedMood}
+         currentLocations={moodData}
+         currentEmoji={selectedMood ? getMoodSvgById(selectedMood) : null}
+         backgroundColor={undefined}
+       />
 
       {/* Overlays and Sections */}
       {renderUserPinOverlay()}

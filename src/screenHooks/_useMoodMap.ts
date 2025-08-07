@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import debounce from 'lodash.debounce';
-import { getMapSearchResults, getLocation } from '@/src/services/apis';
+import { getMapSearchResults, getLocation, getCheckIns } from '@/src/services/apis';
 import * as Location from 'expo-location';
 import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
+import React from 'react';
 
 export interface Hug {
   id: string;
@@ -110,7 +111,7 @@ export function useMoodMap() {
       console.log('Places data:', data);
       
       // Log each place for debugging
-      data.forEach((place, index) => {
+      data.forEach((place: any, index: number) => {
         console.log(`Place ${index + 1}:`, {
           id: place.id,
           name: place.name,
@@ -218,7 +219,7 @@ export function useMoodMap() {
     setSelectedUserPin(null);
   };
 
-  const getMoodEmoji = (mood: string): string => {
+  const getMoodEmoji = React.useCallback((mood: string): string => {
     const moodEmojis: { [key: string]: string } = {
       'happy': '😊',
       'calm': '😌',
@@ -232,48 +233,84 @@ export function useMoodMap() {
       'peaceful': '☮️'
     };
     return moodEmojis[mood?.toLowerCase()] || '😊';
-  };
+  }, []);
 
-  const loadLocationDetails = async (location: LocationDetail) => {
+  const loadLocationDetails = React.useCallback(async (location: LocationDetail) => {
     try {
-      // Simulate loading check-in data for places
+      // Get real check-in data from API
+      const checkInsResponse = await getCheckIns(''); // Get all check-ins
+      console.log('Check-ins response:', checkInsResponse);
+      
+      // Filter check-ins for this specific location
+      const locationCheckIns = Array.isArray(checkInsResponse) 
+        ? checkInsResponse.filter((checkIn: any) => {
+            // Match by location name or coordinates
+            return checkIn.name === location.name || 
+                   (checkIn.latitude === location.latitude && checkIn.longitude === location.longitude);
+          })
+        : [];
+      
+      console.log(`Found ${locationCheckIns.length} check-ins for location: ${location.name}`);
+      
+      // Count check-ins in the last hour
+      const oneHourAgo = Date.now() - (60 * 60 * 1000);
+      const recentCheckIns = locationCheckIns.filter((checkIn: any) => {
+        const checkInTime = new Date(checkIn.created_at || checkIn.timestamp || Date.now()).getTime();
+        return checkInTime > oneHourAgo;
+      });
+      
+      // Generate mood breakdown
+      const moodCounts: { [key: string]: number } = {};
+      recentCheckIns.forEach((checkIn: any) => {
+        const mood = checkIn.mood || 'happy';
+        moodCounts[mood] = (moodCounts[mood] || 0) + 1;
+      });
+      
+      const breakdown = Object.entries(moodCounts)
+        .map(([mood, count]) => `${mood}: ${count}`)
+        .join(', ');
+      
       const checkInData: CheckInData = {
-        count: Math.floor(Math.random() * 10) + 1,
-        breakdown: generateCheckInBreakdown()
+        count: recentCheckIns.length,
+        breakdown: breakdown || 'No recent check-ins'
       };
       
-      // Load real comments from API instead of hardcoded
-      // Replace this with actual API call: const comments = await getLocationComments(location.id);
-      const comments: Comment[] = [
-        {
-          id: '1',
-          text: 'Great music today.',
-          timestamp: Date.now() - 3600000,
-          user: 'john_doe' // This should come from API
-        },
-        {
-          id: '2',
-          text: 'Needed this latte break 😊',
-          timestamp: Date.now() - 1800000,
-          user: 'sarah_smith' // This should come from API
-        }
-      ];
+      // Load real comments from API
+      const comments: Comment[] = locationCheckIns.map((checkIn: any, index: number) => ({
+        id: checkIn.id || index.toString(),
+        text: checkIn.message_text || checkIn.comments || 'Checked in',
+        timestamp: new Date(checkIn.created_at || checkIn.timestamp || Date.now()).getTime(),
+        user: checkIn.user?.username || 'Anonymous'
+      }));
 
       setLocationCheckIns(checkInData);
       setLocationComments(comments);
     } catch (error) {
       console.error('Error loading location details:', error);
+      // Fallback to minimal data if API fails
+      setLocationCheckIns({
+        count: 0,
+        breakdown: 'Unable to load data'
+      });
+      setLocationComments([]);
     }
-  };
+  }, []);
 
-  const generateCheckInBreakdown = (): string => {
+  // Function to refresh location details after check-in
+  const refreshLocationDetails = React.useCallback(async () => {
+    if (selectedLocationDetail) {
+      await loadLocationDetails(selectedLocationDetail);
+    }
+  }, [selectedLocationDetail]);
+
+  const generateCheckInBreakdown = React.useCallback((): string => {
     const moods = ['Happy', 'Calm', 'Anxious', 'Excited', 'Peaceful'];
     const counts = moods.map(mood => {
       const count = Math.floor(Math.random() * 3) + 1;
       return `${count} ${mood}`;
     });
     return counts.slice(0, 3).join(', ');
-  };
+  }, []);
 
   const handleCheckIn = async () => {
     setShowLocationDetail(false)
@@ -603,6 +640,7 @@ export function useMoodMap() {
     handleSendHug,
     handleOpenToTalk,
     addComment,
+    refreshLocationDetails,
     // New exports for user pin expansion
     selectedUserPin,
     setSelectedUserPin,
