@@ -113,7 +113,7 @@ export default function MoodScreen() {
     console.log('🎭 Feeling mapped:', moods[selectedMood].mood, '->', feeling);
 
     // Get the activity_id from the route params or event details
-    const activityId = event_id || activity_id || (eventDetails as any)?.id;
+    const activityId = event_id || activity_id || eventDetails?.id;
     
     if (!activityId) {
       Alert.alert('Error', 'Activity ID is missing. Please try again.');

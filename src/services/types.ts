@@ -1,7 +1,13 @@
 export interface CheckInPayload {
   mood: string;
-  text: string;
-  location_opt_in: boolean;
+  lat?: number | null;
+  lng?: number | null;
+  location_opt_in?: boolean | null;
+  anonymous_checkin?: boolean | null;
+  message_text?: string | null;
+  audio?: string | null;
+  place?: boolean | null;
+  place_name?: string | null;
 }
 
 export interface OpenToTalkPayload {

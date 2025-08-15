@@ -67,6 +67,9 @@ const MoodMapView = ({
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         region={mapRegion}
+        showsUserLocation={true}
+        showsMyLocationButton={true}
+        followsUserLocation={false}
       >
         {currentLocations?.map((location) => {
           const isSelected = selectedMarkerId === location.id;

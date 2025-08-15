@@ -49,12 +49,51 @@ export const updateHugSettings = async (payload: {
 };
 
 
-export const checkIn = async (payload: CheckInPayload) => {
-  const response = await axiosInstance.post(`/home/check-in`, payload,{
-        headers: {
-        
-          'Content-Type': 'multipart/form-data',
-        },});
+export const checkIn = async (payload: CheckInPayload | FormData) => {
+  let formData: FormData;
+  
+  if (payload instanceof FormData) {
+    // If FormData is already provided, use it directly
+    formData = payload;
+  } else {
+    // Create FormData from CheckInPayload
+    formData = new FormData();
+    
+    // Add required mood field
+    formData.append('mood', payload.mood);
+    
+    // Add optional fields if they exist
+    if (payload.lat !== undefined && payload.lat !== null) {
+      formData.append('lat', payload.lat.toString());
+    }
+    if (payload.lng !== undefined && payload.lng !== null) {
+      formData.append('lng', payload.lng.toString());
+    }
+    if (payload.location_opt_in !== undefined && payload.location_opt_in !== null) {
+      formData.append('location_opt_in', payload.location_opt_in.toString());
+    }
+    if (payload.anonymous_checkin !== undefined && payload.anonymous_checkin !== null) {
+      formData.append('anonymous_checkin', payload.anonymous_checkin.toString());
+    }
+    if (payload.message_text !== undefined && payload.message_text !== null) {
+      formData.append('message_text', payload.message_text);
+    }
+    if (payload.audio !== undefined && payload.audio !== null) {
+      formData.append('audio', payload.audio);
+    }
+    if (payload.place !== undefined && payload.place !== null) {
+      formData.append('place', payload.place.toString());
+    }
+    if (payload.place_name !== undefined && payload.place_name !== null) {
+      formData.append('place_name', payload.place_name);
+    }
+  }
+
+  const response = await axiosInstance.post(`/home/check-in`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 
@@ -196,10 +235,18 @@ export const getReflectivePrompt = async () => {
 };
 
 //comments api 
-export const getComments = async (placeName: string) => {
-  const response = await axiosInstance.get(`/home/places/comments`, {
-    params: { name: placeName }
-  });
+export const getComments = async (lat: number, lng: number, tolerance?: number) => {
+  const params: any = { lat, lng };
+  
+  // Add tolerance if provided, otherwise use default
+  if (tolerance !== undefined) {
+    params.tolerance = tolerance;
+  } else {
+    // Use a larger tolerance for better matching
+    params.tolerance = 0.001; // Increased from default 0.00001
+  }
+  
+  const response = await axiosInstance.get(`/home/places/comments`, { params });
   return response.data;
 };
 

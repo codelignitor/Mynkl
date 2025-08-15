@@ -21,10 +21,11 @@ export function useAddCheckIn() {
        const [isAudioRecording, setIsAudioRecording] = useState(false);
        const router = useRouter();
        
-       // Get route parameters for location
-       const params = useLocalSearchParams();
-       const latitude = params.latitude as string;
-       const longitude = params.longitude as string;
+               // Get route parameters for location
+        const params = useLocalSearchParams();
+        const latitude = params.latitude as string;
+        const longitude = params.longitude as string;
+        const locationName = params.locationName as string;
        
        // Current location state
        const [currentLocation, setCurrentLocation] = useState<{
@@ -71,11 +72,13 @@ export function useAddCheckIn() {
 
        // Update location when locationOptIn changes
        useEffect(() => {
+         // Only get current location if:
+         // 1. Location toggle is enabled AND
+         // 2. No map coordinates are provided
          if (locationOptIn && !latitude && !longitude) {
-           // Only get current location if location is enabled but no location params are passed
            getCurrentLocation();
          }
-       }, [locationOptIn, latitude, longitude]);
+       }, [locationOptIn]); // Remove latitude and longitude from dependencies
     
       const handleSubmit =async () => {
        
@@ -112,35 +115,47 @@ export function useAddCheckIn() {
         const formData = new FormData();
         formData.append('mood', selectedMood?.label);
         
-        // Add location parameters when location is enabled
-        if (locationOptIn) {
-          // If location params are passed from map, use those
-          if (latitude && longitude) {
-            formData.append('lat', latitude);
-            formData.append('lng', longitude);
-          } 
-          // If no location params but location is enabled, use current location
-          else if (currentLocation) {
-            formData.append('lat', currentLocation.latitude.toString());
-            formData.append('lng', currentLocation.longitude.toString());
+                // Check if this is a map location check-in or simple check-in
+        const isMapLocationCheckIn = latitude && longitude && latitude.trim() !== '' && longitude.trim() !== '';
+        
+        if (isMapLocationCheckIn) {
+          // MAP LOCATION CHECK-IN: Use selected location coordinates
+          formData.append('lat', latitude);
+          formData.append('lng', longitude);
+          formData.append('place', 'true');
+          formData.append('place_name', locationName || 'Selected Location');
+          console.log('Map location check-in:', latitude, longitude, locationName);
+        } else if (locationOptIn && currentLocation) {
+          // SIMPLE CHECK-IN: Use current GPS coordinates
+          formData.append('lat', currentLocation.latitude.toString());
+          formData.append('lng', currentLocation.longitude.toString());
+          formData.append('place', 'false');
+          // No place_name when place is false
+          console.log('Simple check-in with current location:', currentLocation.latitude, currentLocation.longitude);
+        } else if (locationOptIn) {
+          // SIMPLE CHECK-IN: Get fresh GPS coordinates
+          const coords = await getCurrentLocation();
+          if (coords) {
+            formData.append('lat', coords.latitude.toString());
+            formData.append('lng', coords.longitude.toString());
+            formData.append('place', 'false');
+            // No place_name when place is false
+            console.log('Simple check-in with fresh GPS:', coords.latitude, coords.longitude);
+          } else {
+            Toast.show({
+              type: "error",
+              text1: "Location Error",
+              text2: "Unable to get your location. Please try again.",
+            });
+            return;
           }
-          // If location is enabled but no current location available, try to get it
-          else {
-            const coords = await getCurrentLocation();
-            if (coords) {
-              formData.append('lat', coords.latitude.toString());
-              formData.append('lng', coords.longitude.toString());
-            } else {
-              Toast.show({
-                type: "error",
-                text1: "Location Error",
-                text2: "Unable to get your location. Please try again.",
-              });
-              return;
-            }
-          }
+        } else {
+          // SIMPLE CHECK-IN: No location sharing
+          formData.append('place', 'false');
+          // No place_name when place is false
+          console.log('Simple check-in without location sharing');
         }
-       
+        
         formData.append('location_opt_in', locationOptIn ? 'true' : 'false');
         formData.append('anonymous_checkin', AnonymousCheckIn ? 'true' : 'false');
 
