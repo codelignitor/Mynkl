@@ -8,61 +8,53 @@ import {
   TouchableOpacity,
   Modal,
   StatusBar,
-  FlatList,
   TextInput,
   ScrollView,
   Alert
 } from 'react-native';
 import { styles } from '../../../screenStyles/moodMap/_index.style';
 import { useMoodMap } from '../../../screenHooks/_useMoodMap';
-import { moodsData } from '../../../utils/moodsData';
 import MoodMapView from '@/src/components/map/MoodMapView';
 import SearchInput from '@/src/components/common/searchInput';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Location from 'expo-location';
-import { router } from 'expo-router';
-import { submitComments, getComments } from '@/src/services/apis';
+import { router, useFocusEffect } from 'expo-router';
+import { submitComments, getComments, updatedUserProfile } from '@/src/services/apis';
 
-// Import SVG components
-import HappyIcon from '../../../assets/svgs/happy-icon.svg';
-import CalmIcon from '../../../assets/svgs/calm-icon.svg';
-import StressedIcon from '../../../assets/svgs/stressed-icon.svg';
-import LonelyIcon from '../../../assets/svgs/lonely-icon.svg';
-import GratefulIcon from '../../../assets/svgs/grateful-icon.svg';
-import SadIcon from '../../../assets/svgs/sad-icon.svg';
-import FrustratedIcon from '../../../assets/svgs/frustrated.svg';
+// Import PNG images instead of SVG components
+const HappyIcon = require('../../../assets/images/happy-icon.png');
+const CalmIcon = require('../../../assets/images/calm-icon.png');
+const StressedIcon = require('../../../assets/images/stressed-icon.png');
+const LonelyIcon = require('../../../assets/images/lonely-icon.png');
+const GratefulIcon = require('../../../assets/images/grateful-icon.png');
+const SadIcon = require('../../../assets/images/sad-icon.png');
+const FrustratedIcon = require('../../../assets/images/frustrated.png');
 
-// Constants - Updated with SVG components instead of emojis
+// Constants - Updated with PNG image imports instead of SVG components
 const MOOD_FILTER_OPTIONS = [
-  { id: 'happy', name: 'Happy', SvgComponent: HappyIcon },
-  { id: 'calm', name: 'Calm', SvgComponent: CalmIcon },
-  { id: 'sad', name: 'Sad', SvgComponent: SadIcon },
-  { id: 'stressed', name: 'Stressed', SvgComponent: StressedIcon },
-  { id: 'lonely', name: 'Lonely', SvgComponent: LonelyIcon },
-  { id: 'grateful', name: 'Grateful', SvgComponent: GratefulIcon },
-  { id: 'frustrated', name: 'Frustrated', SvgComponent: FrustratedIcon },
+  { id: 'happy', name: 'Happy', IconComponent: HappyIcon },
+  { id: 'calm', name: 'Calm', IconComponent: CalmIcon },
+  { id: 'sad', name: 'Sad', IconComponent: SadIcon },
+  { id: 'stressed', name: 'Stressed', IconComponent: StressedIcon },
+  { id: 'lonely', name: 'Lonely', IconComponent: LonelyIcon },
+  { id: 'grateful', name: 'Grateful', IconComponent: GratefulIcon },
+  { id: 'frustrated', name: 'Frustrated', IconComponent: FrustratedIcon },
 ];
 
-const MOOD_SVG_COMPONENTS = {
-  'Happy': HappyIcon,
-  'Calm': CalmIcon,
-  'Stressed': StressedIcon,
-  'Lonely': LonelyIcon,
-  'Grateful': GratefulIcon,
-  'Sad': SadIcon,
-  'Frustrated': FrustratedIcon,
+// Remove unused icon-mapping helpers to keep the component lean
+
+// Stable, deterministic IDs for comment items to avoid Math.random
+const hashString = (input: string) => {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash << 5) - hash + input.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
 };
 
-// Function to get SVG component by mood ID
-const getMoodSvgById = (moodId) => {
-  const mood = MOOD_FILTER_OPTIONS.find(mood => mood.id === moodId);
-  return mood ? mood.SvgComponent : HappyIcon; // Default to happy icon
-};
-
-// Function to get SVG component by mood name
-const getMoodSvgByName = (moodName) => {
-  const mood = MOOD_FILTER_OPTIONS.find(mood => mood.name.toLowerCase() === moodName?.toLowerCase());
-  return mood ? mood.SvgComponent : HappyIcon; // Default to happy icon
+const makeCommentId = (content: string, locationKey: string) => {
+  return `comment_${hashString(`${locationKey}:${content}`)}`;
 };
 
 const MoodMapScreen: React.FC = () => {
@@ -90,6 +82,7 @@ const MoodMapScreen: React.FC = () => {
     handleSendHug,
     handleOpenToTalk,
     addComment,
+    refreshLocationDetails,
     selectedUserPin,
     setSelectedUserPin,
     handleSendUserHug,
@@ -99,100 +92,167 @@ const MoodMapScreen: React.FC = () => {
     exploreTab,
     setExploreTab,
     handleExploreTabPress,
+    // From hook: check-ins modals and user details
+    showCheckInsModal,
+    setShowCheckInsModal,
+    showUserDetailModal,
+    setShowUserDetailModal,
+    selectedUserDetail,
+    isLoadingUserDetail,
+    openCheckInsModal,
+    handleCheckInUserPress,
+
+
   } = useMoodMap();
 
   // Local state
   const [showFilterModal, setShowFilterModal] = React.useState(false);
   const [selectedFilterMoods, setSelectedFilterMoods] = React.useState<string[]>([]);
   const [newComment, setNewComment] = React.useState('');
-  const [selectedLocationMood, setSelectedLocationMood] = React.useState<string | null>(null);
   const [isSubmittingComment, setIsSubmittingComment] = React.useState(false);
-  const [fetchedComments, setFetchedComments] = React.useState([]);
+  const [fetchedComments, setFetchedComments] = React.useState<any[]>([]);
   const [isLoadingComments, setIsLoadingComments] = React.useState(false);
 
+  // Refresh location details when returning from addCheckIn screen
+  useFocusEffect(
+    React.useCallback(() => {
+      if (selectedLocationDetail) {
+        refreshLocationDetails();
+      }
+    }, [selectedLocationDetail, refreshLocationDetails])
+  );
+
+  // Clear comments when location changes to prevent showing wrong comments
+  React.useEffect(() => {
+    if (selectedLocationDetail?.name) {
+      // Clear previous comments immediately
+      setFetchedComments([]);
+      setNewComment('');
+      // Trigger a fresh fetch of comments for the new location
+      setIsLoadingComments(true);
+    } else {
+      // If no location is selected, clear all comments
+      setFetchedComments([]);
+      setNewComment('');
+      setIsLoadingComments(false);
+    }
+  }, [selectedLocationDetail?.name]);
+
   // Fetch comments for selected location
-  // React.useEffect(() => {
-  //   const fetchCommentsForLocation = async () => {
-  //     try {
-  //       if (!selectedLocationDetail?.name) {
-  //         setFetchedComments([]);
-  //         return;
-  //       }
+  React.useEffect(() => {
+    const fetchCommentsForLocation = async () => {
+      try {
+        if (!selectedLocationDetail?.name) {
+          setFetchedComments([]);
+          return;
+        }
 
-  //       setIsLoadingComments(true);
+        setIsLoadingComments(true);
 
-  //       // Make sure we're calling the API correctly
-  //       const response = await getComments(selectedLocationDetail.name);
-  //       console.log('API Response Status: Success');
-  //       console.log('API Response Data:', response);
-  //       console.log('API Response Type:', typeof response);
-  //       console.log('Is Array:', Array.isArray(response));
+        // Make sure we're calling the API correctly with coordinates
+        const response = await getComments(
+          selectedLocationDetail.latitude || mapRegion.latitude,
+          selectedLocationDetail.longitude || mapRegion.longitude
+        );
+        // Comment out API response logging to reduce console clutter
+        // console.log('API Response Status: Success');
+        // console.log('API Response Data:', response);
+        // console.log('API Response Type:', typeof response);
+        // console.log('Is Array:', Array.isArray(response));
 
-  //       // Handle different response formats
-  //       let commentsData = response;
+        // Handle different response formats
+        let commentsData = response;
 
-  //       // If response is wrapped in a data property
-  //       if (response && response.data && Array.isArray(response.data)) {
-  //         commentsData = response.data;
-  //       }
+        // If response is wrapped in a data property
+        if (response && response.data && Array.isArray(response.data)) {
+          commentsData = response.data;
+        }
 
-  //       // If response is not an array, try to extract array
-  //       if (!Array.isArray(commentsData)) {
-  //         console.warn('Response is not an array, attempting to extract:', commentsData);
-  //         // If it's an object with comments property
-  //         if (commentsData && commentsData.comments && Array.isArray(commentsData.comments)) {
-  //           commentsData = commentsData.comments;
-  //         } else {
-  //           console.error('Cannot extract comments array from response');
-  //           setFetchedComments([]);
-  //           return;
-  //         }
-  //       }
+        // Handle the new API response format
+        if (!Array.isArray(commentsData)) {
+          if (__DEV__) console.log('📋 Processing new API response format');
 
-  //       console.log('Processing comments data:', commentsData);
+          // Extract comments and check-in details from the response object
+          const comments = commentsData?.comments || [];
+          const checkInDetails = commentsData?.check_in_details || [];
+          const placeName = commentsData?.place_name || 'Unknown Location';
+          const totalCheckIns = commentsData?.total_check_ins || 0;
 
-  //       // Filter comments for current location by matching place name
-  //       const locationComments = commentsData.filter(comment => {
-  //         console.log('Checking comment:', comment);
-  //         return comment &&
-  //           comment.name &&
-  //           typeof comment.name === 'string' &&
-  //           comment.name.toLowerCase().trim() === selectedLocationDetail.name.toLowerCase().trim();
-  //       });
+          if (__DEV__) {
+            console.log(`📍 Location: ${placeName}`);
+            console.log(`📊 Total Check-ins: ${totalCheckIns}`);
+            console.log(`💬 Comments: ${comments.length}`);
+            console.log(`✅ Check-in Details: ${checkInDetails.length}`);
+          }
 
-  //       console.log(`Found ${locationComments.length} comments for location "${selectedLocationDetail.name}"`);
-  //       console.log('Filtered comments:', locationComments);
-  //       setFetchedComments(locationComments);
+          // Combine comments and check-in details for display
+          const locationKey = `${selectedLocationDetail.latitude || mapRegion.latitude},${selectedLocationDetail.longitude || mapRegion.longitude}`;
+          const allData = [
+            ...comments.map((comment: string) => ({
+              type: 'comment',
+              content: comment,
+              id: makeCommentId(comment, locationKey),
+              userId: 'anon'
+            })),
+            ...checkInDetails.map((checkIn: { text?: string; mood: string; timestamp: string; user_id: string }) => ({
+              type: 'checkin',
+              content: checkIn.text || 'No message',
+              mood: checkIn.mood,
+              timestamp: checkIn.timestamp,
+              userId: checkIn.user_id
+            }))
+          ];
 
-  //     } catch (error) {
-  //       console.error('Error fetching comments:', error);
-  //       console.error('Error message:', error.message);
-  //       console.error('Error response:', error.response);
-  //       console.error('Error response data:', error.response?.data);
-  //       console.error('Error response status:', error.response?.status);
-  //       console.error('Error response headers:', error.response?.headers);
+          setFetchedComments(allData);
+        } else {
+          // Normalize simple array format to unified objects
+          const locationKey = `${selectedLocationDetail.latitude || mapRegion.latitude},${selectedLocationDetail.longitude || mapRegion.longitude}`;
+          const normalized = (commentsData || []).map((comment: any) => ({
+            type: 'comment',
+            content: typeof comment === 'string' ? comment : comment?.comments || '',
+            id: makeCommentId(typeof comment === 'string' ? comment : comment?.comments || '', locationKey),
+            userId: 'anon'
+          }));
+          setFetchedComments(normalized);
+        }
 
-  //       setFetchedComments([]);
+      } catch (error: any) {
+        // Comment out error logging to avoid showing errors on screen
+        // console.error('Error fetching comments:', error);
+        // console.error('Error message:', error.message);
+        // console.error('Error response:', error.response);
+        // console.error('Error response data:', error.response?.data);
+        // console.error('Error response status:', error.response?.status);
+        // console.error('Error response headers:', error.response?.headers);
 
-  //       // More specific error handling
-  //       if (error.response?.status === 422) {
-  //         console.error('422 Error - Validation failed. Check API endpoint and request format.');
-  //         // Don't show alert to user during development
-  //         // Alert.alert('Error', 'Unable to load comments. Please try again later.');
-  //       } else if (error.response?.status === 401) {
-  //         console.error('401 Error - Authentication required');
-  //       } else if (error.response?.status === 404) {
-  //         console.error('404 Error - Endpoint not found');
-  //       }
-  //     } finally {
-  //       setIsLoadingComments(false);
-  //     }
-  //   };
+        setFetchedComments([]);
 
-  //   // Add small delay to prevent rapid API calls during development
-  //   const timeoutId = setTimeout(fetchCommentsForLocation, 500);
-  //   return () => clearTimeout(timeoutId);
-  // }, [selectedLocationDetail?.name]);
+        // More specific error handling (commented out to avoid screen errors)
+        // if (error.response?.status === 422) {
+        //   console.error('422 Error - Validation failed. Check API endpoint and request format.');
+        //   // Don't show alert to user during development
+        //   // Alert.alert('Error', 'Unable to load comments. Please try again later.');
+        // } else if (error.response?.status === 401) {
+        //   console.error('401 Error - Authentication required');
+        // } else if (error.response?.status === 404) {
+        //   console.error('404 Error - Endpoint not found');
+        // }
+      } finally {
+        setIsLoadingComments(false);
+      }
+    };
+
+    // Add small delay to prevent rapid API calls during development
+    const timeoutId = setTimeout(fetchCommentsForLocation, 500);
+    return () => clearTimeout(timeoutId);
+  }, [selectedLocationDetail?.latitude, selectedLocationDetail?.longitude, mapRegion.latitude, mapRegion.longitude]);
+
+  // Derived check-ins list for current location
+  const currentCheckIns = React.useMemo(() => {
+    return fetchedComments.filter(item => item.type === 'checkin');
+  }, [fetchedComments]);
+
+  const openCheckInsSheet = React.useCallback(() => openCheckInsModal(currentCheckIns.length > 0), [currentCheckIns.length, openCheckInsModal]);
 
   // Initialize location
   React.useEffect(() => {
@@ -218,21 +278,7 @@ const MoodMapScreen: React.FC = () => {
     initializeLocation();
   }, [setMapRegion]);
 
-  // Memoized derived values
-  const currentLocations = React.useMemo(() =>
-    selectedMood
-      ? moodsData.find(mood => mood.id === selectedMood)?.locations || []
-      : [],
-    [selectedMood]
-  );
-
-  // Updated currentEmoji calculation to use SVG component
-  const currentSvgComponent = React.useMemo(() =>
-    selectedMood
-      ? getMoodSvgById(selectedMood)
-      : null,
-    [selectedMood]
-  );
+  // Remove unused derived values and helpers to avoid stale logic
 
   // Updated handlers
   const handleMood = React.useCallback((moodId: string) => {
@@ -245,7 +291,7 @@ const MoodMapScreen: React.FC = () => {
     setSelectedMood(moodId);
     // Find the mood name from the MOOD_FILTER_OPTIONS
     const moodObj = MOOD_FILTER_OPTIONS.find(mood => mood.id === moodId);
-    const moodName = moodObj?.name === 'Lonely' ? 'alone' : moodObj?.name;
+    const moodName = moodObj?.name === 'Lonely' ? 'alone' : moodObj?.name || '';
     handleMoodSelection(moodName);
   }, [selectedMood, setSelectedMood, handleMoodSelection]);
 
@@ -268,10 +314,6 @@ const MoodMapScreen: React.FC = () => {
     setShowFilterModal(false);
   }, [clearMoodFilter]);
 
-  const handleLocationMoodSelect = React.useCallback((moodId: string) => {
-    setSelectedLocationMood(prev => prev === moodId ? null : moodId);
-  }, []);
-
   const handleAddComment = React.useCallback(async () => {
     const trimmedComment = newComment.trim();
     if (!trimmedComment || !selectedLocationDetail) {
@@ -292,42 +334,107 @@ const MoodMapScreen: React.FC = () => {
         comments: trimmedComment
       };
 
-      console.log('Submitting comment with payload:', payload);
+      // console.log('Submitting comment with payload:', payload);
       const response = await submitComments(payload);
-      console.log('Comment submitted successfully:', response);
+      // console.log('Comment submitted successfully:', response);
 
       // Add comment to local state (existing hook method)
       addComment(trimmedComment);
 
-      // Add comment to fetched comments to show immediately
-      // Using the same format as the API response
+      // Add comment to fetched comments immediately in the same shape used for rendering
+      const locationKey = `${selectedLocationDetail.latitude || mapRegion.latitude},${selectedLocationDetail.longitude || mapRegion.longitude}`;
       const newCommentObj = {
-        id: Date.now(), // Temporary ID until we refresh from API
-        name: selectedLocationDetail.name,
-        comments: trimmedComment
-      };
+        type: 'comment',
+        content: trimmedComment,
+        id: makeCommentId(trimmedComment, locationKey),
+        userId: 'me'
+      } as const;
       setFetchedComments(prev => [...prev, newCommentObj]);
 
       setNewComment('');
       Alert.alert('Success', 'Comment posted successfully!');
 
     } catch (error) {
-      console.error('Error submitting comment:', error);
+      // Comment out error logging to avoid showing errors on screen
+      // console.error('Error submitting comment:', error);
       Alert.alert('Error', 'Failed to post comment. Please try again.');
     } finally {
       setIsSubmittingComment(false);
     }
   }, [newComment, selectedLocationDetail, selectedMood, mapRegion, addComment]);
 
+  // Function to manually refresh comments for debugging
+  const refreshComments = React.useCallback(async () => {
+    if (!selectedLocationDetail?.name) return;
+
+    setIsLoadingComments(true);
+    try {
+      const response = await getComments(
+        selectedLocationDetail.latitude || mapRegion.latitude,
+        selectedLocationDetail.longitude || mapRegion.longitude
+      );
+      let commentsData = response;
+
+      if (response && response.data && Array.isArray(response.data)) {
+        commentsData = response.data;
+      }
+
+      // Handle the new API response format for refresh
+      if (!Array.isArray(commentsData)) {
+        if (__DEV__) console.log('📋 Processing refresh response format');
+
+        // Extract comments and check-in details from the response object
+        const comments = commentsData?.comments || [];
+        const checkInDetails = commentsData?.check_in_details || [];
+
+        // Combine comments and check-in details for display
+        const locationKey = `${selectedLocationDetail.latitude || mapRegion.latitude},${selectedLocationDetail.longitude || mapRegion.longitude}`;
+        const allData = [
+          ...comments.map((comment: string) => ({
+            type: 'comment',
+            content: comment,
+            id: makeCommentId(comment, locationKey),
+            userId: 'anon'
+          })),
+          ...checkInDetails.map((checkIn: { text?: string; mood: string; timestamp: string; user_id: string }) => ({
+            type: 'checkin',
+            content: checkIn.text || 'No message',
+            mood: checkIn.mood,
+            timestamp: checkIn.timestamp,
+            userId: checkIn.user_id
+          }))
+        ];
+
+        setFetchedComments(allData);
+      } else {
+        // Normalize simple array format to unified objects
+        const locationKey = `${selectedLocationDetail.latitude || mapRegion.latitude},${selectedLocationDetail.longitude || mapRegion.longitude}`;
+        const normalized = (commentsData || []).map((comment: any) => ({
+          type: 'comment',
+          content: typeof comment === 'string' ? comment : comment?.comments || '',
+          id: makeCommentId(typeof comment === 'string' ? comment : comment?.comments || '', locationKey),
+          userId: 'anon'
+        }));
+        setFetchedComments(normalized);
+      }
+    } catch (error: any) {
+      // Comment out error logging to avoid showing errors on screen
+      // console.error('Error refreshing comments:', error);
+      setFetchedComments([]);
+    } finally {
+      setIsLoadingComments(false);
+    }
+  }, [selectedLocationDetail?.latitude, selectedLocationDetail?.longitude, mapRegion.latitude, mapRegion.longitude]);
+
   // Optimized render functions
   const renderMoodFilterButton = React.useCallback((mood: typeof MOOD_FILTER_OPTIONS[0]) => {
     const isSelected = selectedFilterMoods.includes(mood?.id || '');
     const isCalm = mood?.id === 'calm';
-    const SvgComponent = mood?.SvgComponent;
+    const IconComponent = mood?.IconComponent;
 
     return (
       <TouchableOpacity
-        key={mood?.id || Math.random().toString()}
+        key={mood?.id}
         style={[
           styles.moodButton,
           {
@@ -340,11 +447,10 @@ const MoodMapScreen: React.FC = () => {
         onPress={() => toggleFilterMood(mood?.id || '')}
         activeOpacity={0.7}
       >
-        {SvgComponent ? (
-          <SvgComponent
-            width={24}
-            height={24}
-            style={{ marginBottom: 4 }}
+        {IconComponent ? (
+          <Image
+            source={IconComponent}
+            style={{ width: 24, height: 24, marginBottom: 4 }}
           />
         ) : (
           <Text style={styles.moodEmoji}>😊</Text>
@@ -359,63 +465,9 @@ const MoodMapScreen: React.FC = () => {
     );
   }, [selectedFilterMoods, toggleFilterMood]);
 
-  const renderCommentItem = React.useCallback(({ item }: { item: any }) => (
-    <View style={styles.commentItem}>
-      <Text style={styles.commentText}>
-        {typeof item.comments === 'string'
-          ? item.comments
-          : JSON.stringify(item.comments)}
-      </Text>
-    </View>
-  ), []);
 
-  const renderMoodItem = React.useCallback(({ item }: { item: any }) => {
-    const isSelected = selectedLocationMood === item.id;
-    const SvgComponent = MOOD_SVG_COMPONENTS[item.name];
 
-    return (
-      <TouchableOpacity
-        style={[
-          styles.moodDisplayItem,
-          isSelected && styles.moodDisplayItemSelected
-        ]}
-        onPress={() => handleLocationMoodSelect(item.id)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.moodImageContainer}>
-          {SvgComponent ? (
-            <SvgComponent
-              width={isSelected ? 35 : 30}
-              height={isSelected ? 35 : 30}
-              style={[
-                styles.moodImage,
-                isSelected && styles.moodImageSelected
-              ]}
-            />
-          ) : (
-            <Text style={[
-              styles.moodDisplayEmoji,
-              isSelected && styles.moodDisplayEmojiSelected
-            ]}>
-              {item.emoji}
-            </Text>
-          )}
-        </View>
 
-        <Text style={[
-          styles.moodDisplayName,
-          isSelected && styles.moodDisplayNameSelected
-        ]}>
-          {item.name}
-        </Text>
-        {isSelected && (
-          <View style={styles.moodSelectedIndicator}>
-            <Ionicons name="checkmark-circle" size={16} color="#40E0D0" />
-          </View>
-        )}
-      </TouchableOpacity>
-    );
-  }, [selectedLocationMood, handleLocationMoodSelect]);
 
   // Component renders
   const renderFilterModal = () => (
@@ -468,14 +520,24 @@ const MoodMapScreen: React.FC = () => {
       visible={showLocationDetail}
       animationType="slide"
       presentationStyle="pageSheet"
-      onRequestClose={() => setShowLocationDetail(false)}
+      onRequestClose={() => {
+        setShowLocationDetail(false);
+        // Clear comments when modal closes to prevent showing wrong comments
+        setFetchedComments([]);
+        setNewComment('');
+      }}
     >
       <SafeAreaView style={styles.locationDetailContainer}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
         <View style={styles.locationDetailHeader}>
           <TouchableOpacity
-            onPress={() => setShowLocationDetail(false)}
+            onPress={() => {
+              setShowLocationDetail(false);
+              // Clear comments when modal closes to prevent showing wrong comments
+              setFetchedComments([]);
+              setNewComment('');
+            }}
             style={styles.backButton}
           >
             <Ionicons name="chevron-back" size={24} color="#000" />
@@ -497,18 +559,29 @@ const MoodMapScreen: React.FC = () => {
               </View>
 
               <View style={styles.moodRow}>
-                <Text style={styles.moodEmoji}>{selectedLocationDetail.moodEmoji}</Text>
-                <Text style={styles.moodLabel}>{selectedLocationDetail.mood}</Text>
+                <Text style={styles.moodEmoji}>😊</Text>
+                <Text style={styles.moodLabel}>
+                  {selectedLocationDetail.mood || 'Happy'}
+                </Text>
               </View>
 
-              <View style={styles.checkInInfo}>
-                <Text style={styles.checkInText}>
-                  Check-ins: {locationCheckIns.count} in the last hour
-                </Text>
-                <Text style={styles.checkInBreakdown}>
-                  → {locationCheckIns.breakdown}
-                </Text>
-              </View>
+              <TouchableOpacity onPress={openCheckInsSheet} activeOpacity={0.8}>
+                <View style={styles.checkInInfo}>
+                  <Text style={styles.checkInText}>
+                    Check-ins: {currentCheckIns.length} in the last hour
+                  </Text>
+                  <Text style={styles.checkInBreakdown}>
+                    → {(() => {
+                      if (currentCheckIns.length > 0) {
+                        const moods = currentCheckIns.map(checkIn => checkIn.mood || 'Happy');
+                        const uniqueMoods = [...new Set(moods)];
+                        return `Recent: ${uniqueMoods.join(', ')}`;
+                      }
+                      return 'No recent check-ins';
+                    })()}
+                  </Text>
+                </View>
+              </TouchableOpacity>
             </View>
 
             {/* Virtual Hugs Card */}
@@ -530,54 +603,58 @@ const MoodMapScreen: React.FC = () => {
               </View>
             </View>
 
-            {/* Moods Card */}
-            <View style={styles.moodsCard}>
-              <View style={styles.moodsHeader}>
-                {MOOD_SVG_COMPONENTS['Happy'] ? (
-                  <HappyIcon width={24} height={24} style={styles.moodsHeaderImage} />
-                ) : (
-                  <Text style={styles.moodsEmoji}>😊</Text>
-                )}
-                <Text style={styles.moodsTitle}>Available Moods</Text>
-              </View>
-              <FlatList
-                data={moodsData}
-                renderItem={renderMoodItem}
-                keyExtractor={item => item.id.toString()}
-                numColumns={3}
-                style={styles.moodsList}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.moodsListContent}
-                scrollEnabled
-                nestedScrollEnabled
-              />
-            </View>
-
             {/* Comments Card */}
             <View style={styles.commentsCard}>
-              <Text style={styles.commentsTitle}>💬 Comments</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <Text style={styles.commentsTitle}>💬 Comments</Text>
+                <TouchableOpacity
+                  onPress={refreshComments}
+                  style={{ padding: 5 }}
+                  disabled={isLoadingComments}
+                >
+                  <Ionicons
+                    name="refresh"
+                    size={20}
+                    color={isLoadingComments ? "#999" : "#40E0D0"}
+                  />
+                </TouchableOpacity>
+              </View>
 
               {isLoadingComments ? (
-                <View style={styles.commentsLoading}>
+                <View style={{ alignItems: 'center', paddingVertical: 20 }}>
                   <ActivityIndicator size="small" color="#40E0D0" />
-                  <Text style={styles.loadingText}>Loading comments...</Text>
+                  <Text style={{ marginTop: 8, color: '#666', fontSize: 14 }}>Loading comments...</Text>
                 </View>
               ) : (
-                <View style={{ maxHeight: 250 }}>
-                  <FlatList
-                    data={fetchedComments}
-                    renderItem={renderCommentItem}
-                    keyExtractor={(item, index) => String(item.id) || String(index)}
-                    showsVerticalScrollIndicator={true}
-                    scrollEnabled={true}
-                    nestedScrollEnabled={true}
-                    ListEmptyComponent={
-                      <Text style={styles.noCommentsText}>
-                        No comments yet. Be the first to comment!
-                      </Text>
+                <ScrollView style={styles.commentsList} showsVerticalScrollIndicator={true}>
+                  {(() => {
+                    // Filter out check-ins and only show user-posted comments
+                    const userComments = fetchedComments.filter(item => item.type === 'comment');
+                    
+                    if (__DEV__) {
+                      console.log('📱 Rendering comments for location:', selectedLocationDetail?.name);
+                      console.log('📱 User comments length:', userComments.length);
                     }
-                  />
-                </View>
+
+                    if (userComments.length === 0) {
+                      return (
+                        <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
+                          No comments yet. Be the first to comment!
+                        </Text>
+                      );
+                    }
+
+                    return (
+                      <View style={{ paddingHorizontal: 0 }}>
+                        {userComments.map((item, index) => (
+                          <View key={item.id || item.userId || index} style={styles.commentItem}>
+                            <Text style={styles.commentText}>💬 {item.content}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    );
+                  })()}
+                </ScrollView>
               )}
 
               <View style={styles.addCommentContainer}>
@@ -588,6 +665,7 @@ const MoodMapScreen: React.FC = () => {
                   onChangeText={setNewComment}
                   multiline
                   editable={!isSubmittingComment}
+                  key={selectedLocationDetail?.name} // Force re-render when location changes
                 />
                 <TouchableOpacity
                   style={[
@@ -606,7 +684,21 @@ const MoodMapScreen: React.FC = () => {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.checkInButton} onPress={handleCheckIn}>
+            <TouchableOpacity
+              style={styles.checkInButton}
+              onPress={() => {
+                // Navigate to addCheckIn screen with location data
+                router.push({
+                  pathname: '/addCheckIn',
+                  params: {
+                    locationName: selectedLocationDetail?.name || '',
+                    latitude: selectedLocationDetail?.latitude || mapRegion.latitude,
+                    longitude: selectedLocationDetail?.longitude || mapRegion.longitude,
+                    mood: selectedLocationDetail?.mood || selectedMood || 'happy'
+                  }
+                });
+              }}
+            >
               <Text style={styles.checkInButtonText}>Check in</Text>
             </TouchableOpacity>
           </ScrollView>
@@ -615,50 +707,114 @@ const MoodMapScreen: React.FC = () => {
     </Modal>
   );
 
-  const renderUserPinOverlay = () => selectedUserPin && (
-    <View style={styles.userPinOverlay}>
-      <TouchableOpacity
-        style={styles.userExpandedCard}
-        onPress={() => setSelectedUserPin(null)}
-        activeOpacity={0.9}
-      >
-        <Text style={styles.userExpandedEmoji}>{selectedUserPin.moodEmoji}</Text>
-
-        <View style={styles.userExpandedInfo}>
-          <Text style={styles.userExpandedName}>
-            { selectedUserPin?.user.username || 'Unknown User'}
-          </Text>
-          <Text style={styles.userExpandedMood}>
-            {selectedUserPin?.mood || 'Happy'}
-          </Text>
+  const renderCheckInsModal = () => (
+    <Modal
+      visible={showCheckInsModal}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={() => setShowCheckInsModal(false)}
+    >
+      <SafeAreaView style={styles.locationDetailContainer}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <View style={styles.locationDetailHeader}>
+          <TouchableOpacity onPress={() => setShowCheckInsModal(false)} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={24} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.locationDetailTitle}>Recent Check-ins</Text>
         </View>
-
-        <TouchableOpacity
-          style={styles.userHugButton}
-          onPress={e => {
-            e.stopPropagation();
-            handleSendUserHug(selectedUserPin);
-          }}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="heart" size={16} color="#FFFFFF" />
-          <Text style={styles.userHugButtonText}>Send virtual hug</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.userChatButton}
-          onPress={e => {
-            e.stopPropagation();
-            handleStartChat(selectedUserPin);
-          }}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="chatbubble" size={16} color="#FFFFFF" />
-          <Text style={styles.userChatButtonText}>Start chat</Text>
-        </TouchableOpacity>
-      </TouchableOpacity>
-    </View>
+        <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
+          {currentCheckIns.length === 0 ? (
+            <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
+              No recent check-ins
+            </Text>
+          ) : (
+            <View>
+              {currentCheckIns.map((ci, idx) => (
+                <TouchableOpacity
+                  key={`${ci.userId || 'user'}_${idx}`}
+                  style={styles.commentItem}
+                  onPress={() => handleCheckInUserPress(ci.userId)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.commentText}>
+                    {`${ci.mood ? ci.mood.charAt(0).toUpperCase() + ci.mood.slice(1) : 'Happy'} • ${ci.timestamp || ''}`}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: '#888', marginTop: 4 }}>Tap to view user</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
   );
+
+  const renderUserDetailModal = () => (
+    <Modal
+      visible={showUserDetailModal}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={() => setShowUserDetailModal(false)}
+    >
+      <SafeAreaView style={styles.locationDetailContainer}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <View style={styles.locationDetailHeader}>
+          <TouchableOpacity onPress={() => setShowUserDetailModal(false)} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={24} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.locationDetailTitle}>User Details</Text>
+        </View>
+        <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
+          {isLoadingUserDetail ? (
+            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+              <ActivityIndicator size="small" color="#40E0D0" />
+              <Text style={{ marginTop: 8, color: '#666', fontSize: 14 }}>Loading user...</Text>
+            </View>
+          ) : selectedUserDetail ? (
+            <View style={styles.locationCard}>
+              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
+                {selectedUserDetail?.name || selectedUserDetail?.username || 'User'}
+              </Text>
+              {selectedUserDetail?.email ? (
+                <Text style={{ fontSize: 14, color: '#666' }}>{selectedUserDetail.email}</Text>
+              ) : null}
+              {selectedUserDetail?.bio ? (
+                <Text style={{ fontSize: 14, color: '#666', marginTop: 8 }}>{selectedUserDetail.bio}</Text>
+              ) : null}
+            </View>
+          ) : (
+            <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
+              No user data
+            </Text>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  );
+
+
+
+
+  // Helper function to get mood emoji
+  const getMoodEmoji = (mood: string): string => {
+    const moodEmojis: { [key: string]: string } = {
+      'happy': '😊',
+      'calm': '😌',
+      'inspired': '💡',
+      'relaxed': '😌',
+      'creative': '🎨',
+      'comforted': '❤️',
+      'sad': '😢',
+      'anxious': '😰',
+      'excited': '🤩',
+      'peaceful': '☮️',
+      'stressed': '😰',
+      'lonely': '😔',
+      'grateful': '🙏',
+      'frustrated': '😤'
+    };
+    return moodEmojis[mood?.toLowerCase()] || '😊';
+  };
 
   const renderActivitiesSection = () => currentMarkedLocation?.type === 'event' && (
     <View style={styles.activitiesContainer}>
@@ -702,45 +858,56 @@ const MoodMapScreen: React.FC = () => {
             value={searchInput}
             placeholder="Mood Map"
           />
-          {/* Explore Button directly below search input, matching width/alignment */}
-          <TouchableOpacity
-            style={styles.exploreButton}
-            onPress={() => setShowExploreSheet(true)}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.exploreButtonText}>Explore</Text>
-          </TouchableOpacity>
+                     {/* Explore Button directly below search input, matching width/alignment */}
+           <TouchableOpacity
+             style={styles.exploreButton}
+             onPress={() => setShowExploreSheet(true)}
+             activeOpacity={0.85}
+           >
+             <Text style={styles.exploreButtonText}>Explore</Text>
+           </TouchableOpacity>
+           
+           {/* Check-ins count indicator */}
+          </View>
+          {/* Remove the filter button from the header */}
         </View>
-        {/* Remove the filter button from the header */}
+        
+        {/* Filter Button */}
         <TouchableOpacity
           style={styles.filterButton}
           onPress={() => setShowFilterModal(true)}
         >
           <Ionicons name="filter" size={24} color="#000" />
         </TouchableOpacity>
-      </View>
+        
+        {/* Refresh map check-ins button */}
+        
+        {/* Loading Indicator */}
+        {loading && <ActivityIndicator size="large" style={styles.loadingIndicator} />}
+        
+        {/* Map Check-ins Loading Indicator */}
 
-      {/* Loading Indicator */}
-      {loading && <ActivityIndicator size="large" style={styles.loadingIndicator} />}
-
-      {/* Map - Updated with SVG component prop */}
+      {/* Map - Updated with icon component prop */}
       <MoodMapView
-        callback={callBackMapHandler}
+        callback={(location: any) => {
+          callBackMapHandler(location);
+        }}
         mapContainerStyle={styles.mapContainerStyle}
         mapRegion={mapRegion}
         selectedMood={selectedMood}
-        currentLocations={moodData}
-        currentSvgComponent={currentSvgComponent}
+                 currentLocations={moodData}
+        currentEmoji={null}
         backgroundColor={undefined}
       />
 
       {/* Overlays and Sections */}
-      {renderUserPinOverlay()}
       {renderActivitiesSection()}
 
       {/* Modals */}
       {renderFilterModal()}
       {renderLocationDetailModal()}
+      {renderCheckInsModal()}
+      {renderUserDetailModal()}
 
       {/*Modal */}
       <Modal

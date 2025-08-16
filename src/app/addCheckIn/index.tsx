@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from "./index.style";
 import { useAddCheckIn } from "./useAddCheckIn";
 import Header from "@/src/components/common/header";
+import { useLocalSearchParams } from 'expo-router';
 
 const moods = [
 
@@ -69,6 +70,13 @@ export const screenOptions = {
 };
 
 export default function AddCheckIn() {
+  // Get route parameters
+  const params = useLocalSearchParams();
+  const locationName = params.locationName as string;
+  const latitude = params.latitude as string;
+  const longitude = params.longitude as string;
+  const mood = params.mood as string;
+
   const {
     isloading,
     selectedMood,
@@ -84,7 +92,9 @@ export default function AddCheckIn() {
     recordedUri, 
     setRecordedUri,
     isAudioRecording, 
-    setIsAudioRecording
+    setIsAudioRecording,
+    currentLocation,
+    locationPermission
   } = useAddCheckIn();
 
 
@@ -113,6 +123,35 @@ export default function AddCheckIn() {
       <View style={styles.contentContainer}>
         <Text style={styles.title}>How are you feeling?</Text>
 
+        {/* Display passed parameters only when location is enabled */}
+        {locationOptIn && locationName && (
+          <View style={styles.paramContainer}>
+            <Text style={styles.paramTitle}>Location Details:</Text>
+            <Text style={styles.paramText}>📍 {locationName}</Text>
+            <Text style={styles.paramText}>Lat: {latitude}</Text>
+            <Text style={styles.paramText}>Lng: {longitude}</Text>
+            <Text style={styles.paramText}>Mood: {mood}</Text>
+          </View>
+        )}
+
+        {/* Display current location when location is enabled but no location params */}
+        {locationOptIn && !locationName && currentLocation && (
+          <View style={styles.paramContainer}>
+            <Text style={styles.paramTitle}>Current Location:</Text>
+            <Text style={styles.paramText}>📍 Your current location</Text>
+            <Text style={styles.paramText}>Lat: {currentLocation.latitude.toFixed(6)}</Text>
+            <Text style={styles.paramText}>Lng: {currentLocation.longitude.toFixed(6)}</Text>
+          </View>
+        )}
+
+        {/* Show location permission status */}
+        {locationOptIn && !locationName && !currentLocation && !locationPermission && (
+          <View style={styles.paramContainer}>
+            <Text style={styles.paramTitle}>Location Status:</Text>
+            <Text style={styles.paramText}>📍 Requesting location permission...</Text>
+          </View>
+        )}
+
         <FlatList
           data={moods}
           horizontal
@@ -121,7 +160,7 @@ export default function AddCheckIn() {
             <TouchableOpacity
               style={[
                 styles.moodButton,
-                selectedMood?.emoji === item.emoji && styles.selectedMood,
+                selectedMood?.label === item.label && styles.selectedMood,
               ]}
               onPress={() => setSelectedMood(item)}
             >
@@ -131,7 +170,7 @@ export default function AddCheckIn() {
               {item.label === 'Lonely' && <Lonely width={103} height={103} />}
               {item.label === 'Grateful' && <Grateful width={74} height={73} />}
               {item.label === 'Sad' && <Sad width={79} height={79} />}
-              {item.label === 'Frustrated' && <Frustrated width={71} height={73} />}[]
+              {item.label === 'Frustrated' && <Frustrated width={71} height={73} />}
             </TouchableOpacity>
           )}
           contentContainerStyle={styles.moodList}

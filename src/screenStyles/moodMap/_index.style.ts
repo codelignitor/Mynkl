@@ -589,7 +589,8 @@ export const styles = StyleSheet.create({
         borderRadius: 12,
         padding: 16,
         marginBottom: 16,
-        maxHeight: 200,
+        minHeight: 200,
+        maxHeight: 400,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -606,19 +607,30 @@ export const styles = StyleSheet.create({
         marginBottom: 12,
     },
     commentsList: {
-        maxHeight: 100,
+        maxHeight: 300,
         marginBottom: 12,
+        backgroundColor: '#f8f9fa',
+        borderRadius: 8,
+        padding: 12,
+        overflow: 'scroll',
     },
     commentItem: {
         backgroundColor: '#F5F5F5',
         borderRadius: 8,
         padding: 12,
         marginBottom: 8,
+        borderLeftWidth: 3,
+        borderLeftColor: '#40E0D0',
     },
     commentText: {
         fontSize: 14,
         color: '#333',
         lineHeight: 20,
+    },
+    commentTimestamp: {
+        fontSize: 12,
+        color: '#666',
+        marginTop: 4,
     },
     
     // Add Comment Styles
@@ -891,4 +903,7 @@ export const styles = StyleSheet.create({
         letterSpacing: 0.2,
     },
     
+
+
+
 });

@@ -126,4 +126,24 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
+  paramContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4A9B9B',
+  },
+  paramTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2D5A5A',
+    marginBottom: 8,
+  },
+  paramText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+    fontWeight: '400',
+  },
 });

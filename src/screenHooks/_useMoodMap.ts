@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import debounce from 'lodash.debounce';
-import { getMapSearchResults, getLocation } from '@/src/services/apis';
+import { getMapSearchResults, getLocation, getCheckIns, updatedUserProfile } from '@/src/services/apis';
 import * as Location from 'expo-location';
 import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
+import React from 'react';
 
 export interface Hug {
   id: string;
@@ -74,6 +75,10 @@ export function useMoodMap() {
   // New states for user pin expansion
   const [selectedUserPin, setSelectedUserPin] = useState<any>(null);
 
+
+
+
+
   // Explore Bottom Sheet State
   const [showExploreSheet, setShowExploreSheet] = useState(false);
   const [exploreTab, setExploreTab] = useState<'Nearby' | 'Trending' | 'Mood-Specific'>('Nearby');
@@ -110,7 +115,7 @@ export function useMoodMap() {
       console.log('Places data:', data);
       
       // Log each place for debugging
-      data.forEach((place, index) => {
+      data.forEach((place: any, index: number) => {
         console.log(`Place ${index + 1}:`, {
           id: place.id,
           name: place.name,
@@ -171,10 +176,9 @@ export function useMoodMap() {
       return; // Exit early for places
     }
     
-    // NEW: For USER pins, show expanded pin details on map
+    // NEW: For USER pins, show all users modal instead of individual user details
     if (location && location.type === 'user') {
-      console.log('👤 USER DETECTED - Expanding user pin on map');
-      console.log('User data:', location.user);
+      console.log('👤 USER DETECTED - Showing all users modal');
       
       // Extract user data from the location object
       const userData = location.user;
@@ -197,13 +201,9 @@ export function useMoodMap() {
       setCurrentMarkedLocation(null);
       setShowLocationDetail(false);
       setSelectedLocationDetail(null);
+      setSelectedUserPin(null);
       
-      // Set selected user pin for map expansion
-      setSelectedUserPin({
-        ...location,
-        moodEmoji: getMoodEmoji(location.mood),
-        username: userData?.username || userData?.name || 'Anonymous'
-      });
+      // User modal functionality removed
       
       return; // Exit early for users
     }
@@ -218,7 +218,7 @@ export function useMoodMap() {
     setSelectedUserPin(null);
   };
 
-  const getMoodEmoji = (mood: string): string => {
+  const getMoodEmoji = React.useCallback((mood: string): string => {
     const moodEmojis: { [key: string]: string } = {
       'happy': '😊',
       'calm': '😌',
@@ -232,48 +232,43 @@ export function useMoodMap() {
       'peaceful': '☮️'
     };
     return moodEmojis[mood?.toLowerCase()] || '😊';
-  };
+  }, []);
 
-  const loadLocationDetails = async (location: LocationDetail) => {
+  const loadLocationDetails = React.useCallback(async (location: LocationDetail) => {
     try {
-      // Simulate loading check-in data for places
-      const checkInData: CheckInData = {
-        count: Math.floor(Math.random() * 10) + 1,
-        breakdown: generateCheckInBreakdown()
-      };
+      // NOTE: Comments and check-ins are now handled in the main component using getComments API
+      // This function is kept for compatibility but no longer fetches data
+      console.log('📍 Location details loaded for:', location.name);
+      console.log('ℹ️ Comments and check-ins are now handled by getComments API in the main component');
       
-      // Load real comments from API instead of hardcoded
-      // Replace this with actual API call: const comments = await getLocationComments(location.id);
-      const comments: Comment[] = [
-        {
-          id: '1',
-          text: 'Great music today.',
-          timestamp: Date.now() - 3600000,
-          user: 'john_doe' // This should come from API
-        },
-        {
-          id: '2',
-          text: 'Needed this latte break 😊',
-          timestamp: Date.now() - 1800000,
-          user: 'sarah_smith' // This should come from API
-        }
-      ];
-
-      setLocationCheckIns(checkInData);
-      setLocationComments(comments);
+      // Set minimal data since the main component handles the real data
+      const locationCheckIns: any[] = [];
+      
+      // Set minimal data since the main component handles the real data
+      setLocationCheckIns({
+        count: 0, // Will be updated by the main component
+        breakdown: 'Loading...'
+      });
+      setLocationComments([]); // Will be updated by the main component
     } catch (error) {
       console.error('Error loading location details:', error);
+      // Fallback to minimal data if API fails
+      setLocationCheckIns({
+        count: 0,
+        breakdown: 'Unable to load data'
+      });
+      setLocationComments([]);
     }
-  };
+  }, []);
 
-  const generateCheckInBreakdown = (): string => {
-    const moods = ['Happy', 'Calm', 'Anxious', 'Excited', 'Peaceful'];
-    const counts = moods.map(mood => {
-      const count = Math.floor(Math.random() * 3) + 1;
-      return `${count} ${mood}`;
-    });
-    return counts.slice(0, 3).join(', ');
-  };
+  // Function to refresh location details after check-in
+  const refreshLocationDetails = React.useCallback(async () => {
+    if (selectedLocationDetail) {
+      await loadLocationDetails(selectedLocationDetail);
+    }
+  }, [selectedLocationDetail]);
+
+  
 
   const handleCheckIn = async () => {
     setShowLocationDetail(false)
@@ -390,6 +385,32 @@ export function useMoodMap() {
     // router.push(`/chat/${userId}`);
   };
 
+  // ===== Check-ins and User Details Modal Logic =====
+  const [showCheckInsModal, setShowCheckInsModal] = useState(false);
+  const [showUserDetailModal, setShowUserDetailModal] = useState(false);
+  const [selectedUserDetail, setSelectedUserDetail] = useState<any | null>(null);
+  const [isLoadingUserDetail, setIsLoadingUserDetail] = useState(false);
+
+  const openCheckInsModal = React.useCallback((hasCheckIns: boolean) => {
+    if (hasCheckIns) {
+      setShowCheckInsModal(true);
+    }
+  }, []);
+
+  const handleCheckInUserPress = React.useCallback(async (userId?: string) => {
+    if (!userId) return;
+    try {
+      setIsLoadingUserDetail(true);
+      const user = await updatedUserProfile(userId);
+      setSelectedUserDetail(user);
+      setShowUserDetailModal(true);
+    } catch (e) {
+      console.error('Unable to load user details:', e);
+    } finally {
+      setIsLoadingUserDetail(false);
+    }
+  }, []);
+
   const addComment = (commentText: string) => {
     if (!commentText.trim() || !selectedLocationDetail) return;
 
@@ -403,7 +424,11 @@ export function useMoodMap() {
     setLocationComments(prev => [...prev, newComment]);
   };
 
-  // Apply mood filter
+
+
+
+
+  // Apply mood filter - Filter out check-ins from map display
   const applyMoodFilter = (selectedMoods: string[]) => {
     console.log('Applying mood filter:', selectedMoods);
     setActiveFilters(selectedMoods);
@@ -411,18 +436,24 @@ export function useMoodMap() {
     setSearchInput('');
     
     if (selectedMoods.length === 0) {
-      setFilteredMapData(mapData);
-      setMoodData(mapData);
-      console.log('No filters applied, showing all data:', mapData.length);
+      // Filter out check-ins from map data
+      const filteredData = mapData.filter((item: any) => item.type !== 'check-in');
+      setFilteredMapData(filteredData);
+      setMoodData(filteredData);
+      console.log('No filters applied, showing all data (excluding check-ins):', filteredData.length);
     } else {
+      // Normalize synonyms so 'lonely' also matches 'alone' in API
+      const normalizedSelected = selectedMoods.map(m => m.toLowerCase());
       const filtered = mapData.filter((item: any) => {
-        const itemMood = item.mood?.toLowerCase();
-        return selectedMoods.some(mood => 
-          itemMood === mood.toLowerCase()
-        );
+        // Exclude check-ins and filter by mood
+        if (item.type === 'check-in') return false;
+        
+        const itemMood = (item.mood?.toLowerCase() || '').trim();
+        const expandedItemMoods = itemMood === 'alone' ? ['alone', 'lonely'] : [itemMood];
+        return normalizedSelected.some(mood => expandedItemMoods.includes(mood));
       });
       
-      console.log('Filtered data:', filtered.length, 'items from', mapData.length);
+      console.log('Filtered data (excluding check-ins):', filtered.length, 'items from', mapData.length);
       setFilteredMapData(filtered);
       setMoodData(filtered);
     }
@@ -433,8 +464,10 @@ export function useMoodMap() {
     setActiveFilters([]);
     setSelectedMood('');
     setSearchInput('');
-    setFilteredMapData(mapData);
-    setMoodData(mapData);
+    // Filter out check-ins when clearing filters
+    const filteredData = mapData.filter((item: any) => item.type !== 'check-in');
+    setFilteredMapData(filteredData);
+    setMoodData(filteredData);
   };
 
   const debouncedSearch = useMemo(
@@ -462,9 +495,11 @@ export function useMoodMap() {
           // mood: 'happy',
         });
          const fetchedData = response || [];
+         // Exclude check-ins from map display datasets
+         const noCheckIns = fetchedData.filter((item: any) => item.type !== 'check-in');
          setMapData(fetchedData);
-        setFilteredMapData(fetchedData);
-        setMoodData(fetchedData);
+        setFilteredMapData(noCheckIns);
+        setMoodData(noCheckIns);
         } catch (error) {
           
         }
@@ -496,20 +531,29 @@ export function useMoodMap() {
 
     if (!name || name.trim() === '') {
       const dataToShow = activeFilters.length > 0 ? filteredMapData : mapData;
-      setMoodData(dataToShow);
-      console.log('No mood selected, showing data:', dataToShow.length);
+      // Filter out check-ins
+      const filteredData = dataToShow.filter((item: any) => item.type !== 'check-in');
+      setMoodData(filteredData);
+      console.log('No mood selected, showing data (excluding check-ins):', filteredData.length);
       return;
     }
 
     setSearchInput('');
     const dataToFilter = activeFilters.length > 0 ? filteredMapData : mapData;
     
+    const normalizedName = name?.toLowerCase();
     const filtered = dataToFilter?.filter((item: any) => {
-      const matchesMood = item.mood?.toLowerCase() === name?.toLowerCase();
-      return matchesMood;
+      // Exclude check-ins and filter by mood
+      if (item.type === 'check-in') return false;
+      
+      const itemMood = (item.mood?.toLowerCase() || '').trim();
+      if (normalizedName === 'alone' || normalizedName === 'lonely') {
+        return itemMood === 'alone' || itemMood === 'lonely';
+      }
+      return itemMood === normalizedName;
     });
 
-    console.log('Mood selection filtered data:', filtered.length, 'items for mood:', name);
+    console.log('Mood selection filtered data (excluding check-ins):', filtered.length, 'items for mood:', name);
     setMoodData(filtered);
   };
 
@@ -534,16 +578,19 @@ export function useMoodMap() {
 
         const fetchedData = response || [];
         
+        // Filter out check-ins from the fetched data
+        const filteredData = fetchedData.filter((item: any) => item.type !== 'check-in');
+        
         // You should replace this test data with real API calls
         // const realUsers = await getUsersNearLocation(mapRegion.latitude, mapRegion.longitude);
         // const realPlaces = await getPlacesNearLocation(mapRegion.latitude, mapRegion.longitude);
         // const realEvents = await getEventsNearLocation(mapRegion.latitude, mapRegion.longitude);
         
-        // console.log('Map Data fetched:', fetchedData.length);
+        console.log('Map Data fetched (excluding check-ins):', filteredData.length, 'from', fetchedData.length);
         
-        setMapData(fetchedData);
-        setFilteredMapData(fetchedData);
-        setMoodData(fetchedData);
+        setMapData(fetchedData); // Keep original data for reference
+        setFilteredMapData(filteredData); // Filtered data for display
+        setMoodData(filteredData); // Filtered data for mood filtering
       } catch (error) {
         console.error('Error fetching map data:', error);
         Toast.show({
@@ -603,6 +650,7 @@ export function useMoodMap() {
     handleSendHug,
     handleOpenToTalk,
     addComment,
+    refreshLocationDetails,
     // New exports for user pin expansion
     selectedUserPin,
     setSelectedUserPin,
@@ -619,5 +667,17 @@ export function useMoodMap() {
     handleExploreTabPress,
     exploreData,
     exploreLoading,
+
+    // Check-ins modals and user details
+    showCheckInsModal,
+    setShowCheckInsModal,
+    showUserDetailModal,
+    setShowUserDetailModal,
+    selectedUserDetail,
+    isLoadingUserDetail,
+    openCheckInsModal,
+    handleCheckInUserPress,
+
+
   };
 }
