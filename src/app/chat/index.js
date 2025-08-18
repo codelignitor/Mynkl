@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext, useMemo } from "react";
 import { SafeAreaView, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { ChannelList } from "stream-chat-expo";
 import { StreamChat } from "stream-chat";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { AppContext } from "../../contexts/AppContext";
 import { useSelector } from "react-redux";
 import { chatApiKey } from "../../../chatConfig";
@@ -15,9 +15,10 @@ const client = StreamChat.getInstance(chatApiKey);
 
 export default function ChannelListScreen() {
   const { setChannel } = useContext(AppContext);
-  const user_id = useSelector((state: any) => state.auth.user_id) || "dev-user";
+  const user_id = useSelector((state) => state.auth.user_id) || "dev-user";
   const [isClientReady, setIsClientReady] = useState(false);
   const router = useRouter();
+  const params = useLocalSearchParams();
 
   
 
@@ -49,11 +50,34 @@ export default function ChannelListScreen() {
     return () => client.disconnectUser();
   }, [user_id]);
 
+  // Auto-create/open a 1:1 channel when navigated with targetUserId
+  useEffect(() => {
+    const openDirectChat = async () => {
+      try {
+        if (!isClientReady) return;
+        const targetUserId = params?.targetUserId;
+        if (!targetUserId || typeof targetUserId !== 'string') return;
+        if (targetUserId === user_id) return;
+
+        // Create or get a distinct messaging channel between the two users
+        const channel = client.channel('messaging', {
+          members: [user_id, targetUserId],
+        });
+        await channel.create();
+        setChannel(channel);
+        router.push(`/chat/channel/${channel.cid}`);
+      } catch (err) {
+        console.error('Failed to open direct chat:', err);
+      }
+    };
+    openDirectChat();
+  }, [isClientReady, params?.targetUserId]);
+
   const filters = useMemo(() => ({ members: { $in: [user_id] }, type: "messaging" }), [user_id]);
   const sort = useMemo(() => ({ last_updated: -1 }), []);
   const options = useMemo(() => ({ state: true, watch: true, presence: true }), []);
 
-  const handleChannelSelect = (channel: any) => {
+  const handleChannelSelect = (channel) => {
     setChannel(channel);
     router.push(`/chat/channel/${channel.cid}`);
   };

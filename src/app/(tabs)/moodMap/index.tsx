@@ -87,11 +87,18 @@ const MoodMapScreen: React.FC = () => {
     setSelectedUserPin,
     handleSendUserHug,
     handleStartChat,
+    selectedHugTargetUser,
+    selectedHugTargetUsers,
+    handleSelectHugTarget,
+    handleSelectAllHugTargets,
+    selectedChatTargetUser,
+    handleSelectChatTarget,
     showExploreSheet,
     setShowExploreSheet,
     exploreTab,
     setExploreTab,
     handleExploreTabPress,
+    submitSearch,
     // From hook: check-ins modals and user details
     showCheckInsModal,
     setShowCheckInsModal,
@@ -112,6 +119,7 @@ const MoodMapScreen: React.FC = () => {
   const [isSubmittingComment, setIsSubmittingComment] = React.useState(false);
   const [fetchedComments, setFetchedComments] = React.useState<any[]>([]);
   const [isLoadingComments, setIsLoadingComments] = React.useState(false);
+  const [showSelectUserButton, setShowSelectUserButton] = React.useState(false);
 
   // Refresh location details when returning from addCheckIn screen
   useFocusEffect(
@@ -121,6 +129,13 @@ const MoodMapScreen: React.FC = () => {
       }
     }, [selectedLocationDetail, refreshLocationDetails])
   );
+
+  // Reset the inline select button visibility whenever the user detail modal opens or user changes
+  React.useEffect(() => {
+    if (showUserDetailModal) {
+      setShowSelectUserButton(false);
+    }
+  }, [showUserDetailModal, selectedUserDetail]);
 
   // Clear comments when location changes to prevent showing wrong comments
   React.useEffect(() => {
@@ -699,7 +714,7 @@ const MoodMapScreen: React.FC = () => {
                 });
               }}
             >
-              <Text style={styles.checkInButtonText}>Check in</Text>
+              <Text style={styles.checkInButtonText}>How do you feel?</Text>
             </TouchableOpacity>
           </ScrollView>
         )}
@@ -763,6 +778,16 @@ const MoodMapScreen: React.FC = () => {
             <Ionicons name="chevron-back" size={24} color="#000" />
           </TouchableOpacity>
           <Text style={styles.locationDetailTitle}>User Details</Text>
+          {/* Select All - top right */}
+          {Array.isArray(currentCheckIns) && currentCheckIns.length > 0 && (
+            <TouchableOpacity
+              onPress={() => handleSelectAllHugTargets(currentCheckIns.map(ci => ({ id: ci.userId, username: ci.username || ci.name })))}
+              style={[styles.backButton, { position: 'absolute', right: 12 }]}
+              activeOpacity={0.85}
+            >
+              <Text style={{ fontWeight: '600', color: '#000' }}>Select all</Text>
+            </TouchableOpacity>
+          )}
         </View>
         <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
           {isLoadingUserDetail ? (
@@ -771,7 +796,7 @@ const MoodMapScreen: React.FC = () => {
               <Text style={{ marginTop: 8, color: '#666', fontSize: 14 }}>Loading user...</Text>
             </View>
           ) : selectedUserDetail ? (
-            <View style={styles.locationCard}>
+            <TouchableOpacity style={styles.locationCard} activeOpacity={0.85} onPress={() => setShowSelectUserButton(true)}>
               <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
                 {selectedUserDetail?.name || selectedUserDetail?.username || 'User'}
               </Text>
@@ -781,7 +806,27 @@ const MoodMapScreen: React.FC = () => {
               {selectedUserDetail?.bio ? (
                 <Text style={{ fontSize: 14, color: '#666', marginTop: 8 }}>{selectedUserDetail.bio}</Text>
               ) : null}
-            </View>
+
+              {showSelectUserButton && (
+                <TouchableOpacity
+                  style={[styles.sendHugButton, { marginTop: 16 }]}
+                  onPress={() => handleSelectHugTarget(selectedUserDetail)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.sendHugButtonText}>Select this user for a hug</Text>
+                </TouchableOpacity>
+              )}
+
+              {showSelectUserButton && (
+                <TouchableOpacity
+                  style={[styles.openToTalkButton, { marginTop: 10 }]}
+                  onPress={() => handleSelectChatTarget(selectedUserDetail)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.openToTalkButtonText}>Select this user to talk</Text>
+                </TouchableOpacity>
+              )}
+            </TouchableOpacity>
           ) : (
             <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
               No user data
@@ -818,6 +863,11 @@ const MoodMapScreen: React.FC = () => {
 
   const renderActivitiesSection = () => currentMarkedLocation?.type === 'event' && (
     <View style={styles.activitiesContainer}>
+      <View style={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}>
+        <TouchableOpacity onPress={() => callBackMapHandler(null)} style={styles.backButton}>
+          <Ionicons name="close" size={24} color="#000" />
+        </TouchableOpacity>
+      </View>
       <View style={styles.rowContiner}>
         <Text style={styles.activitiesLabel}>Activities</Text>
         <TouchableOpacity onPress={() => router.push('/activity_suggestions/activity_card')}>
@@ -857,6 +907,7 @@ const MoodMapScreen: React.FC = () => {
             onChangeText={setSearchInput}
             value={searchInput}
             placeholder="Mood Map"
+            onSearchPress={submitSearch}
           />
                      {/* Explore Button directly below search input, matching width/alignment */}
            <TouchableOpacity

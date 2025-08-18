@@ -75,9 +75,11 @@ export function useMoodMap() {
   // New states for user pin expansion
   const [selectedUserPin, setSelectedUserPin] = useState<any>(null);
 
-
-
-
+  // Selected users to receive a directed hug
+  const [selectedHugTargetUser, setSelectedHugTargetUser] = useState<any | null>(null);
+  const [selectedHugTargetUsers, setSelectedHugTargetUsers] = useState<any[]>([]);
+  // Selected user to start chat (Open to Talk)
+  const [selectedChatTargetUser, setSelectedChatTargetUser] = useState<any | null>(null);
 
   // Explore Bottom Sheet State
   const [showExploreSheet, setShowExploreSheet] = useState(false);
@@ -268,39 +270,54 @@ export function useMoodMap() {
     }
   }, [selectedLocationDetail]);
 
-  
-
   const handleCheckIn = async () => {
     setShowLocationDetail(false)
     router.push('/addCheckIn')
-    // if (!selectedLocationDetail) return;
-
-    // try {
-    //   console.log('Checking in at:', selectedLocationDetail.name);
-      
-    //   Toast.show({
-    //     type: 'success',
-    //     text1: 'Check-in Successful!',
-    //     text2: `${userName} checked in at ${selectedLocationDetail.name}`,
-    //   });
-
-    //   // Update check-in count
-    //   setLocationCheckIns(prev => ({
-    //     ...prev,
-    //     count: prev.count + 1
-    //   }));
-
-    // } catch (error) {
-    //   console.error('Error checking in:', error);
-    //   Toast.show({
-    //     type: 'error',
-    //     text1: 'Check-in Failed',
-    //     text2: 'Please try again later.',
-    //   });
-    // }
   };
 
   const handleSendHug = async () => {
+    // If multiple users selected, send to all
+    if (selectedHugTargetUsers && selectedHugTargetUsers.length > 0) {
+      try {
+        for (const u of selectedHugTargetUsers) {
+          const targetUserName = u?.username || u?.name || 'Unknown User';
+          const targetUserId = u?.id || u?.user_id || u?.userId || u?._id || 'unknown-id';
+          console.log(`✅ Hug sent to user: ${targetUserName} (id: ${targetUserId})`);
+          await handleSendUserHug(u);
+        }
+        // Clear selection after sending
+        setSelectedHugTargetUsers([]);
+      } catch (error) {
+        console.error('Error sending hugs to selected users:', error);
+        Toast.show({ type: 'error', text1: 'Failed to Send Hugs', text2: 'Please try again later.' });
+      }
+      return;
+    }
+
+    // If a single user is selected, send a direct hug
+    if (selectedHugTargetUser) {
+      try {
+        const targetUserName = selectedHugTargetUser?.username || selectedHugTargetUser?.name || 'Unknown User';
+        const targetUserId = selectedHugTargetUser?.id || selectedHugTargetUser?.user_id || selectedHugTargetUser?.userId || selectedHugTargetUser?._id || 'unknown-id';
+
+        console.log(`✅ Hug sent to user: ${targetUserName} (id: ${targetUserId})`);
+
+        await handleSendUserHug(selectedHugTargetUser);
+
+        // Clear selection after sending
+        setSelectedHugTargetUser(null);
+      } catch (error) {
+        console.error('Error sending user-directed hug:', error);
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to Send Hug',
+          text2: 'Please try again later.',
+        });
+      }
+      return;
+    }
+
+    // Otherwise, send a group hug to the location
     if (!selectedLocationDetail) return;
 
     try {
@@ -308,7 +325,7 @@ export function useMoodMap() {
       
       const newHug: Hug = {
         id: Math.random().toString(),
-        sender: userName, // Using dynamic username
+        sender: userName,
         message: `${userName} sent a hug to everyone at ${selectedLocationDetail.name}`,
         timestamp: Date.now()
       };
@@ -332,6 +349,13 @@ export function useMoodMap() {
   };
 
   const handleOpenToTalk = () => {
+    // If a chat target is selected, start a chat with that user
+    if (selectedChatTargetUser) {
+      handleStartChat(selectedChatTargetUser);
+      setSelectedChatTargetUser(null);
+      return;
+    }
+
     if (!selectedLocationDetail) return;
 
     Toast.show({
@@ -375,14 +399,16 @@ export function useMoodMap() {
     const targetUserName = user?.username || user?.name || 'Unknown User';
     const userId = user?.id || user?.user_id;
     
-    Toast.show({
-      type: 'success',
-      text1: 'Chat Started! 💬',
-      text2: `${userName} started conversation with ${targetUserName}`,
-    });
-
-    // Here you would typically navigate to a chat screen
-    // router.push(`/chat/${userId}`);
+    // Navigate to chat and auto-open direct channel with userId
+    if (userId) {
+      router.push({ pathname: '/chat', params: { targetUserId: userId } });
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'Chat Error',
+        text2: 'Unable to resolve user id for chat.',
+      });
+    }
   };
 
   // ===== Check-ins and User Details Modal Logic =====
@@ -402,13 +428,71 @@ export function useMoodMap() {
     try {
       setIsLoadingUserDetail(true);
       const user = await updatedUserProfile(userId);
-      setSelectedUserDetail(user);
+      // Ensure the selected user detail always contains a stable id
+      const normalizedUser = {
+        ...user,
+        id: (user as any)?.id || (user as any)?.user_id || (user as any)?.userId || (user as any)?._id || userId,
+      } as any;
+      setSelectedUserDetail(normalizedUser);
       setShowUserDetailModal(true);
     } catch (e) {
       console.error('Unable to load user details:', e);
     } finally {
       setIsLoadingUserDetail(false);
     }
+  }, []);
+
+  const handleSelectHugTarget = React.useCallback((user: any) => {
+    if (!user) return;
+    // Persist a version that includes an id field
+    const normalizedUser = {
+      ...user,
+      id: user?.id || user?.user_id || user?.userId || user?._id,
+    };
+    setSelectedHugTargetUser(normalizedUser);
+    setSelectedHugTargetUsers([normalizedUser]);
+    // Close both modals as requested
+    setShowUserDetailModal(false);
+    setShowCheckInsModal(false);
+    // Optional: feedback
+    Toast.show({
+      type: 'info',
+      text1: 'User Selected',
+      text2: `You selected ${user?.username || user?.name || 'a user'} for a hug.`,
+    });
+  }, []);
+
+  // Select a user as chat target and close both modals
+  const handleSelectChatTarget = React.useCallback((user: any) => {
+    if (!user) return;
+    const normalizedUser = {
+      ...user,
+      id: user?.id || user?.user_id || user?.userId || user?._id,
+    };
+    setSelectedChatTargetUser(normalizedUser);
+    setShowUserDetailModal(false);
+    setShowCheckInsModal(false);
+    Toast.show({
+      type: 'info',
+      text1: 'User Selected',
+      text2: `You selected ${user?.username || user?.name || 'a user'} to chat.`,
+    });
+  }, []);
+
+  const handleSelectAllHugTargets = React.useCallback((users: any[]) => {
+    const normalized = (users || []).map(u => ({
+      ...u,
+      id: u?.id || u?.user_id || u?.userId || u?._id,
+    })).filter(u => !!u.id);
+    setSelectedHugTargetUser(null);
+    setSelectedHugTargetUsers(normalized);
+    setShowUserDetailModal(false);
+    setShowCheckInsModal(false);
+    Toast.show({
+      type: 'info',
+      text1: 'All Users Selected',
+      text2: `You selected ${normalized.length} users for a hug.`,
+    });
   }, []);
 
   const addComment = (commentText: string) => {
@@ -423,10 +507,6 @@ export function useMoodMap() {
 
     setLocationComments(prev => [...prev, newComment]);
   };
-
-
-
-
 
   // Apply mood filter - Filter out check-ins from map display
   const applyMoodFilter = (selectedMoods: string[]) => {
@@ -524,6 +604,35 @@ export function useMoodMap() {
       }, 1000),
     []
   );
+
+  // Immediate search submit (for clickable icon)
+  const submitSearch = React.useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.warn('Permission to access location was denied');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const response = await getMapSearchResults({
+        query: searchInput,
+        lat: location.coords.latitude,
+        lng: location.coords.longitude,
+      });
+      const fetchedData = response || [];
+      const noCheckIns = fetchedData.filter((item: any) => item.type !== 'check-in');
+      setMapData(fetchedData);
+      setFilteredMapData(noCheckIns);
+      setMoodData(noCheckIns);
+    } catch (error) {
+      // swallow
+    } finally {
+      setLoading(false);
+    }
+  }, [searchInput]);
 
   const handleMoodSelection = (name: string) => {
     console.log('Handling mood selection:', name);
@@ -634,6 +743,7 @@ export function useMoodMap() {
     setMapRegion,
     callBackMapHandler,
     currentMarkedLocation,
+    setCurrentMarkedLocation,
     selectedMood,
     setSelectedMood,
     handleMoodSelection,
@@ -659,6 +769,15 @@ export function useMoodMap() {
     // Export current user data
     currentUser,
     userName,
+    submitSearch,
+    // Hug target selection
+    selectedHugTargetUser,
+    selectedHugTargetUsers,
+    handleSelectHugTarget,
+    handleSelectAllHugTargets,
+    // Chat target selection
+    selectedChatTargetUser,
+    handleSelectChatTarget,
     // Explore Bottom Sheet exports
     showExploreSheet,
     setShowExploreSheet,
@@ -677,7 +796,5 @@ export function useMoodMap() {
     isLoadingUserDetail,
     openCheckInsModal,
     handleCheckInUserPress,
-
-
   };
 }
