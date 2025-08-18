@@ -160,27 +160,20 @@ export function useMoodMap() {
       setCurrentMarkedLocation(null);
       setSelectedUserPin(null);
       
-      // Prepare location detail data for PLACE
-      const locationDetail: LocationDetail = {
-        id: location.id || Math.random().toString(),
-        name: location.name || 'Unknown Place',
-        mood: location.mood || 'Happy',
+      // Set selected user pin for map expansion
+      setSelectedUserPin({
+        ...location,
         moodEmoji: getMoodEmoji(location.mood),
-        latitude: location.latitude || 0,
-        longitude: location.longitude || 0,
-        hasLocations: true
-      };
-      
-      setSelectedLocationDetail(locationDetail);
-      loadLocationDetails(locationDetail);
-      setShowLocationDetail(true);
+        username: userData?.username || userData?.name || 'Anonymous'
+      });
       
       return; // Exit early for places
     }
     
     // NEW: For USER pins, show all users modal instead of individual user details
     if (location && location.type === 'user') {
-      console.log('👤 USER DETECTED - Showing all users modal');
+      console.log('👤 USER DETECTED - Expanding user pin on map');
+      console.log('User data:', location.user);
       
       // Extract user data from the location object
       const userData = location.user;
@@ -203,9 +196,13 @@ export function useMoodMap() {
       setCurrentMarkedLocation(null);
       setShowLocationDetail(false);
       setSelectedLocationDetail(null);
-      setSelectedUserPin(null);
       
-      // User modal functionality removed
+      // Set selected user pin for map expansion
+      setSelectedUserPin({
+        ...location,
+        moodEmoji: getMoodEmoji(location.mood),
+        username: userData?.username || userData?.name || 'Anonymous'
+      });
       
       return; // Exit early for users
     }
