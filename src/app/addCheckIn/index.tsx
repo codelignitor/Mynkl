@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   ScrollView,
+  Image,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from "./index.style";
@@ -50,13 +51,7 @@ const moods = [
 
 ];
 
-import Sad from '../../assets/svgs/sad-icon.svg';
-import Frustrated from '../../assets/svgs/frustrated.svg';
-import Grateful from '../../assets/svgs/grateful-icon.svg';
-import Happy from '../../assets/svgs/happy-icon.svg';
-import Calm from '../../assets/svgs/calm-icon.svg';
-import Stressed from '../../assets/svgs/stressed-icon.svg';
-import Lonely from '../../assets/svgs/lonely-icon.svg';
+// Replaced SVG icons with PNG images via Image component
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import AudioRecorderPlayer from "@/src/components/common/audioRecorder";
@@ -134,23 +129,7 @@ export default function AddCheckIn() {
           </View>
         )}
 
-        {/* Display current location when location is enabled but no location params */}
-        {locationOptIn && !locationName && currentLocation && (
-          <View style={styles.paramContainer}>
-            <Text style={styles.paramTitle}>Current Location:</Text>
-            <Text style={styles.paramText}>📍 Your current location</Text>
-            <Text style={styles.paramText}>Lat: {currentLocation.latitude.toFixed(6)}</Text>
-            <Text style={styles.paramText}>Lng: {currentLocation.longitude.toFixed(6)}</Text>
-          </View>
-        )}
 
-        {/* Show location permission status */}
-        {locationOptIn && !locationName && !currentLocation && !locationPermission && (
-          <View style={styles.paramContainer}>
-            <Text style={styles.paramTitle}>Location Status:</Text>
-            <Text style={styles.paramText}>📍 Requesting location permission...</Text>
-          </View>
-        )}
 
         <FlatList
           data={moods}
@@ -164,13 +143,27 @@ export default function AddCheckIn() {
               ]}
               onPress={() => setSelectedMood(item)}
             >
-              {item.label === 'Happy' && <Happy width={88} height={88} />}
-              {item.label === 'Calm' && <Calm width={93} height={93} />}
-              {item.label === 'Stressed' && <Stressed width={88} height={88} />}
-              {item.label === 'Lonely' && <Lonely width={103} height={103} />}
-              {item.label === 'Grateful' && <Grateful width={74} height={73} />}
-              {item.label === 'Sad' && <Sad width={79} height={79} />}
-              {item.label === 'Frustrated' && <Frustrated width={71} height={73} />}
+              {item.label === 'Happy' && (
+                <Image source={require('../../assets/images/happy-icon.png')} style={{ width: 88, height: 88 }} />
+              )}
+              {item.label === 'Calm' && (
+                <Image source={require('../../assets/images/calm-icon.png')} style={{ width: 93, height: 93 }} />
+              )}
+              {item.label === 'Stressed' && (
+                <Image source={require('../../assets/images/stressed-icon.png')} style={{ width: 88, height: 88 }} />
+              )}
+              {item.label === 'Lonely' && (
+                <Image source={require('../../assets/images/lonely-icon.png')} style={{ width: 103, height: 103 }} />
+              )}
+              {item.label === 'Grateful' && (
+                <Image source={require('../../assets/images/grateful-icon.png')} style={{ width: 74, height: 73 }} />
+              )}
+              {item.label === 'Sad' && (
+                <Image source={require('../../assets/images/sad-icon.png')} style={{ width: 79, height: 79 }} />
+              )}
+              {item.label === 'Frustrated' && (
+                <Image source={require('../../assets/images/frustrated.png')} style={{ width: 71, height: 73 }} />
+              )}
             </TouchableOpacity>
           )}
           contentContainerStyle={styles.moodList}

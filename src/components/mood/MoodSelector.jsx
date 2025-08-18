@@ -1,14 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { styles } from '../../screenStyles/styles';
 import SectionHeader from '../common/SectionHeader';
-import Happy from '../../assets/svgs/happy-icon.svg';
-import Calm from '../../assets/svgs/calm-icon.svg';
-import Stressed from '../../assets/svgs/stressed-icon.svg';
-import Lonely from '../../assets/svgs/lonely-icon.svg';
-import Grateful from '../../assets/svgs/grateful-icon.svg';
-import Sad from '../../assets/svgs/sad-icon.svg';
-import Frustrated from '../../assets/svgs/frustrated.svg';
 
 const MoodSelector = ({ moods, selectedMood, handleMoodSelection }) => {
   return (
@@ -30,13 +23,27 @@ const MoodSelector = ({ moods, selectedMood, handleMoodSelection }) => {
                 selectedMood === mood.id && styles.selectedMoodCircle
               ]}
             >
-              {mood.name === 'Happy' && <Happy width={78} height={78}/>}
-              {mood.name === 'Calm' && <Calm width={93} height={93}/>}
-              {mood.name === 'Stressed' && <Stressed width={83} height={83}/>}
-              {mood.name === 'Lonely' && <Lonely width={103} height={103}/>}
-              {mood.name === 'Grateful' && <Grateful width={83} height={75}/>}
-              {mood.name === 'Sad' && <Sad width={85} height={83}/>}
-              {mood.name === 'Frustrated' && <Frustrated width={68} height={75}/>}
+              {mood.name === 'Happy' && (
+                <Image source={require('../../assets/images/happy-icon.png')} style={{ width: 78, height: 78 }} />
+              )}
+              {mood.name === 'Calm' && (
+                <Image source={require('../../assets/images/calm-icon.png')} style={{ width: 93, height: 93 }} />
+              )}
+              {mood.name === 'Stressed' && (
+                <Image source={require('../../assets/images/stressed-icon.png')} style={{ width: 83, height: 83 }} />
+              )}
+              {mood.name === 'Lonely' && (
+                <Image source={require('../../assets/images/lonely-icon.png')} style={{ width: 103, height: 103 }} />
+              )}
+              {mood.name === 'Grateful' && (
+                <Image source={require('../../assets/images/grateful-icon.png')} style={{ width: 83, height: 75 }} />
+              )}
+              {mood.name === 'Sad' && (
+                <Image source={require('../../assets/images/sad-icon.png')} style={{ width: 85, height: 83 }} />
+              )}
+              {mood.name === 'Frustrated' && (
+                <Image source={require('../../assets/images/frustrated.png')} style={{ width: 68, height: 75 }} />
+              )}
             </View>
             <Text 
               numberOfLines={1}
