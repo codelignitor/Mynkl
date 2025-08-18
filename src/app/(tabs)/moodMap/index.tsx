@@ -722,6 +722,51 @@ const MoodMapScreen: React.FC = () => {
     </Modal>
   );
 
+  const renderUserPinOverlay = () => selectedUserPin && (
+    <View style={styles.userPinOverlay}>
+      <TouchableOpacity
+        style={styles.userExpandedCard}
+        onPress={() => setSelectedUserPin(null)}
+        activeOpacity={0.9}
+      >
+        <Text style={styles.userExpandedEmoji}>{selectedUserPin.moodEmoji}</Text>
+
+        <View style={styles.userExpandedInfo}>
+          <Text style={styles.userExpandedName}>
+            {selectedUserPin?.name || selectedUserPin?.username || 'Unknown User'}
+          </Text>
+          <Text style={styles.userExpandedMood}>
+            {selectedUserPin?.mood || 'Happy'}
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.userHugButton}
+          onPress={e => {
+            e.stopPropagation();
+            handleSendUserHug(selectedUserPin);
+          }}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="heart" size={16} color="#FFFFFF" />
+          <Text style={styles.userHugButtonText}>Send virtual hug</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.userChatButton}
+          onPress={e => {
+            e.stopPropagation();
+            handleStartChat(selectedUserPin);
+          }}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="chatbubble" size={16} color="#FFFFFF" />
+          <Text style={styles.userChatButtonText}>Start chat</Text>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
+  );
+
   const renderCheckInsModal = () => (
     <Modal
       visible={showCheckInsModal}
@@ -952,6 +997,7 @@ const MoodMapScreen: React.FC = () => {
       />
 
       {/* Overlays and Sections */}
+      {renderUserPinOverlay()}
       {renderActivitiesSection()}
 
       {/* Modals */}
