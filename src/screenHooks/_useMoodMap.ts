@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import debounce from 'lodash.debounce';
-import { getMapSearchResults, getLocation, getCheckIns, updatedUserProfile } from '@/src/services/apis';
+import { getMapSearchResults, getLocation, getCheckIns, updatedUserProfile, sendHug } from '@/src/services/apis';
 import * as Location from 'expo-location';
 import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
@@ -42,7 +42,7 @@ export interface User {
   email?: string;
 }
 
-export function useMoodMap() {
+export function useMoodMap(currentUserId?: string, currentUsername?: string) {
   const [hugs, setHugs] = useState<Hug[]>([]);
   const [selectedMood, setSelectedMood] = useState('');
   const [loading, setLoading] = useState<boolean>(true);
@@ -61,7 +61,7 @@ export function useMoodMap() {
 
   // Updated state for current user - will be set from location data
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userName, setUserName] = useState<string>('Anonymous');
+  const [userName, setUserName] = useState<string>(currentUsername || 'Anonymous');
 
   // New states for location detail screen
   const [showLocationDetail, setShowLocationDetail] = useState(false);
@@ -74,11 +74,18 @@ export function useMoodMap() {
 
   // New states for user pin expansion
   const [selectedUserPin, setSelectedUserPin] = useState<any>(null);
+  const [showUserFloatingSection, setShowUserFloatingSection] = useState(false);
+  
+  // Debug useEffect to monitor state changes
+  React.useEffect(() => {
+    console.log('🔍 STATE CHANGED - selectedUserPin:', selectedUserPin);
+    console.log('🔍 STATE CHANGED - showUserFloatingSection:', showUserFloatingSection);
+  }, [selectedUserPin, showUserFloatingSection]);
 
   // Selected users to receive a directed hug
   const [selectedHugTargetUser, setSelectedHugTargetUser] = useState<any | null>(null);
   const [selectedHugTargetUsers, setSelectedHugTargetUsers] = useState<any[]>([]);
-  // Selected user to start chat (Open to Talk)
+  // Selected user to start chat (Open to Talk) - functionality removed
   const [selectedChatTargetUser, setSelectedChatTargetUser] = useState<any | null>(null);
 
   // Explore Bottom Sheet State
@@ -149,8 +156,10 @@ export function useMoodMap() {
   };
 
   const callBackMapHandler = (location: any) => {
+    console.log('🔍 CALLBACK MAP HANDLER CALLED');
     console.log('Current Marked Location:', location);
     console.log('Location Type:', location?.type);
+    console.log('Full Location Object:', JSON.stringify(location, null, 2));
     
     // CRUCIAL: Only show new screen if mood-pin is a PLACE
     if (location && location.type === 'place') {
@@ -160,52 +169,96 @@ export function useMoodMap() {
       setCurrentMarkedLocation(null);
       setSelectedUserPin(null);
       
-      // Set selected user pin for map expansion
-      setSelectedUserPin({
-        ...location,
+      // Prepare location detail data for PLACE
+      const locationDetail: LocationDetail = {
+        id: location.id || Math.random().toString(),
+        name: location.name || 'Unknown Place',
+        mood: location.mood || 'Happy',
         moodEmoji: getMoodEmoji(location.mood),
-        username: userData?.username || userData?.name || 'Anonymous'
-      });
+        latitude: location.latitude || 0,
+        longitude: location.longitude || 0,
+        hasLocations: true
+      };
+      
+      setSelectedLocationDetail(locationDetail);
+      loadLocationDetails(locationDetail);
+      setShowLocationDetail(true);
       
       return; // Exit early for places
     }
     
-    // NEW: For USER pins, show all users modal instead of individual user details
-    if (location && location.type === 'user') {
-      console.log('👤 USER DETECTED - Expanding user pin on map');
-      console.log('User data:', location.user);
-      
-      // Extract user data from the location object
-      const userData = location.user;
-      if (userData) {
-        const user: User = {
-          id: userData.id,
-          username: userData.username,
-          name: userData.name,
-          email: userData.email
-        };
+              // NEW: For USER pins, show floating user section
+      if (location && location.type === 'user') {
+        console.log('👤 USER DETECTED - Showing floating user section');
+        console.log('User Data:', location.user);
         
-        // Set current user from the location data
-        setCurrentUser(user);
-        setUserName(userData.username || userData.name || 'Anonymous');
+        // Extract user data from the location object
+        const userData = location.user;
+        if (userData) {
+          // Normalize user data to ensure proper ID field for hug API
+          const normalizedUserData = {
+            ...userData,
+            id: userData.id || userData.user_id || userData.userId || userData._id || Math.random().toString(),
+          };
+          
+          const user: User = {
+            id: normalizedUserData.id,
+            username: normalizedUserData.username,
+            name: normalizedUserData.name,
+            email: normalizedUserData.email
+          };
+          
+          // Set current user from the location data
+          setCurrentUser(user);
+          setUserName(userData.username || userData.name || 'Anonymous');
+          setSelectedUserPin(normalizedUserData); // Use normalized data
+          setShowUserFloatingSection(true);
+          
+          console.log('Set userName to:', userData.username || userData.name || 'Anonymous');
+          console.log('✅ User pin overlay should now be visible');
+          console.log('Selected User Pin (normalized):', normalizedUserData);
+          console.log('Show User Floating Section:', true);
+        } else {
+          console.log('❌ No user data found in location.user');
+        }
         
-        console.log('Set userName to:', userData.username || userData.name || 'Anonymous');
+        // Clear everything else
+        setCurrentMarkedLocation(null);
+        setShowLocationDetail(false);
+        setSelectedLocationDetail(null);
+        
+        return; // Exit early for users
       }
-      
-      // Clear everything else
-      setCurrentMarkedLocation(null);
-      setShowLocationDetail(false);
-      setSelectedLocationDetail(null);
-      
-      // Set selected user pin for map expansion
-      setSelectedUserPin({
-        ...location,
-        moodEmoji: getMoodEmoji(location.mood),
-        username: userData?.username || userData?.name || 'Anonymous'
-      });
-      
-      return; // Exit early for users
-    }
+    
+         // Alternative user pin detection - check if location has user properties directly
+     if (location && (location.username || location.name) && !location.type) {
+       console.log('👤 ALTERNATIVE USER DETECTED - Location has user properties');
+       console.log('Alternative User Data:', location);
+       
+       // Create user data from the location itself with proper normalization
+       const userData = {
+         ...location, // Include all original properties
+         id: location.id || location.user_id || location.userId || location._id || Math.random().toString(),
+         username: location.username,
+         name: location.name,
+         email: location.email,
+         mood: location.mood || 'happy'
+       };
+       
+       setSelectedUserPin(userData);
+       setShowUserFloatingSection(true);
+       
+       console.log('✅ Alternative user pin overlay should now be visible');
+       console.log('Alternative Selected User Pin (normalized):', userData);
+       console.log('Alternative Show User Floating Section:', true);
+       
+       // Clear everything else
+       setCurrentMarkedLocation(null);
+       setShowLocationDetail(false);
+       setSelectedLocationDetail(null);
+       
+       return; // Exit early for alternative users
+     }
     
     // For ALL OTHER types (events, etc.), use existing bottom sheet
     console.log(`🔄 Type (${location?.type}) - Using existing bottom sheet`);
@@ -346,30 +399,59 @@ export function useMoodMap() {
   };
 
   const handleOpenToTalk = () => {
-    // If a chat target is selected, start a chat with that user
-    if (selectedChatTargetUser) {
-      handleStartChat(selectedChatTargetUser);
-      setSelectedChatTargetUser(null);
-      return;
-    }
-
-    if (!selectedLocationDetail) return;
-
-    Toast.show({
-      type: 'info',
-      text1: 'Open to Talk',
-      text2: `${userName} is now marked as open to talk!`,
-    });
+    // Functionality removed - keeping function for UI compatibility only
   };
 
   const handleSendUserHug = async (user: any) => {
     try {
       const targetUserName = user?.username || user?.name || 'Unknown User';
-      console.log('Sending hug to user:', targetUserName);
+      const targetUserId = user?.id || user?.user_id || user?.userId || user?._id;
       
+      console.log('🔍 Sending hug to user:', targetUserName, 'with ID:', targetUserId);
+      console.log('🔍 Current user (userName):', userName);
+      console.log('🔍 Current user (from hook param):', currentUsername);
+      
+      // Validate user ID before sending
+      if (!targetUserId || targetUserId === 'unknown-id') {
+        throw new Error('Invalid user ID');
+      }
+      
+      // Check if user ID is a valid UUID format
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(targetUserId)) {
+        console.warn('User ID is not in UUID format:', targetUserId);
+        // Continue anyway as the API might accept other formats
+      }
+      
+      // Call the actual virtual hug API with correct payload structure
+      // Try a simplified payload first to identify the issue
+      const payload = {
+        receiver_id: targetUserId,
+        message: `${userName} sent you a virtual hug! 🤗`,
+        hug_type: 'Calm Hug',
+        ai_choice: true,
+        emoji: '🤗',
+        receiver_type: 'Community'
+      };
+      
+      console.log('Sending hug payload:', payload);
+      
+      try {
+        const response = await sendHug(payload);
+        console.log('Virtual hug API response:', response);
+      } catch (apiError: any) {
+        console.error('API Error Details:', {
+          status: apiError.response?.status,
+          data: apiError.response?.data,
+          message: apiError.message
+        });
+        throw apiError;
+      }
+      
+      // Create local hug object for UI
       const newHug: Hug = {
         id: Math.random().toString(),
-        sender: userName, // Using dynamic username
+        sender: userName,
         message: `${userName} sent a virtual hug to ${targetUserName}`,
         timestamp: Date.now()
       };
@@ -382,30 +464,29 @@ export function useMoodMap() {
         text2: `${userName} sent a hug to ${targetUserName}`,
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending user hug:', error);
+      console.error('Error response data:', error.response?.data);
+      console.error('Error response status:', error.response?.status);
+      
+      // Show more specific error message
+      let errorMessage = 'Please try again later.';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.status === 422) {
+        errorMessage = 'Invalid request format. Please check the data.';
+      }
+      
       Toast.show({
         type: 'error',
         text1: 'Failed to Send Hug',
-        text2: 'Please try again later.',
+        text2: errorMessage,
       });
     }
   };
 
   const handleStartChat = (user: any) => {
-    const targetUserName = user?.username || user?.name || 'Unknown User';
-    const userId = user?.id || user?.user_id;
-    
-    // Navigate to chat and auto-open direct channel with userId
-    if (userId) {
-      router.push({ pathname: '/chat', params: { targetUserId: userId } });
-    } else {
-      Toast.show({
-        type: 'error',
-        text1: 'Chat Error',
-        text2: 'Unable to resolve user id for chat.',
-      });
-    }
+    // Functionality removed - keeping function for UI compatibility only
   };
 
   // ===== Check-ins and User Details Modal Logic =====
@@ -415,9 +496,7 @@ export function useMoodMap() {
   const [isLoadingUserDetail, setIsLoadingUserDetail] = useState(false);
 
   const openCheckInsModal = React.useCallback((hasCheckIns: boolean) => {
-    if (hasCheckIns) {
-      setShowCheckInsModal(true);
-    }
+    setShowCheckInsModal(true);
   }, []);
 
   const handleCheckInUserPress = React.useCallback(async (userId?: string) => {
@@ -439,58 +518,147 @@ export function useMoodMap() {
     }
   }, []);
 
-  const handleSelectHugTarget = React.useCallback((user: any) => {
-    if (!user) return;
-    // Persist a version that includes an id field
-    const normalizedUser = {
-      ...user,
-      id: user?.id || user?.user_id || user?.userId || user?._id,
-    };
-    setSelectedHugTargetUser(normalizedUser);
-    setSelectedHugTargetUsers([normalizedUser]);
-    // Close both modals as requested
-    setShowUserDetailModal(false);
-    setShowCheckInsModal(false);
-    // Optional: feedback
-    Toast.show({
-      type: 'info',
-      text1: 'User Selected',
-      text2: `You selected ${user?.username || user?.name || 'a user'} for a hug.`,
-    });
-  }, []);
+  const handleSelectHugTarget = React.useCallback(async (user: any) => {
+    console.log('🔍 handleSelectHugTarget called with user:', user);
+    
+    if (!user) {
+      console.log('❌ No user provided to handleSelectHugTarget');
+      return;
+    }
+    
+    try {
+      // Normalize user data
+      const normalizedUser = {
+        ...user,
+        id: user?.id || user?.user_id || user?.userId || user?._id,
+      };
+      
+      console.log('🔍 Normalized user for hug:', normalizedUser);
+      console.log('🔍 User ID for hug API:', normalizedUser.id);
+      
+      // Send the virtual hug immediately
+      await handleSendUserHug(normalizedUser);
+      
+      // Close both modals
+      setShowUserDetailModal(false);
+      setShowCheckInsModal(false);
+      
+      // Clear the selected users since hug was sent
+      setSelectedHugTargetUser(null);
+      setSelectedHugTargetUsers([]);
+      
+      console.log('✅ Hug sent successfully to user:', normalizedUser.username || normalizedUser.name);
+      
+    } catch (error) {
+      console.error('❌ Error sending hug:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to Send Hug',
+        text2: 'Please try again later.',
+      });
+    }
+  }, [handleSendUserHug]);
 
   // Select a user as chat target and close both modals
   const handleSelectChatTarget = React.useCallback((user: any) => {
-    if (!user) return;
-    const normalizedUser = {
-      ...user,
-      id: user?.id || user?.user_id || user?.userId || user?._id,
-    };
-    setSelectedChatTargetUser(normalizedUser);
-    setShowUserDetailModal(false);
-    setShowCheckInsModal(false);
-    Toast.show({
-      type: 'info',
-      text1: 'User Selected',
-      text2: `You selected ${user?.username || user?.name || 'a user'} to chat.`,
-    });
+    console.log('🔍 handleSelectChatTarget called with user:', user);
+    
+    if (!user) {
+      console.log('❌ No user provided to handleSelectChatTarget');
+      return;
+    }
+    
+    try {
+      // Normalize user data
+      const normalizedUser = {
+        ...user,
+        id: user?.id || user?.user_id || user?.userId || user?._id,
+      };
+      
+      console.log('🔍 Normalized user:', normalizedUser);
+      
+      // Set the selected chat user
+      setSelectedChatTargetUser(normalizedUser);
+      
+      // Navigate to chat screen with the selected user
+      const targetUserName = normalizedUser.username || normalizedUser.name || 'Unknown User';
+      const userId = normalizedUser.id;
+      
+      console.log('🔍 Chat target - UserName:', targetUserName, 'UserId:', userId);
+      
+      // Navigate to chat and auto-open direct channel with userId and userName
+      if (userId) {
+        console.log('✅ Navigating to chat with:', { targetUserId: userId, targetUserName });
+        router.push({ 
+          pathname: '/chat', 
+          params: { 
+            targetUserId: userId,
+            targetUserName: targetUserName
+          } 
+        });
+      } else {
+        console.log('❌ No valid userId found for chat');
+        Toast.show({
+          type: 'error',
+          text1: 'Chat Error',
+          text2: 'Unable to resolve user id for chat.',
+        });
+      }
+      
+      // Close both modals
+      setShowUserDetailModal(false);
+      setShowCheckInsModal(false);
+      
+      // Clear the selected users since chat was started
+      setSelectedChatTargetUser(null);
+      
+    } catch (error) {
+      console.error('❌ Error starting chat:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to Start Chat',
+        text2: 'Please try again later.',
+      });
+    }
   }, []);
 
-  const handleSelectAllHugTargets = React.useCallback((users: any[]) => {
-    const normalized = (users || []).map(u => ({
-      ...u,
-      id: u?.id || u?.user_id || u?.userId || u?._id,
-    })).filter(u => !!u.id);
-    setSelectedHugTargetUser(null);
-    setSelectedHugTargetUsers(normalized);
-    setShowUserDetailModal(false);
-    setShowCheckInsModal(false);
-    Toast.show({
-      type: 'info',
-      text1: 'All Users Selected',
-      text2: `You selected ${normalized.length} users for a hug.`,
-    });
-  }, []);
+  const handleSelectAllHugTargets = React.useCallback(async (users: any[]) => {
+    if (!users || users.length === 0) return;
+    
+    try {
+      const normalized = (users || []).map(u => ({
+        ...u,
+        id: u?.id || u?.user_id || u?.userId || u?._id,
+      })).filter(u => !!u.id);
+      
+      // Send hugs to all selected users
+      for (const user of normalized) {
+        await handleSendUserHug(user);
+      }
+      
+      // Close both modals
+      setShowUserDetailModal(false);
+      setShowCheckInsModal(false);
+      
+      // Clear the selected users since hugs were sent
+      setSelectedHugTargetUser(null);
+      setSelectedHugTargetUsers([]);
+      
+      Toast.show({
+        type: 'success',
+        text1: 'Hugs Sent! 🤗',
+        text2: `Successfully sent hugs to ${normalized.length} users.`,
+      });
+      
+    } catch (error) {
+      console.error('Error sending hugs to all users:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to Send Hugs',
+        text2: 'Please try again later.',
+      });
+    }
+  }, [handleSendUserHug]);
 
   const addComment = (commentText: string) => {
     if (!commentText.trim() || !selectedLocationDetail) return;
@@ -730,6 +898,14 @@ export function useMoodMap() {
   //   console.log('Mood data updated:', moodData.length, 'items');
   // }, [moodData]);
 
+  // Update userName when current user information changes
+  useEffect(() => {
+    if (currentUsername) {
+      setUserName(currentUsername);
+      console.log('🔍 Updated userName to:', currentUsername);
+    }
+  }, [currentUsername]);
+
   return {
     hugs,
     loading,
@@ -758,9 +934,11 @@ export function useMoodMap() {
     handleOpenToTalk,
     addComment,
     refreshLocationDetails,
-    // New exports for user pin expansion
-    selectedUserPin,
-    setSelectedUserPin,
+         // New exports for user pin expansion
+     selectedUserPin,
+     setSelectedUserPin,
+     showUserFloatingSection,
+     setShowUserFloatingSection,
     handleSendUserHug,
     handleStartChat,
     // Export current user data

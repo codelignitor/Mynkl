@@ -902,8 +902,79 @@ export const styles = StyleSheet.create({
         fontSize: 17,
         letterSpacing: 0.2,
     },
-    
 
-
-
+    // ========== USER FLOATING SECTION STYLES ==========
+    userFloatingSection: {
+        position: 'absolute',
+        top: 120,
+        left: 16,
+        right: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 8,
+        zIndex: 1000,
+    },
+    userFloatingHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    userMoodIcon: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#FFD700',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    userMoodEmoji: {
+        fontSize: 24,
+    },
+    userInfo: {
+        flex: 1,
+    },
+    userName: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 4,
+    },
+    userMood: {
+        fontSize: 16,
+        color: '#666',
+    },
+    userActionButtons: {
+        gap: 12,
+    },
+    buttonText: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginLeft: 8,
+    },
+    startChatButton: {
+        backgroundColor: '#F5F5F5',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    closeUserSection: {
+        position: 'absolute',
+        top: 12,
+        right: 12,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#F5F5F5',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });

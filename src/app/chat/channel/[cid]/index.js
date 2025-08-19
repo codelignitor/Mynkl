@@ -47,9 +47,46 @@ export default function ChannelScreen() {
   const currentUser = client.user;
 
   const CustomChannelHeader = () => {
-    const { channel } = useChannelContext();
-    const moodTitle = channel?.data?.name || "Feeling Lonely";
-    const memberKeys = channel?.state?.members ? Object.keys(channel.state.members) : [];
+    const { channel: contextChannel } = useChannelContext();
+    
+    // Use the channel from context if available, otherwise fall back to the main channel
+    const channelToUse = contextChannel || channel;
+    
+    console.log('🔍 Main channel:', channel?.id);
+    console.log('🔍 Context channel:', contextChannel?.id);
+    console.log('🔍 Channel to use:', channelToUse?.id);
+    
+    // Debug logging to see what's in the channel data
+    console.log('🔍 Channel data:', channelToUse?.data);
+    console.log('🔍 Channel extraData:', channelToUse?.extraData);
+    console.log('🔍 Channel type:', channelToUse?.data?.channelType || channelToUse?.extraData?.channelType);
+    console.log('🔍 Target user name:', channelToUse?.data?.targetUserName || channelToUse?.extraData?.targetUserName);
+    console.log('🔍 Channel name:', channelToUse?.data?.name);
+    console.log('🔍 Current user:', currentUser?.name || currentUser?.id);
+    console.log('🔍 Channel members:', Object.keys(channelToUse?.state?.members || {}));
+    
+    // Use the channel name if it's a direct chat, otherwise fallback to mood title
+    let channelTitle = "Feeling Lonely";
+    
+    // Check multiple sources for the target user name
+    const targetUserName = channelToUse?.data?.targetUserName || channelToUse?.extraData?.targetUserName;
+    const channelType = channelToUse?.data?.channelType || channelToUse?.extraData?.channelType;
+    const channelName = channelToUse?.data?.name;
+    
+    if (channelType === 'direct') {
+      // For direct chats, try to get the target user's name
+      if (targetUserName) {
+        channelTitle = `Chat with ${targetUserName}`;
+      } else if (channelName) {
+        channelTitle = channelName;
+      } else {
+        channelTitle = "Chat with User";
+      }
+    } else if (channelName) {
+      // For other channel types, use the channel name
+      channelTitle = channelName;
+    }
+    const memberKeys = channelToUse?.state?.members ? Object.keys(channelToUse.state.members) : [];
     const onlineCount = memberKeys.length;
 
     return (
@@ -86,34 +123,43 @@ export default function ChannelScreen() {
                   marginLeft: 10,
                 }}
               >
-                {moodTitle}
+                {channelTitle}
               </Text>
 
-              {currentUser && (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginTop: 6,
-                    marginLeft: 10,
-                  }}
-                >
-                  <Image
-                    source={{ uri: currentUser.image || "https://placehold.co/48x48" }}
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 18,
-                      marginRight: 8,
-                      borderWidth: 1,
-                      borderColor: "#fff",
-                    }}
-                  />
-                  <Text style={{ color: "white", fontSize: 16 }}>
-                    {currentUser.name || currentUser.id}
-                  </Text>
-                </View>
-              )}
+              {/* Show target user info instead of current user */}
+              {(() => {
+                const targetUserName = channelToUse?.data?.targetUserName || channelToUse?.extraData?.targetUserName;
+                const targetUserId = channelToUse?.data?.targetUserId || channelToUse?.extraData?.targetUserId;
+                
+                if (targetUserName && targetUserName !== 'User') {
+                  return (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginTop: 6,
+                        marginLeft: 10,
+                      }}
+                    >
+                      <Image
+                        source={{ uri: "https://placehold.co/48x48" }}
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 18,
+                          marginRight: 8,
+                          borderWidth: 1,
+                          borderColor: "#fff",
+                        }}
+                      />
+                      <Text style={{ color: "white", fontSize: 16 }}>
+                        {targetUserName}
+                      </Text>
+                    </View>
+                  );
+                }
+                return null;
+              })()}
             </View>
           </View>
         </View>

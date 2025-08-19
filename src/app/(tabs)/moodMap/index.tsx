@@ -20,6 +20,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Location from 'expo-location';
 import { router, useFocusEffect } from 'expo-router';
 import { submitComments, getComments, updatedUserProfile } from '@/src/services/apis';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../../store';
+import Toast from 'react-native-toast-message';
 
 // Import PNG images instead of SVG components
 const HappyIcon = require('../../../assets/images/happy-icon.png');
@@ -58,6 +61,12 @@ const makeCommentId = (content: string, locationKey: string) => {
 };
 
 const MoodMapScreen: React.FC = () => {
+  // Get current authenticated user from Redux store
+  const { user_id, username, isUserLoggedIn } = useSelector((state: RootState) => state.auth);
+  
+  // Debug logging for current user
+  // console.log('🔍 Current user from Redux:', { user_id, username, isUserLoggedIn });
+  
   // Custom hook state
   const {
     searchInput,
@@ -78,13 +87,14 @@ const MoodMapScreen: React.FC = () => {
     selectedLocationDetail,
     locationCheckIns,
     locationComments,
-    handleCheckIn,
-    handleSendHug,
-    handleOpenToTalk,
-    addComment,
+         handleCheckIn,
+     handleSendHug,
+     addComment,
     refreshLocationDetails,
-    selectedUserPin,
-    setSelectedUserPin,
+         selectedUserPin,
+     setSelectedUserPin,
+     showUserFloatingSection,
+     setShowUserFloatingSection,
     handleSendUserHug,
     handleStartChat,
     selectedHugTargetUser,
@@ -102,15 +112,14 @@ const MoodMapScreen: React.FC = () => {
     // From hook: check-ins modals and user details
     showCheckInsModal,
     setShowCheckInsModal,
-    showUserDetailModal,
-    setShowUserDetailModal,
-    selectedUserDetail,
-    isLoadingUserDetail,
-    openCheckInsModal,
-    handleCheckInUserPress,
+         showUserDetailModal,
+     setShowUserDetailModal,
+     selectedUserDetail,
+     isLoadingUserDetail,
+     handleCheckInUserPress,
 
 
-  } = useMoodMap();
+  } = useMoodMap(user_id || undefined, username || undefined);
 
   // Local state
   const [showFilterModal, setShowFilterModal] = React.useState(false);
@@ -119,7 +128,10 @@ const MoodMapScreen: React.FC = () => {
   const [isSubmittingComment, setIsSubmittingComment] = React.useState(false);
   const [fetchedComments, setFetchedComments] = React.useState<any[]>([]);
   const [isLoadingComments, setIsLoadingComments] = React.useState(false);
-  const [showSelectUserButton, setShowSelectUserButton] = React.useState(false);
+     const [showSelectUserButton, setShowSelectUserButton] = React.useState(false);
+   const [checkInsForModal, setCheckInsForModal] = React.useState<any[]>([]);
+   const [isCheckInsForHugs, setIsCheckInsForHugs] = React.useState(false);
+   const [selectedUserForChat, setSelectedUserForChat] = React.useState<any>(null);
 
   // Refresh location details when returning from addCheckIn screen
   useFocusEffect(
@@ -207,7 +219,7 @@ const MoodMapScreen: React.FC = () => {
               type: 'comment',
               content: comment,
               id: makeCommentId(comment, locationKey),
-              userId: 'anon'
+              userId: user_id || 'anonymous'
             })),
             ...checkInDetails.map((checkIn: { text?: string; mood: string; timestamp: string; user_id: string }) => ({
               type: 'checkin',
@@ -226,7 +238,7 @@ const MoodMapScreen: React.FC = () => {
             type: 'comment',
             content: typeof comment === 'string' ? comment : comment?.comments || '',
             id: makeCommentId(typeof comment === 'string' ? comment : comment?.comments || '', locationKey),
-            userId: 'anon'
+            userId: user_id || 'anonymous'
           }));
           setFetchedComments(normalized);
         }
@@ -260,14 +272,14 @@ const MoodMapScreen: React.FC = () => {
     // Add small delay to prevent rapid API calls during development
     const timeoutId = setTimeout(fetchCommentsForLocation, 500);
     return () => clearTimeout(timeoutId);
-  }, [selectedLocationDetail?.latitude, selectedLocationDetail?.longitude, mapRegion.latitude, mapRegion.longitude]);
+  }, [selectedLocationDetail?.latitude, selectedLocationDetail?.longitude, mapRegion.latitude, mapRegion.longitude, user_id]);
 
   // Derived check-ins list for current location
   const currentCheckIns = React.useMemo(() => {
     return fetchedComments.filter(item => item.type === 'checkin');
   }, [fetchedComments]);
 
-  const openCheckInsSheet = React.useCallback(() => openCheckInsModal(currentCheckIns.length > 0), [currentCheckIns.length, openCheckInsModal]);
+
 
   // Initialize location
   React.useEffect(() => {
@@ -337,6 +349,12 @@ const MoodMapScreen: React.FC = () => {
       }
       return;
     }
+    
+    // Check if user is authenticated
+    if (!isUserLoggedIn || !user_id) {
+      Alert.alert('Authentication Required', 'Please log in to post comments.');
+      return;
+    }
 
     setIsSubmittingComment(true);
 
@@ -346,7 +364,8 @@ const MoodMapScreen: React.FC = () => {
         name: selectedLocationDetail.name,
         latitude: selectedLocationDetail.latitude || mapRegion.latitude,
         longitude: selectedLocationDetail.longitude || mapRegion.longitude,
-        comments: trimmedComment
+        comments: trimmedComment,
+        user_id: user_id // Include the authenticated user ID
       };
 
       // console.log('Submitting comment with payload:', payload);
@@ -362,7 +381,7 @@ const MoodMapScreen: React.FC = () => {
         type: 'comment',
         content: trimmedComment,
         id: makeCommentId(trimmedComment, locationKey),
-        userId: 'me'
+        userId: user_id || 'anonymous'
       } as const;
       setFetchedComments(prev => [...prev, newCommentObj]);
 
@@ -376,7 +395,7 @@ const MoodMapScreen: React.FC = () => {
     } finally {
       setIsSubmittingComment(false);
     }
-  }, [newComment, selectedLocationDetail, selectedMood, mapRegion, addComment]);
+  }, [newComment, selectedLocationDetail, selectedMood, mapRegion, addComment, isUserLoggedIn, user_id]);
 
   // Function to manually refresh comments for debugging
   const refreshComments = React.useCallback(async () => {
@@ -409,7 +428,7 @@ const MoodMapScreen: React.FC = () => {
             type: 'comment',
             content: comment,
             id: makeCommentId(comment, locationKey),
-            userId: 'anon'
+            userId: user_id || 'anonymous'
           })),
           ...checkInDetails.map((checkIn: { text?: string; mood: string; timestamp: string; user_id: string }) => ({
             type: 'checkin',
@@ -428,7 +447,7 @@ const MoodMapScreen: React.FC = () => {
           type: 'comment',
           content: typeof comment === 'string' ? comment : comment?.comments || '',
           id: makeCommentId(typeof comment === 'string' ? comment : comment?.comments || '', locationKey),
-          userId: 'anon'
+          userId: user_id || 'anonymous'
         }));
         setFetchedComments(normalized);
       }
@@ -439,7 +458,7 @@ const MoodMapScreen: React.FC = () => {
     } finally {
       setIsLoadingComments(false);
     }
-  }, [selectedLocationDetail?.latitude, selectedLocationDetail?.longitude, mapRegion.latitude, mapRegion.longitude]);
+  }, [selectedLocationDetail?.latitude, selectedLocationDetail?.longitude, mapRegion.latitude, mapRegion.longitude, user_id]);
 
   // Optimized render functions
   const renderMoodFilterButton = React.useCallback((mood: typeof MOOD_FILTER_OPTIONS[0]) => {
@@ -580,23 +599,21 @@ const MoodMapScreen: React.FC = () => {
                 </Text>
               </View>
 
-              <TouchableOpacity onPress={openCheckInsSheet} activeOpacity={0.8}>
-                <View style={styles.checkInInfo}>
-                  <Text style={styles.checkInText}>
-                    Check-ins: {currentCheckIns.length} in the last hour
-                  </Text>
-                  <Text style={styles.checkInBreakdown}>
-                    → {(() => {
-                      if (currentCheckIns.length > 0) {
-                        const moods = currentCheckIns.map(checkIn => checkIn.mood || 'Happy');
-                        const uniqueMoods = [...new Set(moods)];
-                        return `Recent: ${uniqueMoods.join(', ')}`;
-                      }
-                      return 'No recent check-ins';
-                    })()}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+              <View style={styles.checkInInfo}>
+                <Text style={styles.checkInText}>
+                  Check-ins: {currentCheckIns.length} in the last hour
+                </Text>
+                <Text style={styles.checkInBreakdown}>
+                  → {(() => {
+                    if (currentCheckIns.length > 0) {
+                      const moods = currentCheckIns.map(checkIn => checkIn.mood || 'Happy');
+                      const uniqueMoods = [...new Set(moods)];
+                      return `Recent: ${uniqueMoods.join(', ')}`;
+                    }
+                    return 'No recent check-ins';
+                  })()}
+                </Text>
+              </View>
             </View>
 
             {/* Virtual Hugs Card */}
@@ -606,15 +623,55 @@ const MoodMapScreen: React.FC = () => {
                 <Text style={styles.virtualHugsTitle}>Virtual Hugs</Text>
               </View>
               <Text style={styles.virtualHugsDesc}>
-                Send a group hug to everyone checked in here
+                Send hugs or find users to start conversations
               </Text>
               <View style={styles.hugButtonRow}>
-                <TouchableOpacity style={styles.sendHugButton} onPress={handleSendHug}>
-                  <Text style={styles.sendHugButtonText}>Send a hug</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.openToTalkButton} onPress={handleOpenToTalk}>
-                  <Text style={styles.openToTalkButtonText}>Open to Talk</Text>
-                </TouchableOpacity>
+                                 <TouchableOpacity style={styles.sendHugButton} onPress={() => {
+                   // Check if user is authenticated
+                   if (!isUserLoggedIn || !user_id) {
+                     Alert.alert('Authentication Required', 'Please log in to send hugs.');
+                     return;
+                   }
+                   
+                   // Store the current check-ins data before closing the modal
+                   const checkInsToShow = [...currentCheckIns];
+                   setCheckInsForModal(checkInsToShow);
+                   // Set flag to indicate this is for sending hugs only
+                   setIsCheckInsForHugs(true);
+                   setShowCheckInsModal(true);
+                   // Close the location detail modal
+                   setShowLocationDetail(false);
+                   // Clear comments when modal closes to prevent showing wrong comments
+                   setFetchedComments([]);
+                   setNewComment('');
+                 }}>
+                   <Text style={styles.sendHugButtonText}>Send a hug</Text>
+                 </TouchableOpacity>
+                                 <TouchableOpacity style={styles.openToTalkButton} onPress={() => {
+                   console.log('🔍 Open to Talk button pressed');
+                   console.log('🔍 Current check-ins:', currentCheckIns);
+                   
+                   // Check if user is authenticated
+                   if (!isUserLoggedIn || !user_id) {
+                     Alert.alert('Authentication Required', 'Please log in to start conversations.');
+                     return;
+                   }
+                   
+                   // Store the current check-ins data before closing the modal
+                   const checkInsToShow = [...currentCheckIns];
+                   console.log('🔍 Setting check-ins for modal:', checkInsToShow);
+                   setCheckInsForModal(checkInsToShow);
+                   // Set flag to indicate this is for Open to Talk (not hugs)
+                   setIsCheckInsForHugs(false);
+                   setShowCheckInsModal(true);
+                   // Close the location detail modal
+                   setShowLocationDetail(false);
+                   // Clear comments when modal closes to prevent showing wrong comments
+                   setFetchedComments([]);
+                   setNewComment('');
+                 }}>
+                   <Text style={styles.openToTalkButtonText}>Open To Talk</Text>
+                 </TouchableOpacity>
               </View>
             </View>
 
@@ -722,86 +779,75 @@ const MoodMapScreen: React.FC = () => {
     </Modal>
   );
 
-  const renderUserPinOverlay = () => selectedUserPin && (
-    <View style={styles.userPinOverlay}>
-      <TouchableOpacity
-        style={styles.userExpandedCard}
-        onPress={() => setSelectedUserPin(null)}
-        activeOpacity={0.9}
-      >
-        <Text style={styles.userExpandedEmoji}>{selectedUserPin.moodEmoji}</Text>
-
-        <View style={styles.userExpandedInfo}>
-          <Text style={styles.userExpandedName}>
-            {selectedUserPin?.name || selectedUserPin?.username || 'Unknown User'}
-          </Text>
-          <Text style={styles.userExpandedMood}>
-            {selectedUserPin?.mood || 'Happy'}
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          style={styles.userHugButton}
-          onPress={e => {
-            e.stopPropagation();
-            handleSendUserHug(selectedUserPin);
-          }}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="heart" size={16} color="#FFFFFF" />
-          <Text style={styles.userHugButtonText}>Send virtual hug</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.userChatButton}
-          onPress={e => {
-            e.stopPropagation();
-            handleStartChat(selectedUserPin);
-          }}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="chatbubble" size={16} color="#FFFFFF" />
-          <Text style={styles.userChatButtonText}>Start chat</Text>
-        </TouchableOpacity>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderCheckInsModal = () => (
+  
+    const renderCheckInsModal = () => (
     <Modal
       visible={showCheckInsModal}
       animationType="slide"
       presentationStyle="pageSheet"
-      onRequestClose={() => setShowCheckInsModal(false)}
+             onRequestClose={() => {
+         setShowCheckInsModal(false);
+         setCheckInsForModal([]); // Clear stored check-ins data
+         setIsCheckInsForHugs(false); // Reset the flag
+         setSelectedUserForChat(null); // Reset selected user for chat
+         setShowSelectUserButton(false); // Reset button visibility
+       }}
     >
       <SafeAreaView style={styles.locationDetailContainer}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <View style={styles.locationDetailHeader}>
-          <TouchableOpacity onPress={() => setShowCheckInsModal(false)} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
-          </TouchableOpacity>
-          <Text style={styles.locationDetailTitle}>Recent Check-ins</Text>
+                                     <TouchableOpacity onPress={() => {
+           setShowCheckInsModal(false);
+           setCheckInsForModal([]); // Clear stored check-ins data
+           setIsCheckInsForHugs(false); // Reset the flag
+           setSelectedUserForChat(null); // Reset selected user for chat
+           setShowSelectUserButton(false); // Reset button visibility
+         }} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color="#000" />
+        </TouchableOpacity>
+                                           <Text style={styles.locationDetailTitle}>
+              {isCheckInsForHugs ? 'Send Hugs to Users' : 'Users to Chat With'}
+            </Text>
         </View>
         <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
-          {currentCheckIns.length === 0 ? (
+          {checkInsForModal.length === 0 ? (
             <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
-              No recent check-ins
+              No users have checked in here recently
             </Text>
           ) : (
             <View>
-              {currentCheckIns.map((ci, idx) => (
+              {checkInsForModal.map((ci, idx) => (
                 <TouchableOpacity
                   key={`${ci.userId || 'user'}_${idx}`}
                   style={styles.commentItem}
-                  onPress={() => handleCheckInUserPress(ci.userId)}
+                  onPress={() => {
+                    console.log('🔍 User tapped in check-ins modal:', ci);
+                    console.log('🔍 isCheckInsForHugs:', isCheckInsForHugs);
+                    
+                                         if (isCheckInsForHugs) {
+                       // For hugs: close modal and open user details
+                       console.log('🔍 Opening user details for hugs');
+                       setShowCheckInsModal(false);
+                       handleCheckInUserPress(ci.userId);
+                     } else {
+                       // For chat: close modal and open user details (same as hugs)
+                       console.log('🔍 Opening user details for chat');
+                       setShowCheckInsModal(false);
+                       handleCheckInUserPress(ci.userId);
+                     }
+                  }}
                   activeOpacity={0.8}
                 >
                   <Text style={styles.commentText}>
-                    {`${ci.mood ? ci.mood.charAt(0).toUpperCase() + ci.mood.slice(1) : 'Happy'} • ${ci.timestamp || ''}`}
+                    {`${ci.mood ? ci.mood.charAt(0).toUpperCase() + ci.mood.slice(1) : 'Happy'} `}
                   </Text>
-                  <Text style={{ fontSize: 12, color: '#888', marginTop: 4 }}>Tap to view user</Text>
+                                     <Text style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
+                     {isCheckInsForHugs ? 'Tap to send hug' : 'Tap to view user details'}
+                   </Text>
                 </TouchableOpacity>
               ))}
+              
+                             {/* Remove the old chat selection button since both flows now go through user detail modal */}
             </View>
           )}
         </ScrollView>
@@ -814,70 +860,85 @@ const MoodMapScreen: React.FC = () => {
       visible={showUserDetailModal}
       animationType="slide"
       presentationStyle="pageSheet"
-      onRequestClose={() => setShowUserDetailModal(false)}
+             onRequestClose={() => {
+         setShowUserDetailModal(false);
+         setIsCheckInsForHugs(false); // Reset the flag
+         setSelectedUserForChat(null); // Reset selected user for chat
+         setShowSelectUserButton(false); // Reset button visibility
+       }}
     >
       <SafeAreaView style={styles.locationDetailContainer}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
         <View style={styles.locationDetailHeader}>
-          <TouchableOpacity onPress={() => setShowUserDetailModal(false)} style={styles.backButton}>
+                     <TouchableOpacity onPress={() => {
+             setShowUserDetailModal(false);
+             setIsCheckInsForHugs(false); // Reset the flag
+             setSelectedUserForChat(null); // Reset selected user for chat
+             setShowSelectUserButton(false); // Reset button visibility
+           }} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.locationDetailTitle}>User Details</Text>
-          {/* Select All - top right */}
-          {Array.isArray(currentCheckIns) && currentCheckIns.length > 0 && (
-            <TouchableOpacity
-              onPress={() => handleSelectAllHugTargets(currentCheckIns.map(ci => ({ id: ci.userId, username: ci.username || ci.name })))}
-              style={[styles.backButton, { position: 'absolute', right: 12 }]}
-              activeOpacity={0.85}
-            >
-              <Text style={{ fontWeight: '600', color: '#000' }}>Select all</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-        <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
-          {isLoadingUserDetail ? (
-            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-              <ActivityIndicator size="small" color="#40E0D0" />
-              <Text style={{ marginTop: 8, color: '#666', fontSize: 14 }}>Loading user...</Text>
-            </View>
-          ) : selectedUserDetail ? (
-            <TouchableOpacity style={styles.locationCard} activeOpacity={0.85} onPress={() => setShowSelectUserButton(true)}>
-              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
-                {selectedUserDetail?.name || selectedUserDetail?.username || 'User'}
-              </Text>
-              {selectedUserDetail?.email ? (
-                <Text style={{ fontSize: 14, color: '#666' }}>{selectedUserDetail.email}</Text>
-              ) : null}
-              {selectedUserDetail?.bio ? (
-                <Text style={{ fontSize: 14, color: '#666', marginTop: 8 }}>{selectedUserDetail.bio}</Text>
-              ) : null}
-
-              {showSelectUserButton && (
-                <TouchableOpacity
-                  style={[styles.sendHugButton, { marginTop: 16 }]}
-                  onPress={() => handleSelectHugTarget(selectedUserDetail)}
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.sendHugButtonText}>Select this user for a hug</Text>
-                </TouchableOpacity>
-              )}
-
-              {showSelectUserButton && (
-                <TouchableOpacity
-                  style={[styles.openToTalkButton, { marginTop: 10 }]}
-                  onPress={() => handleSelectChatTarget(selectedUserDetail)}
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.openToTalkButtonText}>Select this user to talk</Text>
-                </TouchableOpacity>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
-              No user data
+                                           <Text style={styles.locationDetailTitle}>
+              {isCheckInsForHugs ? 'Send Hug to User' : 'Start Chat with User'}
             </Text>
-          )}
-        </ScrollView>
+                     {/* Select All - top right - only show for hugs */}
+           {isCheckInsForHugs && Array.isArray(checkInsForModal) && checkInsForModal.length > 0 && (
+             <TouchableOpacity
+               onPress={() => handleSelectAllHugTargets(checkInsForModal.map(ci => ({ id: ci.userId, username: ci.username || ci.name })))}
+               style={[styles.backButton, { position: 'absolute', right: 12 }]}
+               activeOpacity={0.85}
+             >
+               <Text style={{ fontWeight: '600', color: '#000' }}>Select all</Text>
+             </TouchableOpacity>
+           )}
+        </View>
+                 <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
+           {isLoadingUserDetail ? (
+             <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+               <ActivityIndicator size="small" color="#40E0D0" />
+               <Text style={{ marginTop: 8, color: '#666', fontSize: 14 }}>Loading user...</Text>
+             </View>
+           ) : selectedUserDetail ? (
+             // Show single user for hugs
+             <TouchableOpacity style={styles.locationCard} activeOpacity={0.85} onPress={() => setShowSelectUserButton(true)}>
+               <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
+                 {selectedUserDetail?.name || selectedUserDetail?.username || 'User'}
+               </Text>
+               {selectedUserDetail?.email ? (
+                 <Text style={{ fontSize: 14, color: '#666' }}>{selectedUserDetail.email}</Text>
+               ) : null}
+               {selectedUserDetail?.bio ? (
+                 <Text style={{ fontSize: 14, color: '#666', marginTop: 8 }}>{selectedUserDetail.bio}</Text>
+               ) : null}
+
+                               {/* Show different buttons based on the purpose */}
+                {showSelectUserButton && isCheckInsForHugs && (
+                  <TouchableOpacity
+                    style={[styles.sendHugButton, { marginTop: 16 }]}
+                    onPress={() => handleSelectHugTarget(selectedUserDetail)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.sendHugButtonText}>Send Virtual Hug 🤗</Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Show "Start Conversation" button when it's for chat */}
+                {showSelectUserButton && !isCheckInsForHugs && (
+                  <TouchableOpacity
+                    style={[styles.openToTalkButton, { marginTop: 16 }]}
+                    onPress={() => handleSelectChatTarget(selectedUserDetail)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={styles.openToTalkButtonText}>Start Conversation</Text>
+                  </TouchableOpacity>
+                )}
+             </TouchableOpacity>
+           ) : (
+             <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
+               No user data
+             </Text>
+           )}
+         </ScrollView>
       </SafeAreaView>
     </Modal>
   );
@@ -996,9 +1057,67 @@ const MoodMapScreen: React.FC = () => {
         backgroundColor={undefined}
       />
 
-      {/* Overlays and Sections */}
-      {renderUserPinOverlay()}
-      {renderActivitiesSection()}
+             {/* Overlays and Sections */}
+       {renderActivitiesSection()}
+
+               {/* User Pin Overlay */}
+        {showUserFloatingSection && selectedUserPin && (
+          <View style={styles.userPinOverlay}>
+            <View style={styles.userExpandedCard}>
+              <Text style={styles.userExpandedEmoji}>
+                {getMoodEmoji(selectedUserPin.mood || 'happy')}
+              </Text>
+              
+              <View style={styles.userExpandedInfo}>
+                <Text style={styles.userExpandedName}>
+                  {selectedUserPin.name || selectedUserPin.username || 'Anonymous'}
+                </Text>
+                <Text style={styles.userExpandedMood}>
+                  {selectedUserPin.mood || 'Happy'}
+                </Text>
+              </View>
+              
+              <TouchableOpacity 
+                style={styles.userHugButton}
+                onPress={() => {
+                  console.log('🔍 Send Hug button pressed!');
+                  console.log('🔍 selectedUserPin:', selectedUserPin);
+                  console.log('🔍 Calling handleSelectHugTarget with:', selectedUserPin);
+                  handleSelectHugTarget(selectedUserPin);
+                }}
+              >
+                <Ionicons name="heart" size={20} color="#FFFFFF" />
+                <Text style={styles.userHugButtonText}>Send Hug</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.userChatButton}
+                onPress={() => handleSelectChatTarget(selectedUserPin)}
+              >
+                <Ionicons name="chatbubble-outline" size={20} color="#FFFFFF" />
+                <Text style={styles.userChatButtonText}>Start Chat</Text>
+              </TouchableOpacity>
+              
+              {/* Close button */}
+              <TouchableOpacity 
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: '#F5F5F5',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => setShowUserFloatingSection(false)}
+              >
+                <Ionicons name="close" size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
       {/* Modals */}
       {renderFilterModal()}
