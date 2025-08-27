@@ -1,12 +1,37 @@
+import firebase from '@react-native-firebase/app';
 import React, { useEffect, useState } from 'react';
-import { Alert, Clipboard, Platform, StyleSheet, View } from 'react-native';
+import { Alert, Platform, StyleSheet, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { Redirect } from 'expo-router';
 import { RootState } from '@/src/store';
-// import notifee, { AndroidImportance } from '@notifee/react-native';
 
 import messaging from '@react-native-firebase/messaging';
-import firebase from '@react-native-firebase/app';
+
+
+import * as Clipboard from 'expo-clipboard';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import Reactotron from 'reactotron-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// ✅ Required for foreground display behavior
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: false,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true, // ✅ Required
+    shouldShowList: true,
+  }),
+});
+
+
+
+if (__DEV__) {
+  import('../../ReactotronConfig');
+}
+
+
 
 const App = () => {
   const isUserLoggedIn = useSelector((state: RootState) => state.auth.isUserLoggedIn);
@@ -15,7 +40,38 @@ const App = () => {
   useEffect(() => {
     const initFCM = async () => {
       try {
-        // ✅ Request permission on iOS
+        // ✅ Ensure notification permissions
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync({
+            ios: {
+              allowAlert: true,
+              allowSound: true,
+              allowBadge: true,
+            },
+          });
+          finalStatus = status;
+        }
+
+        if (finalStatus !== 'granted') {
+          console.warn('🚫 Notification permissions not granted');
+          return;
+        }
+
+        // ✅ Android: set channel
+        if (Platform.OS === 'android') {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.HIGH,
+            sound: 'default',
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+          });
+        }
+
+        // ✅ Firebase Messaging permissions (iOS only)
         const authStatus = await messaging().requestPermission();
         const enabled =
           authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
@@ -24,53 +80,46 @@ const App = () => {
         if (enabled) {
           const token = await messaging().getToken();
           console.log('📱 FCM Token:', token);
-         
-    console.log('📱 FCM Token:', token);
 
-    // 📦 Show alert with copy option
-    Alert.alert(
-      'FCM Token',
-      token,
-      [
-        {
-          text: 'Copy',
-          onPress: () => {
-            if (Platform.OS === 'android') {
-              Clipboard.setString(token);
-            } else {
-              // Clipboard API is now deprecated on iOS, use alternative if needed
-              Clipboard.setString(token);
-            }
-          },
-        },
-        { text: 'OK', style: 'cancel' },
-      ],
-      { cancelable: false }
-    );
+        //   Alert.alert(
+        //     'FCM Token',
+        //     token,
+        //     [
+        //       {
+        //         text: 'Copy',
+        //         onPress: () => Clipboard.setStringAsync(token),
+        //       },
+        //       { text: 'OK', style: 'cancel' },
+        //     ],
+        //     { cancelable: false }
+        //   );
         } else {
           console.log('🚫 FCM permission not granted');
         }
 
-        // Foreground messages
-        const unsubscribe = messaging().onMessage(async remoteMessage => {
-//             await notifee.displayNotification({
-//     title: remoteMessage.notification?.title ?? '📩 New Message',
-//     body: remoteMessage.notification?.body ?? '',
-//     android: {
-//       channelId: 'default',
-//       smallIcon: 'ic_launcher', // ensure it's in your mipmap
-//       importance: AndroidImportance.HIGH,
-//     },
-//   });
-          Alert.alert('📩 New Message', remoteMessage.notification?.body || 'You have a new message');
+        // ✅ Foreground message handler
+        const unsubscribeForeground = messaging().onMessage(async remoteMessage => {
+          const { title, body } = remoteMessage.notification ?? {};
+
+          console.log('📬 Foreground notification received:', remoteMessage);
+
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: title ?? '📩 New Message',
+              body: body ?? 'You have a new message',
+              data: remoteMessage.data,
+              sound: 'default', // ✅ Required for sound
+            },
+            trigger: null, // Show immediately
+          });
         });
 
-        // App opened from background
+        // When app is opened from background due to notification
         const unsubscribeOpened = messaging().onNotificationOpenedApp(remoteMessage => {
-          console.log('📥 App opened from background due to notification:', remoteMessage);
+          console.log('📥 App opened from background via notification:', remoteMessage);
         });
 
-        // App opened from quit state
+        // When app is opened from quit state via notification
         const initialNotification = await messaging().getInitialNotification();
         if (initialNotification) {
           console.log('📲 Opened from quit state via notification:', initialNotification);
@@ -79,7 +128,7 @@ const App = () => {
         setLoading(false);
 
         return () => {
-          unsubscribe();
+          unsubscribeForeground();
           unsubscribeOpened();
         };
       } catch (err) {
@@ -89,11 +138,6 @@ const App = () => {
     };
 
     initFCM();
-
-    // Background messages
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      console.log('📤 Background message:', remoteMessage);
-    });
   }, []);
 
   if (loading || isUserLoggedIn === undefined) {

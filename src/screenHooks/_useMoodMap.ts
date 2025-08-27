@@ -379,7 +379,12 @@ export function useMoodMap(currentUserId?: string, currentUsername?: string) {
   const handleCheckInUserPress = React.useCallback(async (userId?: string) => {
     if (!userId) return;
     try {
+
+     setShowCheckInsModal(false)
+      setTimeout(() => {
       setIsLoadingUserDetail(true);
+      }
+      , 100);
       const user = await updatedUserProfile(userId);
       // Ensure the selected user detail always contains a stable id
       const normalizedUser = {

@@ -11,6 +11,8 @@ import {
   Alert
 } from 'react-native';
 import { loginStyles } from './login-style';
+import { updateFcm } from '@/src/services/apis';
+import messaging from '@react-native-firebase/messaging';
 
 const LoginForm = ({ onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -80,10 +82,13 @@ const LoginForm = ({ onLoginSuccess }) => {
       });
 
       const data = await response.json();
+
+
       
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
       }
+      
       
       if (!isLogin) {
         Alert.alert(
@@ -95,11 +100,19 @@ const LoginForm = ({ onLoginSuccess }) => {
       
       onLoginSuccess(data, isLogin);
       
+
+    
     } catch (error) {
       console.error('API Error:', error);
       Alert.alert('Error', error.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
+      const token = await messaging().getToken();
+         const payload ={
+        token : token,
+       }
+       const res  =  await updateFcm(payload);
+      console.log('FCM Token updated:', res);
     }
   };
 

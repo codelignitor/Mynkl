@@ -97,6 +97,14 @@ export const checkIn = async (payload: CheckInPayload | FormData) => {
   return response.data;
 };
 
+
+
+export const updateFcm = async (payload) => {
+  const response = await axiosInstance.post(`notifications/fcm-token`, payload,{
+      });
+  return response.data;
+};
+
 // profile api
 export const updateUserProfile = async (payload) => {
   try {

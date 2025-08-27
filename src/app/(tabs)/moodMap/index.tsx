@@ -65,8 +65,7 @@ const MoodMapScreen: React.FC = () => {
     isLoadingUserDetail,
     handleCheckInUserPress,
 
-
-    // Comment-related from hook
+ // Comment-related from hook
     newComment,
     setNewComment,
     isSubmittingComment,
@@ -94,6 +93,9 @@ const MoodMapScreen: React.FC = () => {
     // Utility functions from hook
     getMoodEmoji,
   } = useMoodMap(user_id || undefined, username || undefined);
+
+
+
 
   // Refresh location details when returning from addCheckIn screen
   useFocusEffect(
@@ -424,6 +426,7 @@ const MoodMapScreen: React.FC = () => {
             <TouchableOpacity
               style={styles.checkInButton}
               onPress={() => {
+                  setShowLocationDetail(false);
                 // Navigate to addCheckIn screen with location data
                 router.push({
                   pathname: '/addCheckIn',
@@ -443,6 +446,7 @@ const MoodMapScreen: React.FC = () => {
       </SafeAreaView>
     </Modal>
   );
+
 
 
   const renderCheckInsModal = () => (
@@ -794,6 +798,7 @@ const MoodMapScreen: React.FC = () => {
                 </TouchableOpacity>
               ))}
             </View>
+            
             {/* Suggestion Card */}
             <View style={styles.exploreSuggestionCard}>
               <View style={styles.exploreSuggestionIcon}>

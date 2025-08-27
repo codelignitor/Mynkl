@@ -14,67 +14,85 @@
     "newArchEnabled": true,
     "ios": {
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "We need your location to show nearby moods."
+         "UIBackgroundModes": [
+          "audio"
+        ],
+        "NSLocationWhenInUseUsageDescription": "We need your location to show nearby moods.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       },
-      "supportsTablet": true,
+       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.mynkl"
+      
     },
+   
+   
     "android": {
-      "googleServicesFile": "./google-services.json",
-      "permissions": [
-        "ACCESS_FINE_LOCATION"
-      ],
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyC-V2YHOsvvAEPdJog2DHZRr5Mj2b2hk_Q"
-        }
-      },
-      "package": "com.mynkl"
-    },
-    "build": {
-      "development": {
-        "developmentClient": true,
-        "distribution": "internal"
-      },
-      "preview": {
-        "distribution": "internal",
-        "android": {
-          "buildType": "apk"
-        }
-      },
-      "production": {
-        "android": {
-          "buildType": "apk"
-        }
-      }
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
-      "expo-video"
+      "package": "com.abdullahsheikh.mynkl"
+    }
+  },
+  "android": {
+    "useNextNotificationsApi": true,
+    "googleServicesFile": "./google-services.json",
+    "permissions": [
+      "ACCESS_FINE_LOCATION"
     ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "a7c307cb-d26e-4645-9a1f-6231ee6834be"
+    "config": {
+      "googleMaps": {
+        "apiKey": "AIzaSyC-V2YHOsvvAEPdJog2DHZRr5Mj2b2hk_Q"
       }
     },
-    "owner": "abdullahsheikh"
-  }
+    "package": "com.mynkl"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  },
+  "web": {
+    "bundler": "metro",
+    "output": "static",
+    "favicon": "./assets/images/favicon.png"
+  },
+  "plugins": [
+    "expo-notifications",
+    "expo-router",
+    [
+       "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        },
+      "expo-splash-screen",
+      {
+        "image": "./assets/images/splash-icon.png",
+        "imageWidth": 200,
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      }
+    ],
+    "expo-video"
+  ],
+  "experiments": {
+    "typedRoutes": true
+  },
+  "extra": {
+    "router": {},
+    "eas": {
+      "projectId": "a7c307cb-d26e-4645-9a1f-6231ee6834be"
+    }
+  },
+  "owner": "abdullahsheikh"
 }

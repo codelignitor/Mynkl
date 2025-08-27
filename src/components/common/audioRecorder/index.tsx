@@ -12,7 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function AudioRecorderPlayer({recordedUri, setRecordedUri}) {
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
-  
+  // const [recordedUri, setRecordedUri] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 

@@ -60,6 +60,8 @@ export const unstable_settings = {
   initialRouteName: 'index',
 };
 
+
+
 export const screenOptions = {
   tabBarButton: () => null,
 };
@@ -93,6 +95,11 @@ export default function AddCheckIn() {
   } = useAddCheckIn();
 
 
+  const location = params?.locationName ?params?.locationName  : null;
+
+  console.log('Location from params:', location);
+
+
   if (isloading) {
    return   <SafeAreaView style={styles.container}>
        <Header style={{ backgroundColor: '#A7E2E0' }} title="Check-In" showBack={true} rightChildren={
@@ -119,7 +126,7 @@ export default function AddCheckIn() {
         <Text style={styles.title}>How are you feeling?</Text>
 
         {/* Display passed parameters only when location is enabled */}
-        {locationOptIn && locationName && (
+        {/* {locationOptIn && locationName && (
           <View style={styles.paramContainer}>
             <Text style={styles.paramTitle}>Location Details:</Text>
             <Text style={styles.paramText}>📍 {locationName}</Text>
@@ -127,7 +134,7 @@ export default function AddCheckIn() {
             <Text style={styles.paramText}>Lng: {longitude}</Text>
             <Text style={styles.paramText}>Mood: {mood}</Text>
           </View>
-        )}
+        )} */}
 
 
 
@@ -192,7 +199,7 @@ export default function AddCheckIn() {
         <View style={styles.locationContainer}>
           <View style={styles.locationContent}>
             <Text style={styles.locationIcon}>📍</Text>
-            <Text style={styles.locationText}>Share location</Text>
+            <Text style={styles.locationText}>{location ? location : 'Share location' }</Text>
           </View>
           <Switch
             value={locationOptIn}

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { View, Text, Platform, ActivityIndicator, Image } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapMarker from './MapMarker';
@@ -51,6 +51,7 @@ const MoodMapView = ({
   callback,
 }) => {
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
+  const mapViewRef = useRef(null);
 
   const onSelectMarker = (location) => {
     setSelectedMarkerId(location.id);
@@ -60,45 +61,24 @@ const MoodMapView = ({
   const mapKey = useMemo(() => JSON.stringify(currentLocations), [currentLocations]);
 
   return (
-    <View style={[styles.mapContainer, mapContainerStyle]}>
+    <>
       <MapView
+        ref={mapViewRef}
         key={mapKey}
         customMapStyle={mapStyle}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         region={mapRegion}
         showsUserLocation={true}
-        showsMyLocationButton={true}
+        // showsMyLocationButton is only supported on Android
         followsUserLocation={false}
+        // For iOS, you can use showsUserLocation, but there is no built-in button
       >
+     
         {currentLocations?.map((location) => {
           const isSelected = selectedMarkerId === location.id;
-          const emojiIcon = emojiMap[location.mood] || emojiMap['happy'];
-
-          // Android-specific: use icon prop and scale image manually
-          // if (Platform.OS === 'android') {
-          //   const resolved = resolveAssetSource(require('../../assets/images/happy-icon.png'));
-
-          //   return (
-          //     <Marker
-          //       key={location.id}
-          //       coordinate={{
-          //         latitude: location.latitude,
-          //         longitude: location.longitude,
-          //       }}
-          //       onPress={() => onSelectMarker(location)}
-          //       icon={{
-          //         uri: resolved.uri,
-          //         width: isSelected ? 60 : 40,
-          //         height: isSelected ? 60 : 40,
-          //         scale: 1,
-          //       }}
-          //     />
-          //   );
-          // }
-
-          // iOS: use custom MapMarker component
           return (
+            
             <Marker
               key={location.id}
               coordinate={{
@@ -119,7 +99,43 @@ const MoodMapView = ({
           );
         })}
       </MapView>
-    </View>
+      {Platform.OS === 'ios' && (
+        <View style={{ position: 'absolute', top: '35%', right: 10 }}>
+          <View
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: 25,
+              elevation: 3,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.2,
+              shadowRadius: 2,
+            }}
+          >
+            <Text
+              style={{
+                padding: 12,
+                fontSize: 18,
+                textAlign: 'center',
+              }}
+              onPress={() => {
+                if (mapRegion) {
+                    // You may want to animate to user's location here
+                    if (mapViewRef && mapViewRef.current && mapRegion) {
+                    mapViewRef.current.animateToRegion(mapRegion, 1000);
+                    }
+                  callback && callback({ type: 'moveToCurrentLocation' });
+                }
+              }}
+            >
+              📍
+            </Text>
+          </View>
+        </View>
+      )}
+       
+    
+   </>
   );
 };
 
