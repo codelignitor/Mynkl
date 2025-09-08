@@ -81,11 +81,14 @@ export const checkIn = async (payload: CheckInPayload | FormData) => {
     if (payload.audio !== undefined && payload.audio !== null) {
       formData.append('audio', payload.audio);
     }
-    if (payload.place !== undefined && payload.place !== null) {
-      formData.append('place', payload.place.toString());
+    if (payload.checkin_type !== undefined && payload.checkin_type !== null) {
+      formData.append('checkin_type', payload.checkin_type);
     }
     if (payload.place_name !== undefined && payload.place_name !== null) {
       formData.append('place_name', payload.place_name);
+    }
+    if (payload.checkin_ref !== undefined && payload.checkin_ref !== null) {
+      formData.append('checkin_ref', payload.checkin_ref);
     }
   }
 
@@ -243,24 +246,13 @@ export const getReflectivePrompt = async () => {
 };
 
 //comments api 
-export const getComments = async (lat: number, lng: number, tolerance?: number) => {
-  const params: any = { lat, lng };
-  
-  // Add tolerance if provided, otherwise use default
-  if (tolerance !== undefined) {
-    params.tolerance = tolerance;
-  } else {
-    // Use a larger tolerance for better matching
-    params.tolerance = 0.001; // Increased from default 0.00001
-  }
-  
+export const getComments = async (params: { type: 'event' | 'place'; ref_id: string }) => {
   const response = await axiosInstance.get(`/home/places/comments`, { params });
   return response.data;
 };
 
-//comments api
 export const submitComments = async (payload) => {
-  const response = await axiosInstance.post(`/home/places`, payload);
+  const response = await axiosInstance.post(`/home/add-comments`, payload);
   return response.data;
 };
 
@@ -372,5 +364,23 @@ export const getNotifications = async (page: number = 1, limit: number = 10) => 
       limit
     }
   });
+  return response.data;
+};
+
+//Session AutoComplete
+export const getSessionAutoComplete = async (searchQuery: string, lat?: number, lng?: number) => {
+  const params: any = { query: searchQuery };
+  
+  if (lat !== undefined && lng !== undefined) {
+    params.lat = lat;
+    params.lng = lng;
+  }
+  
+  const response = await axiosInstance.get(`/home/places/autocomplete`, { params });
+  return response.data;
+};
+
+export const getPlaceDetails = async (placeId: string) => {
+  const response = await axiosInstance.get(`/home/places/details/${placeId}`);
   return response.data;
 };

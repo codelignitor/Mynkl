@@ -41,6 +41,18 @@ const emojiMap = {
   frustrated: require('../../assets/images/frustrated.png'),
 };
 
+
+const imageSizes = {
+  happy: { width: 68, height: 68 },
+  calm: { width: 73, height: 73 },
+  stressed: { width: 78, height: 78 },
+  lonely: { width: 83, height: 83 },
+  alone: { width: 83, height: 83 },
+  sad: { width: 83, height: 83 },
+  grateful:{ width: 83, height: 83 },
+  frustrated:{ width: 73, height: 73 },
+};
+
 const MoodMapView = ({
   mapRegion,
   selectedMood,
@@ -65,7 +77,7 @@ const MoodMapView = ({
       <MapView
         ref={mapViewRef}
         key={mapKey}
-        customMapStyle={mapStyle}
+        // customMapStyle={mapStyle}
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         region={mapRegion}

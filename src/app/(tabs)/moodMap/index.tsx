@@ -21,6 +21,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
+import { useComments } from '@/src/screenHooks/moodMap/useComments';
 
 // Remove unused icon-mapping helpers to keep the component lean
 
@@ -66,16 +67,7 @@ const MoodMapScreen: React.FC = () => {
     handleCheckInUserPress,
 
  // Comment-related from hook
-    newComment,
-    setNewComment,
-    isSubmittingComment,
-    fetchedComments,
-    setFetchedComments,
-    isLoadingComments,
-    handleAddComment,
-    refreshComments,
-    currentCheckIns,
-    // Filter modal from hook
+   
     showFilterModal,
     setShowFilterModal,
     selectedFilterMoods,
@@ -93,6 +85,24 @@ const MoodMapScreen: React.FC = () => {
     // Utility functions from hook
     getMoodEmoji,
   } = useMoodMap(user_id || undefined, username || undefined);
+
+
+   const {
+      newComment,
+      setNewComment,
+      isSubmittingComment,
+      fetchedComments,
+      setFetchedComments,
+      isLoadingComments,
+      handleAddComment,
+      refreshComments,
+      currentCheckIns,
+    } = useComments({
+      selectedLocationDetail,
+      mapRegion,
+      user_id,
+      selectedMood,
+    });
 
 
 
@@ -428,13 +438,16 @@ const MoodMapScreen: React.FC = () => {
               onPress={() => {
                   setShowLocationDetail(false);
                 // Navigate to addCheckIn screen with location data
+               
                 router.push({
                   pathname: '/addCheckIn',
                   params: {
                     locationName: selectedLocationDetail?.name || '',
                     latitude: selectedLocationDetail?.latitude || mapRegion.latitude,
                     longitude: selectedLocationDetail?.longitude || mapRegion.longitude,
-                    mood: selectedLocationDetail?.mood || selectedMood || 'happy'
+                    mood: selectedLocationDetail?.mood || selectedMood || 'happy',
+                    locationId: selectedLocationDetail?.id || '',
+                    type: selectedLocationDetail?.type || '',
                   }
                 });
               }}

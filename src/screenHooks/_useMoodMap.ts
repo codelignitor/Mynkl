@@ -45,6 +45,7 @@ export interface LocationDetail {
   latitude: number;
   longitude: number;
   hasLocations?: boolean;
+  type: string;
 }
 
 // Removed unused CheckInData and Comment interfaces
@@ -132,22 +133,7 @@ export function useMoodMap(currentUserId?: string, currentUsername?: string) {
   });
 
   // Comments sub-hook (depends on selectedLocationDetail, mapRegion, user/mood)
-  const {
-    newComment,
-    setNewComment,
-    isSubmittingComment,
-    fetchedComments,
-    setFetchedComments,
-    isLoadingComments,
-    handleAddComment,
-    refreshComments,
-    currentCheckIns,
-  } = useComments({
-    selectedLocationDetail,
-    mapRegion,
-    currentUserId,
-    selectedMood,
-  });
+ 
 
   const callBackMapHandler = (location: any) => {
 
@@ -166,7 +152,8 @@ export function useMoodMap(currentUserId?: string, currentUsername?: string) {
         moodEmoji: getMoodEmoji(location.mood),
         latitude: location.latitude || 0,
         longitude: location.longitude || 0,
-        hasLocations: true
+        hasLocations: true,
+        type: location.type 
       };
 
       setSelectedLocationDetail(locationDetail);
@@ -592,15 +579,15 @@ export function useMoodMap(currentUserId?: string, currentUsername?: string) {
     isLoadingUserDetail,
     handleCheckInUserPress,
     // Comment-related exports
-    newComment,
-    setNewComment,
-    isSubmittingComment,
-    fetchedComments,
-    setFetchedComments,
-    isLoadingComments,
-    handleAddComment,
-    refreshComments,
-    currentCheckIns,
+    // newComment,
+    // setNewComment,
+    // isSubmittingComment,
+    // fetchedComments,
+    // setFetchedComments,
+    // isLoadingComments,
+    // handleAddComment,
+    // refreshComments,
+    // currentCheckIns,
     // Filter modal exports
     showFilterModal,
     setShowFilterModal,

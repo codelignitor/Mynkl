@@ -1,3 +1,7 @@
+
+
+
+
 {
   "expo": {
     "name": "Mynkl",
@@ -7,92 +11,92 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "platforms": ["ios", "android"],
     "newArchEnabled": true,
+
     "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "bundleIdentifier": "com.mynkl",
       "infoPlist": {
-         "UIBackgroundModes": [
-          "audio"
-        ],
+        "UIBackgroundModes": ["audio"],
         "NSLocationWhenInUseUsageDescription": "We need your location to show nearby moods.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         }
-      },
-       "googleServicesFile": "./GoogleService-Info.plist",
-      "bundleIdentifier": "com.mynkl"
-      
+      }
     },
-   
-   
+
     "android": {
-      "package": "com.abdullahsheikh.mynkl"
-    }
-  },
-  "android": {
-    "useNextNotificationsApi": true,
-    "googleServicesFile": "./google-services.json",
-    "permissions": [
-      "ACCESS_FINE_LOCATION"
-    ],
-    "config": {
-      "googleMaps": {
-        "apiKey": "AIzaSyC-V2YHOsvvAEPdJog2DHZRr5Mj2b2hk_Q"
-      }
-    },
-    "package": "com.mynkl"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
-    },
-    "production": {
-      "android": {
-        "buildType": "apk"
-      }
-    }
-  },
-  "web": {
-    "bundler": "metro",
-    "output": "static",
-    "favicon": "./assets/images/favicon.png"
-  },
-  "plugins": [
-    "expo-notifications",
-    "expo-router",
-    [
-       "expo-audio",
-        {
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
-        },
-      "expo-splash-screen",
-      {
-        "image": "./assets/images/splash-icon.png",
-        "imageWidth": 200,
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
-      }
-    ],
-    "expo-video"
+      "package": "com.mynkl",
+      "googleServicesFile": "./google-services.json",
+      "useNextNotificationsApi": true,
+     "permissions": [
+    "ACCESS_FINE_LOCATION",
+    "ACCESS_COARSE_LOCATION",
+    "INTERNET",
+    "ACCESS_NETWORK_STATE"
   ],
-  "experiments": {
-    "typedRoutes": true
-  },
-  "extra": {
-    "router": {},
-    "eas": {
-      "projectId": "a7c307cb-d26e-4645-9a1f-6231ee6834be"
-    }
-  },
-  "owner": "abdullahsheikh"
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDnoc6XxrzYXuCC2Tg-QKcoIs3RLcHmuS0"
+        }
+      }
+    },
+
+    "build": {
+      "development": {
+        "developmentClient": true,
+        "distribution": "internal"
+      },
+      "preview": {
+        "distribution": "internal",
+        "android": {
+          "buildType": "apk"
+        }
+      },
+      "production": {
+        "android": {
+          "buildType": "apk"
+        }
+      }
+    },
+
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+
+    "plugins": [
+      "expo-notifications",
+      "expo-router",
+     
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+    
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
+    ],
+
+    "experiments": {
+      "typedRoutes": true
+    },
+
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a7c307cb-d26e-4645-9a1f-6231ee6834be"
+      }
+    },
+
+    "owner": "abdullahsheikh"
+  }
 }
+

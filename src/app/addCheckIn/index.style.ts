@@ -2,9 +2,9 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
-    paddingTop:30,
+    paddingTop: 30,
     flex: 1,
-    backgroundColor: '#A7E2E0', // Light teal background like in the image
+    backgroundColor: '#A7E2E0',
   },
   contentContainer: {
     flex: 1,
@@ -33,17 +33,7 @@ export const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   selectedMood: {
-    // backgroundColor: 'rgba(255, 255, 255, 0.8)',
     transform: [{ scale: 1.1 }],
-  },
-  moodEmoji: {
-    fontSize: 50,
-  },
-  moodLabel: {
-    fontSize: 10,
-    color: '#2D5A5A',
-    fontWeight: '500',
-    marginTop: 2,
   },
   noteContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -59,11 +49,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     fontWeight: '400',
   },
-  placeholderText: {
-    fontSize: 16,
-    color: '#999',
-    fontWeight: '400',
-  },
   voiceButton: {
     position: 'absolute',
     right: 15,
@@ -76,6 +61,87 @@ export const styles = StyleSheet.create({
   },
   voiceIcon: {
     fontSize: 20,
+  },
+  locationInputContainer: {
+    marginBottom: 20,
+    position: 'relative',
+  },
+  locationInputField: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  locationInputFieldSelected: {
+    borderColor: '#4A9B9B',
+    borderWidth: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  locationInputPlaceholder: {
+    fontSize: 16,
+    color: '#4A9B9B',
+    fontWeight: '400',
+    flex: 1,
+  },
+  selectedLocationContent: {
+    flex: 1,
+  },
+  selectedLocationTitle: {
+    fontSize: 16,
+    color: '#2D5A5A',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  selectedLocationSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '400',
+  },
+  selectedLocationContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 30,
+    borderWidth: 1,
+    borderColor: 'rgba(74, 155, 155, 0.3)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  locationPinContainer: {
+    marginRight: 15,
+  },
+  locationTextContainer: {
+    flex: 1,
+  },
+  selectedLocationInstruction: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '400',
+    marginTop: 4,
+  },
+  selectedLocationAddress: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
+    fontStyle: 'italic',
+  },
+  changeLocationButton: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  changeLocationButtonText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   locationContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -101,7 +167,12 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: '#2D5A5A',
     fontWeight: '500',
-    flex: 1,
+    marginBottom: 2,
+  },
+  locationSubtext: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '400',
   },
   switch: {
     transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
@@ -126,7 +197,7 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
-  paramContainer: {
+   paramContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 15,
     padding: 15,

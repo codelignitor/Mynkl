@@ -27,10 +27,11 @@ const makeCommentId = (content: string, locationKey: string) => {
 export function useComments(args: {
   selectedLocationDetail: SimpleLocationDetail;
   mapRegion: Region;
-  currentUserId?: string;
+  user_id: string;
   selectedMood: string;
+  location:Object
 }) {
-  const { selectedLocationDetail, mapRegion, currentUserId, selectedMood } = args;
+  const { selectedLocationDetail, mapRegion, user_id, selectedMood } = args;
 
   const [newComment, setNewComment] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
@@ -46,49 +47,45 @@ export function useComments(args: {
       return;
     }
 
-    if (!currentUserId) {
-      Alert.alert('Authentication Required', 'Please log in to post comments.');
-      return;
-    }
+    // if (!currentUserId) {
+    //   Alert.alert('Authentication Required', 'Please log in to post comments.');
+    //   return;
+    // }
 
     setIsSubmittingComment(true);
     try {
       const payload = {
-        mood: selectedLocationDetail.mood || selectedMood || 'happy',
-        name: selectedLocationDetail.name,
-        latitude: selectedLocationDetail.latitude || mapRegion.latitude,
-        longitude: selectedLocationDetail.longitude || mapRegion.longitude,
-        comments: trimmedComment,
-        user_id: currentUserId,
+         ref_id: selectedLocationDetail?.id,
+        comment: trimmedComment,
+       
       };
 
       await submitComments(payload);
 
-      const locationKey = `${selectedLocationDetail.latitude || mapRegion.latitude},${selectedLocationDetail.longitude || mapRegion.longitude}`;
-      const newCommentObj = {
-        type: 'comment',
-        content: trimmedComment,
-        id: makeCommentId(trimmedComment, locationKey),
-        userId: currentUserId || 'anonymous',
-      } as const;
-      setFetchedComments(prev => [...prev, newCommentObj]);
-
       setNewComment('');
+      refreshComments();
       Alert.alert('Success', 'Comment posted successfully!');
     } catch (e) {
       Alert.alert('Error', 'Failed to post comment. Please try again.');
     } finally {
       setIsSubmittingComment(false);
     }
-  }, [newComment, selectedLocationDetail, selectedMood, mapRegion, currentUserId]);
+  }, [newComment, selectedLocationDetail, selectedMood, mapRegion, user_id]);
 
   const refreshComments = useCallback(async () => {
+    // console.log('refreshComments called', selectedLocationDetail );
+    
     if (!selectedLocationDetail?.name) return;
     setIsLoadingComments(true);
     try {
+
+      const params ={
+     type: selectedLocationDetail?.type ,
+      ref_id: selectedLocationDetail?.id
+      }
+    
       const response = await getComments(
-        selectedLocationDetail.latitude || mapRegion.latitude,
-        selectedLocationDetail.longitude || mapRegion.longitude
+        params
       );
       let commentsData = response as any;
       if (response && (response as any).data && Array.isArray((response as any).data)) {
@@ -104,7 +101,7 @@ export function useComments(args: {
             type: 'comment',
             content: comment,
             id: makeCommentId(comment, locationKey),
-            userId: currentUserId || 'anonymous',
+            userId: user_id || 'anonymous',
           })),
           ...checkInDetails.map((checkIn: { text?: string; mood: string; timestamp: string; user_id: string }) => ({
             type: 'checkin',
@@ -120,7 +117,7 @@ export function useComments(args: {
           type: 'comment',
           content: typeof comment === 'string' ? comment : comment?.comments || '',
           id: makeCommentId(typeof comment === 'string' ? comment : comment?.comments || '', locationKey),
-          userId: currentUserId || 'anonymous',
+          userId: user_id || 'anonymous',
         }));
         setFetchedComments(normalized);
       }
@@ -129,7 +126,7 @@ export function useComments(args: {
     } finally {
       setIsLoadingComments(false);
     }
-  }, [selectedLocationDetail?.latitude, selectedLocationDetail?.longitude, mapRegion.latitude, mapRegion.longitude, currentUserId]);
+  }, [selectedLocationDetail?.latitude, selectedLocationDetail?.longitude, mapRegion.latitude, mapRegion.longitude, user_id]);
 
   // Clear or fetch when location changes
   useEffect(() => {
@@ -151,7 +148,7 @@ export function useComments(args: {
       }
     }, 500);
     return () => clearTimeout(t);
-  }, [selectedLocationDetail?.latitude, selectedLocationDetail?.longitude, mapRegion.latitude, mapRegion.longitude, currentUserId, refreshComments]);
+  }, [selectedLocationDetail?.latitude, selectedLocationDetail?.longitude, mapRegion.latitude, mapRegion.longitude, user_id, refreshComments]);
 
   const currentCheckIns = useMemo(() => {
     return fetchedComments.filter(item => item.type === 'checkin');

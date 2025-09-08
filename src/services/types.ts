@@ -6,8 +6,9 @@ export interface CheckInPayload {
   anonymous_checkin?: boolean | null;
   message_text?: string | null;
   audio?: string | null;
-  place?: boolean | null;
+  checkin_type?: string | null;
   place_name?: string | null;
+  checkin_ref?: string | null;
 }
 
 export interface OpenToTalkPayload {
