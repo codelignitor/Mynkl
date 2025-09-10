@@ -8,7 +8,7 @@ import { useMapDataSearch } from './moodMap/useMapDataSearch';
 import { useFilters } from './moodMap/useFilters';
 import { useExplore } from './moodMap/useExplore';
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert } from 'react-native'; 
 
 // Import PNG images for mood filter options
 const HappyIcon = require('../assets/images/happy-icon.png');
@@ -257,6 +257,7 @@ export function useMoodMap(currentUserId?: string, currentUsername?: string) {
   // Comments handled in useComments
 
   // Filter handlers moved to useFilters
+
 
   const loadLocationDetails = React.useCallback(async (location: LocationDetail) => {
     try {

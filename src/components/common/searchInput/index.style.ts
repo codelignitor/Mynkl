@@ -15,7 +15,8 @@ export const styles = StyleSheet.create({
       width: 0,
       height: 2,  
     },
-    marginHorizontal: 16,
+    marginHorizontal: 0,
+    marginRight: 8,
     marginBottom: 16,
   },
   input: {

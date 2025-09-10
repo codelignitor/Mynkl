@@ -16,6 +16,7 @@ import { useHome } from '../../../screenHooks/_useHome';
 import { useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/src/store';
+import { useMoodMap } from '../../../screenHooks/_useMoodMap';
 
 const MoodMapScreen = () => {
   const router = useRouter();
@@ -169,7 +170,9 @@ const MoodMapScreen = () => {
               styles.appIconCard, 
               selectedSections.moodMap && { backgroundColor: '#b7c2cc' }
             ]}
-            onPress={() => moveToScreen('/moodMap')}
+            onPress={() => {
+              moveToScreen('/moodMap');
+            }}
           >
             <View style={styles.iconContainer}>
               <Icon name="map-marker" size={24} color="#4287f5" />

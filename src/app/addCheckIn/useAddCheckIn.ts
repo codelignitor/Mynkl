@@ -3,6 +3,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import Toast from 'react-native-toast-message';
 import * as Location from 'expo-location';
+import { useDispatch } from 'react-redux';
+import { triggerMapRefresh } from '@/src/store/slices/mapSlice';
 
 interface Mood {
   label: string;
@@ -10,7 +12,7 @@ interface Mood {
 }
 
 export function useAddCheckIn() {
-
+  const dispatch = useDispatch();
   const [isloading, setIsLoading] = useState<boolean>(false);
   const [selectedMood, setSelectedMood] = useState<Mood | null>(null);
   const [text, setText] = useState("");
@@ -146,6 +148,8 @@ export function useAddCheckIn() {
           text1: "Check-in successful",
           text2: "Your check-in has been recorded.",
         });
+        // Trigger automatic map refresh via Redux
+        dispatch(triggerMapRefresh());
         router.back()
       }
     } catch (error) {

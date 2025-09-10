@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,16 +20,20 @@ import MoodMapView from '@/src/components/map/MoodMapView';
 import SearchInput from '@/src/components/common/searchInput';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../../store';
+import { resetMapRefresh } from '../../../store/slices/mapSlice';
 import { useComments } from '@/src/screenHooks/moodMap/useComments';
 import { ss } from '@/src/constants/ss';
 
 // Remove unused icon-mapping helpers to keep the component lean
 
 const MoodMapScreen: React.FC = () => {
+  const dispatch = useDispatch();
   // Get current authenticated user from Redux store
   const { user_id, username, isUserLoggedIn } = useSelector((state: RootState) => state.auth);
+  // Get map refresh trigger from Redux
+  const shouldRefresh = useSelector((state: RootState) => state.map.shouldRefresh);
 
   // Debug logging for current user
   // console.log('🔍 Current user from Redux:', { user_id, username, isUserLoggedIn });
@@ -108,6 +113,15 @@ const MoodMapScreen: React.FC = () => {
 
 
 
+  // Listen for Redux map refresh trigger
+  useEffect(() => {
+    if (shouldRefresh) {
+      submitSearch();
+      // Reset the trigger after refresh
+      dispatch(resetMapRefresh());
+    }
+  }, [shouldRefresh, submitSearch, dispatch]);
+
   // Refresh location details when returning from addCheckIn screen
   useFocusEffect(
     React.useCallback(() => {
@@ -117,6 +131,12 @@ const MoodMapScreen: React.FC = () => {
     }, [selectedLocationDetail, refreshLocationDetails])
   );
 
+  // Auto-load comments when location detail changes
+  React.useEffect(() => {
+    if (selectedLocationDetail) {
+      refreshComments();
+    }
+  }, [selectedLocationDetail, refreshComments]);
 
 const emojiMap = {
   happy: require('../../../assets/images/happy-icon.png'),
@@ -387,17 +407,6 @@ const setEmoji = (emoji:any) => {
             <View style={styles.commentsCard}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <Text style={styles.commentsTitle}>💬 Comments</Text>
-                <TouchableOpacity
-                  onPress={refreshComments}
-                  style={{ padding: 5 }}
-                  disabled={isLoadingComments}
-                >
-                  <Ionicons
-                    name="refresh"
-                    size={20}
-                    color={isLoadingComments ? "#999" : "#40E0D0"}
-                  />
-                </TouchableOpacity>
               </View>
 
               {isLoadingComments ? (
@@ -698,16 +707,15 @@ const setEmoji = (emoji:any) => {
 
           {/* Check-ins count indicator */}
         </View>
-        {/* Remove the filter button from the header */}
+        
+        {/* Filter Button - Right Side */}
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={() => setShowFilterModal(true)}
+        >
+          <Ionicons name="filter" size={20} color="#000" />
+        </TouchableOpacity>
       </View>
-
-      {/* Filter Button */}
-      <TouchableOpacity
-        style={styles.filterButton}
-        onPress={() => setShowFilterModal(true)}
-      >
-        <Ionicons name="filter" size={24} color="#000" />
-      </TouchableOpacity>
 
       {/* Refresh map check-ins button */}
 

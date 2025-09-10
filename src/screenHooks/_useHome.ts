@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { moodsData } from '../utils/moodsData';
 import { getHomeDetail } from '../store/slices/authSlice';
+import { triggerMapRefresh } from '../store/slices/mapSlice';
 
 
 
@@ -87,6 +88,8 @@ export function useHome() {
               text1: "Check-in successful",
               text2: "Your check-in has been recorded.",
             });
+            // Trigger automatic map refresh via Redux
+            dispatch(triggerMapRefresh());
         }
             
             

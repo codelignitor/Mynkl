@@ -3,8 +3,11 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistStore, persistReducer, PersistConfig } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import authReducer from './slices/authSlice';
+import mapReducer from './slices/mapSlice';
+
 const rootReducer = combineReducers({
 auth: authReducer,
+map: mapReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
