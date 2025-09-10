@@ -29,7 +29,7 @@ const imageSizes = {
   frustrated:{ width: 73, height: 73 },
 };
 
-const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count }) => {
+const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count , highlighted }) => {
   const key = emoji?.toLowerCase();
   const source = emojiMap[key];
   const size = Platform.OS === 'android'
@@ -56,7 +56,7 @@ const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count }) =
 
   return (
     <View>
-      {count > 0 ? (
+      {highlighted ? (
         <View style={[size, { position: 'relative' }]}>
           <LottieView
             source={require('../../assets/lottie/highlighted-place.json')}

@@ -22,6 +22,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
 import { useComments } from '@/src/screenHooks/moodMap/useComments';
+import { ss } from '@/src/constants/ss';
 
 // Remove unused icon-mapping helpers to keep the component lean
 
@@ -117,7 +118,24 @@ const MoodMapScreen: React.FC = () => {
   );
 
 
+const emojiMap = {
+  happy: require('../../../assets/images/happy-icon.png'),
+  calm: require('../../../assets/images/calm-icon.png'),
+  stressed: require('../../../assets/images/stressed-icon.png'),
+  lonely: require('../../../assets/images/lonely-icon.png'),
+  alone: require('../../../assets/images/lonely-icon.png'),
+  sad: require('../../../assets/images/sad-icon.png'),
+  grateful: require('../../../assets/images/grateful-icon.png'),
+  frustrated: require('../../../assets/images/frustrated.png'),
 
+
+
+};
+
+const setEmoji = (emoji:any) => {
+   const key = emoji?.toLowerCase();
+  return emojiMap[key];
+}
 
 
   // Remove unused derived values and helpers to avoid stale logic
@@ -282,9 +300,12 @@ const MoodMapScreen: React.FC = () => {
                 <Ionicons name="location-outline" size={20} color="#666" />
                 <Text style={styles.locationName}>{selectedLocationDetail.name}</Text>
               </View>
-
               <View style={styles.moodRow}>
-                <Text style={styles.moodEmoji}>😊</Text>
+                <Image
+                         source={setEmoji(selectedLocationDetail.mood)}
+                        style={{ width: ss(38), height: ss(38), display: "flex" }}
+                         resizeMode="contain"
+                       />
                 <Text style={styles.moodLabel}>
                   {selectedLocationDetail.mood || 'Happy'}
                 </Text>
@@ -292,7 +313,7 @@ const MoodMapScreen: React.FC = () => {
 
               <View style={styles.checkInInfo}>
                 <Text style={styles.checkInText}>
-                  Check-ins: {currentCheckIns.length} in the last hour
+                 Total Check-ins: {currentCheckIns.length}
                 </Text>
                 <Text style={styles.checkInBreakdown}>
                   → {(() => {

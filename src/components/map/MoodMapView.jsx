@@ -106,6 +106,7 @@ const MoodMapView = ({
                 emojiStyle={{
                   fontSize: isSelected ? 50 : 30,
                 }}
+                highlighted={location.highlighted}
               />
             </Marker>
           );
