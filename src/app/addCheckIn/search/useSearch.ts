@@ -1,3 +1,4 @@
+//new
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import debounce from 'lodash.debounce';
 import { getSessionAutoComplete, getPlaceDetails } from "@/src/services/apis";
@@ -16,11 +17,10 @@ export const useSearch = () => {
     getCurrentLocation().then(setCurrentLocation);
   }, []);
 
-  const handleSearch = useMemo(
+  // Create the debounced search function
+  const debouncedSearch = useMemo(
     () => 
       debounce(async (query: string) => {
-        setSearchQuery(query); // Update search query immediately for UI
-        
         if (query.trim().length < 2) {
           setSearchResults([]);
           setHasSearched(false);
@@ -37,20 +37,27 @@ export const useSearch = () => {
           setHasSearched(true);
         }
         catch (error: any) {
+          // console.log(error>, "error")
           setSearchResults([]);
         }
         finally {
           setIsLoading(false);
         }
       }, 500),
-    [currentLocation] // Add currentLocation as dependency
+    [currentLocation] 
   );
+
+  // Handle search with immediate UI update
+  const handleSearch = (query: string) => {
+    setSearchQuery(query); 
+    debouncedSearch(query); 
+  };
 
   useEffect(() => {
     return () => {
-      handleSearch.cancel();
+      debouncedSearch.cancel();
     };
-  }, [handleSearch]);
+  }, [debouncedSearch]);
   const handlePlaceSelection = async (placeId: string) => {
     try {
       const placeDetails = await getPlaceDetails(placeId);
