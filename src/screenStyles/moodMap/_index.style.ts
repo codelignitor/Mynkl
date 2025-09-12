@@ -18,7 +18,13 @@ export const styles = StyleSheet.create({
     },
     searchContainer: {
         flex: 1,
-        maxWidth: '70%',
+       
+    },
+    searchInput:{
+        flex:1
+    },
+    searchRow:{
+        flexDirection:'row'
     },
     filterButton: {
         backgroundColor: '#FFFFFF',

@@ -37,6 +37,7 @@ export function useComments(args: {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [fetchedComments, setFetchedComments] = useState<any[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [comentsResponse , setCommentResponse] = useState<any>(null)
 
   const handleAddComment = useCallback(async () => {
     const trimmedComment = newComment.trim();
@@ -91,6 +92,8 @@ export function useComments(args: {
       if (response && (response as any).data && Array.isArray((response as any).data)) {
         commentsData = (response as any).data;
       }
+
+      setCommentResponse(commentsData)
 
       const locationKey = `${selectedLocationDetail.latitude || mapRegion.latitude},${selectedLocationDetail.longitude || mapRegion.longitude}`;
       if (!Array.isArray(commentsData)) {
@@ -164,6 +167,7 @@ export function useComments(args: {
     handleAddComment,
     refreshComments,
     currentCheckIns,
+    comentsResponse
   } as const;
 }
 

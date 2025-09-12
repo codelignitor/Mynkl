@@ -103,6 +103,7 @@ const MoodMapScreen: React.FC = () => {
       handleAddComment,
       refreshComments,
       currentCheckIns,
+       comentsResponse,
     } = useComments({
       selectedLocationDetail,
       mapRegion,
@@ -333,18 +334,17 @@ const setEmoji = (emoji:any) => {
 
               <View style={styles.checkInInfo}>
                 <Text style={styles.checkInText}>
-                 Total Check-ins: {currentCheckIns.length}
+                 Total Check-ins: {comentsResponse?.total_check_ins || 0}
                 </Text>
-                <Text style={styles.checkInBreakdown}>
-                  → {(() => {
-                    if (currentCheckIns.length > 0) {
-                      const moods = currentCheckIns.map(checkIn => checkIn.mood || 'Happy');
-                      const uniqueMoods = [...new Set(moods)];
-                      return `Recent: ${uniqueMoods.join(', ')}`;
-                    }
-                    return 'No recent check-ins';
-                  })()}
-                </Text>
+               {comentsResponse?.total_check_ins > 0 && (
+  <Text style={styles.checkInBreakdown}>
+    Moods:{" "}
+    {Object.entries(comentsResponse?.mood_counts || {})
+      .map(([mood, count]) => `${mood}: ${count}`)
+      .join(", ")}
+  </Text>
+)}
+              
               </View>
             </View>
 
@@ -690,12 +690,22 @@ const setEmoji = (emoji:any) => {
       {/* Header */}
       <View style={styles.headerContainer}>
         <View style={styles.searchContainer}>
+          <View style={styles.searchRow}>
+            
           <SearchInput
+          style={styles.searchInput}
             onChangeText={setSearchInput}
             value={searchInput}
             placeholder="Mood Map"
             onSearchPress={submitSearch}
           />
+            <TouchableOpacity
+          style={styles.filterButton}
+          onPress={() => setShowFilterModal(true)}
+        >
+          <Ionicons name="filter" size={20} color="#000" />
+        </TouchableOpacity>
+          </View>
           {/* Explore Button directly below search input, matching width/alignment */}
           <TouchableOpacity
             style={styles.exploreButton}
@@ -709,12 +719,7 @@ const setEmoji = (emoji:any) => {
         </View>
         
         {/* Filter Button - Right Side */}
-        <TouchableOpacity
-          style={styles.filterButton}
-          onPress={() => setShowFilterModal(true)}
-        >
-          <Ionicons name="filter" size={20} color="#000" />
-        </TouchableOpacity>
+      
       </View>
 
       {/* Refresh map check-ins button */}

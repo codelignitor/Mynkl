@@ -9,11 +9,12 @@ interface SearchInputProps extends Omit<TextInputProps, 'onChangeText' | 'value'
   onChangeText: (text: string) => void;
   placeholder?: string;
   onSearchPress?: () => void;
+  style:Object
 }
 
-const SearchInput: React.FC<SearchInputProps> = ({ value, onChangeText, placeholder, onSearchPress, ...rest }) => {
+const SearchInput: React.FC<SearchInputProps> = ({ value, onChangeText, placeholder, onSearchPress,style , ...rest }) => {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container , style]}>
       <TextInput
         style={styles.input}
         placeholderTextColor="#000"
