@@ -1,10 +1,12 @@
 //new changes 
+import { ss } from '@/src/constants/ss';
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#A7E2E0',
+    // borderRadius:30
   },
   contentContainer: {
     flex: 1,
@@ -122,19 +124,20 @@ export const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
+  
 });
 
 // Modal-specific styles
 export const modalStyles = {
   headerContainer: {
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     justifyContent: 'space-between' as const,
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
-    backgroundColor: '#FFFFFF',
+   paddingVertical: 12,
+    // borderBottomColor: '#E0E0E0',
+    // backgroundColor: '#FFFFFF',
   },
   closeButton: {
     padding: 8,

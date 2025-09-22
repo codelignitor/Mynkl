@@ -5,14 +5,14 @@ import { ss } from '@/src/constants/ss';
 
 
 const emojiMap = {
-  happy: require('../../assets/images/happy-icon.png'),
-  calm: require('../../assets/images/calm-icon.png'),
-  stressed: require('../../assets/images/stressed-icon.png'),
-  lonely: require('../../assets/images/lonely-icon.png'),
-  alone: require('../../assets/images/lonely-icon.png'),
-  sad: require('../../assets/images/sad-icon.png'),
-  grateful:require('../../assets/images/grateful-icon.png'),
-  frustrated:require('../../assets/images/frustrated.png'),
+  happy: require('../../assets/images/happy-place.png'),
+  calm: require('../../assets/images/calm-place.png'),
+  // stressed: require('../../assets/images/stressed-place.png'),
+  lonely: require('../../assets/images/lonely-place.png'),
+  alone: require('../../assets/images/lonely-place.png'),
+  sad: require('../../assets/images/sad-place.png'),
+  grateful: require('../../assets/images/grateful-place.png'),
+  frustrated: require('../../assets/images/frustrated-place.png'),
 
 
 

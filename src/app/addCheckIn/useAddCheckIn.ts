@@ -26,7 +26,7 @@ export function useAddCheckIn() {
   const latitude = params.latitude as string;
   const longitude = params.longitude as string;
   const locationName = params.locationName as string;
-  const checkinRefParam = params.checkinRef as string;
+  const checkinRefParam = params.locationId as string;
   const typeParam = params.type as string ;
   const selectedLocationParam = params.selectedLocation as string ;
   // let selectedLocation: any = null;

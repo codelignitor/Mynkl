@@ -1,3 +1,4 @@
+import { ss } from "@/src/constants/ss";
 import { Platform, StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
@@ -602,7 +603,7 @@ export const styles = StyleSheet.create({
         padding: 16,
         marginBottom: 16,
         minHeight: 200,
-        maxHeight: 400,
+        maxHeight: 300,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -895,19 +896,11 @@ export const styles = StyleSheet.create({
         marginLeft: 8,
     },
     exploreButton: {
-        backgroundColor: '#E0F7FA',
-        borderRadius: 22,
-        paddingVertical: 12,
-        marginHorizontal: 0,
-        marginRight: 8,
-        marginTop: 0,
-        marginBottom: 8,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
-        elevation: 2,
+        position: 'absolute',
+        bottom: ss(70),
+        right: ss(-20),
+
+        zIndex: 1000,
     },
     exploreButtonText: {
         color: '#00796B',

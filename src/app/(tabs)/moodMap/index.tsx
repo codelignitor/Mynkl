@@ -140,14 +140,14 @@ const MoodMapScreen: React.FC = () => {
   }, [selectedLocationDetail, refreshComments]);
 
 const emojiMap = {
-  happy: require('../../../assets/images/happy-icon.png'),
-  calm: require('../../../assets/images/calm-icon.png'),
-  stressed: require('../../../assets/images/stressed-icon.png'),
-  lonely: require('../../../assets/images/lonely-icon.png'),
-  alone: require('../../../assets/images/lonely-icon.png'),
-  sad: require('../../../assets/images/sad-icon.png'),
-  grateful: require('../../../assets/images/grateful-icon.png'),
-  frustrated: require('../../../assets/images/frustrated.png'),
+  happy: require('../../../assets/images/happy-place.png'),
+  calm: require('../../../assets/images/calm-place.png'),
+  // stressed: require('../../../assets/images/stressed-place.png'),
+  lonely: require('../../../assets/images/lonely-place.png'),
+  alone: require('../../../assets/images/lonely-place.png'),
+  sad: require('../../../assets/images/sad-place.png'),
+  grateful: require('../../../assets/images/grateful-place.png'),
+  frustrated: require('../../../assets/images/frustrated-place.png'),
 
 
 
@@ -463,7 +463,11 @@ const setEmoji = (emoji:any) => {
               </View>
             </View>
 
-            <TouchableOpacity
+         
+          </ScrollView>
+          
+        )}
+           <TouchableOpacity
               style={styles.checkInButton}
               onPress={() => {
                   setShowLocationDetail(false);
@@ -484,8 +488,6 @@ const setEmoji = (emoji:any) => {
             >
               <Text style={styles.checkInButtonText}>How do you feel?</Text>
             </TouchableOpacity>
-          </ScrollView>
-        )}
       </SafeAreaView>
     </Modal>
   );
@@ -600,7 +602,8 @@ const setEmoji = (emoji:any) => {
             </View>
           ) : selectedUserDetail ? (
             // Show single user for hugs
-            <TouchableOpacity style={styles.locationCard} activeOpacity={0.85} onPress={() => setShowSelectUserButton(true)}>
+            <TouchableOpacity style={styles.locationCard} activeOpacity={0.85} onPress={() =>
+            { setShowSelectUserButton(true) }}>
               <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
                 {selectedUserDetail?.name || selectedUserDetail?.username || 'User'}
               </Text>
@@ -615,7 +618,13 @@ const setEmoji = (emoji:any) => {
               {showSelectUserButton && isCheckInsForHugs && (
                 <TouchableOpacity
                   style={[styles.sendHugButton, { marginTop: 16 }]}
-                  onPress={() => handleSelectHugTarget(selectedUserDetail)}
+                  onPress={() => {
+                    if(user_id === selectedUserDetail.id) {
+                      Alert.alert("Action Not Allowed", "You cannot send a virtual hug to yourself.");
+                      return;
+                    }
+                    handleSelectHugTarget(selectedUserDetail);
+                  }}
                   activeOpacity={0.85}
                 >
                   <Text style={styles.sendHugButtonText}>Send Virtual Hug 🤗</Text>
@@ -707,13 +716,7 @@ const setEmoji = (emoji:any) => {
         </TouchableOpacity>
           </View>
           {/* Explore Button directly below search input, matching width/alignment */}
-          <TouchableOpacity
-            style={styles.exploreButton}
-            onPress={() => setShowExploreSheet(true)}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.exploreButtonText}>Explore</Text>
-          </TouchableOpacity>
+         
 
           {/* Check-ins count indicator */}
         </View>
@@ -725,7 +728,8 @@ const setEmoji = (emoji:any) => {
       {/* Refresh map check-ins button */}
 
       {/* Loading Indicator */}
-      {loading && <ActivityIndicator size="large" style={styles.loadingIndicator} />}
+     
+      {loading && <ActivityIndicator size="small" style={styles.loadingIndicator} />}
 
       {/* Map Check-ins Loading Indicator */}
 
@@ -741,6 +745,18 @@ const setEmoji = (emoji:any) => {
         currentEmoji={null}
         backgroundColor={undefined}
       />
+
+       <TouchableOpacity
+            style={styles.exploreButton}
+            onPress={() => setShowExploreSheet(true)}
+            activeOpacity={0.85}
+          >
+            <Image
+              source={require('../../../assets/images/explore-icon.png')}
+              style={{ width: ss(132), height: ss(132), marginRight: 8 }}
+            />
+            {/* <Text style={styles.exploreButtonText}>Explore</Text> */}
+          </TouchableOpacity>
 
       {/* Overlays and Sections */}
       {renderActivitiesSection()}
