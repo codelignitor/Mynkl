@@ -267,15 +267,6 @@ export const getaiMessage = async () => {
   return response.data;
 };
 
-export const getLocation = async (lat?: number, lng?: number) => {
-  const params: any = {};
-  if (lat !== undefined && lng !== undefined) {
-    params.lat = lat;
-    params.lng = lng;
-  }
-  const response = await axiosInstance.get(`/home/places/suggestions`, { params });
-  return response.data;
-};
 
 export const submitJournal = async (payload) => {
   const response = await axiosInstance.post(`/home/journal`, payload);

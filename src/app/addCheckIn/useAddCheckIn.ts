@@ -104,8 +104,8 @@ export function useAddCheckIn() {
       }
 
       const formData = new FormData();
-      formData.append('mood', selectedMood?.label);
-
+      formData.append('mood', selectedMood?.label?.toLowerCase());
+      
       if (hasLocationFromMap) {
         formData.append('lat', latitude);
         formData.append('lng', longitude);
@@ -113,7 +113,7 @@ export function useAddCheckIn() {
         if (locationName) {
           formData.append('place_name', locationName);
         }
-          formData.append('checkin_ref', checkinRefParam);
+        formData.append('checkin_ref', checkinRefParam);
 
       } else  {
         // Use coordinates from selectedLocation if available; otherwise we already fetched currentLocation above

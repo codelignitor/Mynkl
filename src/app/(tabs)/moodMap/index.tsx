@@ -12,7 +12,8 @@ import {
   TextInput,
   ScrollView,
   Alert,
-  Platform
+  Platform,
+  FlatList
 } from 'react-native';
 import { styles } from '../../../screenStyles/moodMap/_index.style';
 import { useMoodMap, MOOD_FILTER_OPTIONS } from '../../../screenHooks/_useMoodMap';
@@ -425,13 +426,18 @@ const setEmoji = (emoji:any) => {
                     );
                   }
                   return (
-                    <ScrollView style={styles.commentsList} showsVerticalScrollIndicator={true}>
-                      {userComments.map((item, index) => (
+                    <FlatList
+                      data={userComments}
+                      style={styles.commentsList}
+                      showsVerticalScrollIndicator={true}
+                      nestedScrollEnabled={true}
+                      renderItem={({ item, index }) => (
                         <View key={`comment_${index}`} style={styles.commentItem}>
                           <Text style={styles.commentText}>💬 {item.content}</Text>
                         </View>
-                      ))}
-                    </ScrollView>
+                      )}
+                      keyExtractor={(item, index) => `comment_${index}`}
+                    />
                   );
                 })()
               )}

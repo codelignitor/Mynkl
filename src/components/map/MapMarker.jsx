@@ -45,11 +45,29 @@ const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count , hi
       <View style={[size, { backgroundColor }, highlightStyle ,{overflow: 'visible' ,alignItems: 'center',
     justifyContent: 'center',
     padding: 20,}]}>
+      {highlighted ? (
+        <View style={[size, { position: 'relative' }]}>
+          <LottieView
+            source={require('../../assets/lottie/highlighted-place.json')}
+            autoPlay
+            loop
+            enableMergePathsAndroidForKitKatAndAbove
+            style={[StyleSheet.absoluteFill, highlightStyle, markerStyle]}
+          />
+           <Image
+          source={source}
+         style={{ width: ss(38), height: ss(38), display: "flex" }}
+          resizeMode="contain"
+        />
+        </View>
+      ) : (
         <Image
           source={source}
          style={{ width: ss(38), height: ss(38), display: "flex" }}
           resizeMode="contain"
         />
+      )}
+       
       </View>
     );
   }

@@ -625,7 +625,6 @@ export const styles = StyleSheet.create({
         backgroundColor: '#f8f9fa',
         borderRadius: 8,
         padding: 12,
-        overflow: 'scroll',
     },
     commentItem: {
         backgroundColor: '#F5F5F5',
