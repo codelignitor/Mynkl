@@ -106,12 +106,15 @@ export function useComments(args: {
             id: makeCommentId(comment, locationKey),
             userId: user_id || 'anonymous',
           })),
-          ...checkInDetails.map((checkIn: { text?: string; mood: string; timestamp: string; user_id: string }) => ({
+          ...checkInDetails.map((checkIn: { text?: string; mood: string; timestamp: string; user_id: string , user:Object ,location_opt_in:boolean  }) => ({
             type: 'checkin',
             content: checkIn.text || 'No message',
             mood: checkIn.mood,
             timestamp: checkIn.timestamp,
             userId: checkIn.user_id,
+            user : checkIn.user,
+            location_opt_in:checkIn.location_opt_in
+
           })),
         ];
         setFetchedComments(allData);

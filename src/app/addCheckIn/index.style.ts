@@ -173,6 +173,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     fontWeight: '400',
+    width:'90%'
   },
   switch: {
     transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],

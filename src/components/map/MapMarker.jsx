@@ -7,7 +7,7 @@ import { ss } from '@/src/constants/ss';
 const emojiMap = {
   happy: require('../../assets/images/happy-place.png'),
   calm: require('../../assets/images/calm-place.png'),
-  // stressed: require('../../assets/images/stressed-place.png'),
+  stressed: require('../../assets/images/anxious-place.png'),
   lonely: require('../../assets/images/lonely-place.png'),
   alone: require('../../assets/images/lonely-place.png'),
   sad: require('../../assets/images/sad-place.png'),
@@ -48,17 +48,19 @@ const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count , hi
       {highlighted ? (
         <View style={[size, { position: 'relative' }]}>
           <LottieView
-            source={require('../../assets/lottie/highlighted-place.json')}
+            source={require('../../assets/lottie/highlighted-place1.json')}
             autoPlay
             loop
             enableMergePathsAndroidForKitKatAndAbove
-            style={[StyleSheet.absoluteFill, highlightStyle, markerStyle]}
+            style={[StyleSheet.absoluteFill, { width: 38, height: 38 ,
+             
+            }, markerStyle]}
           />
-           <Image
+           {/* <Image
           source={source}
-         style={{ width: ss(38), height: ss(38), display: "flex" }}
+         style={{ width: ss(32), height: ss(32), display: "flex" }}
           resizeMode="contain"
-        />
+        /> */}
         </View>
       ) : (
         <Image
@@ -77,22 +79,22 @@ const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count , hi
       {highlighted ? (
         <View style={[size, { position: 'relative' }]}>
           <LottieView
-            source={require('../../assets/lottie/highlighted-place.json')}
+            source={require('../../assets/lottie/highlighted-place1.json')}
             autoPlay
             loop
             enableMergePathsAndroidForKitKatAndAbove
-            style={[StyleSheet.absoluteFill, highlightStyle, markerStyle]}
+            style={[StyleSheet.absoluteFill, styles.highlight , markerStyle]}
           />
-          <Image
+          {/* <Image
             source={source}
-            style={[size, emojiStyle]}
+            style={{ width: 44, height: 44 }}
             resizeMode="contain"
-          />
+          /> */}
         </View>
       ) : (
         <Image
           source={source}
-          style={[size, emojiStyle]}
+          style={{ width: 73, height: 73 }}
           resizeMode="contain"
         />
       )}
@@ -102,9 +104,7 @@ const MapMarker = ({ emoji, backgroundColor, markerStyle, emojiStyle, count , hi
 
 const styles = StyleSheet.create({
   highlight: {
-    backgroundColor: 'rgba(255, 255, 0, 0.2)',
-    borderRadius: 50,
-    padding: 2,
+    width: 68, height: 68
   },
 });
 

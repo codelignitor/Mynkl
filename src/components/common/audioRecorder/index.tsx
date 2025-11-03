@@ -135,7 +135,7 @@ export default function AudioRecorderPlayer({recordedUri, setRecordedUri}) {
                 source={require('../../../assets/lottie/audio_waves_anim.json')}
                 autoPlay={isPlaying}
                 loop={isPlaying}
-                enableMergePathsAndroidForKitKatAndAbove
+            
                 style={[{ position: 'absolute', left: 0, right: 50, width: 196, height: 66, alignItems: 'center', justifyContent: 'center' }]}
             />
         </View>
@@ -150,8 +150,9 @@ export default function AudioRecorderPlayer({recordedUri, setRecordedUri}) {
           {/* <Text style={{ marginTop: 10, fontSize: 12 }}>Audio URI: {recordedUri}</Text> */}
         </>
       ):
+      <>
         <TouchableOpacity
-            style={{ alignItems: 'center', justifyContent: 'center' , position:'absolute' , left:120 , right:0,  }}
+            style={{ alignItems: 'center', justifyContent: 'center' , position:'absolute' , left:130 , right:0,  }}
             // title={isPlaying ? 'Stop Playback' : 'Play Recording'}
             onPress={isRecording ? stopRecording : startRecording}
           >
@@ -160,11 +161,21 @@ export default function AudioRecorderPlayer({recordedUri, setRecordedUri}) {
                       source={isRecording ?require('../../../assets/lottie/stop_mic_anim.json') : require('../../../assets/lottie/play_mic_anim.json')}
                       autoPlay
                       loop
-                      enableMergePathsAndroidForKitKatAndAbove
-                      style={[StyleSheet.absoluteFill , { width: 66, height: 66 }]}
+                      style={[StyleSheet.absoluteFill , { width: 56, height: 56 }]}
                     />
                     </TouchableOpacity>
+                      <TouchableOpacity
+            style={{ alignItems: 'center', justifyContent: 'center' , position:'absolute' , left:0 , right:0, top:60  }}
+            // title={isPlaying ? 'Stop Playback' : 'Play Recording'}
+            onPress={isRecording ? stopRecording : startRecording}
+          >
+           <Text style={{ color: '#fff', fontSize: 16 , backgroundColor:'#31c0bc' , padding:8 , borderRadius:8 }}>{isRecording ? 'Stop Recording' : 'Start Recording'}</Text>
+          </TouchableOpacity>
+
+                    </>
+                    
       }
+
     </View>
   );
 }

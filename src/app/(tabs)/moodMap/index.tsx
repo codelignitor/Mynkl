@@ -13,7 +13,8 @@ import {
   ScrollView,
   Alert,
   Platform,
-  FlatList
+  FlatList,
+  Pressable
 } from 'react-native';
 import { styles } from '../../../screenStyles/moodMap/_index.style';
 import { useMoodMap, MOOD_FILTER_OPTIONS } from '../../../screenHooks/_useMoodMap';
@@ -143,7 +144,7 @@ const MoodMapScreen: React.FC = () => {
 const emojiMap = {
   happy: require('../../../assets/images/happy-place.png'),
   calm: require('../../../assets/images/calm-place.png'),
-  // stressed: require('../../../assets/images/stressed-place.png'),
+  stressed: require('../../../assets/images/anxious-place.png'),
   lonely: require('../../../assets/images/lonely-place.png'),
   alone: require('../../../assets/images/lonely-place.png'),
   sad: require('../../../assets/images/sad-place.png'),
@@ -246,14 +247,9 @@ const setEmoji = (emoji:any) => {
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
         <View style={styles.filterHeader}>
-          <TouchableOpacity
-            onPress={() => setShowFilterModal(false)}
-            style={styles.filterBackButton}
-          >
-            <Ionicons name="chevron-back" size={24} color="#000" />
-          </TouchableOpacity>
+         
           <Text style={styles.filterHeaderTitle}>Filter by Mood</Text>
-          <View style={styles.filterHeaderRight} />
+      
         </View>
 
         <Text style={styles.filterDescription}>
@@ -335,7 +331,7 @@ const setEmoji = (emoji:any) => {
 
               <View style={styles.checkInInfo}>
                 <Text style={styles.checkInText}>
-                 Total Check-ins: {comentsResponse?.total_check_ins || 0}
+                 Check-ins in last 24h: {comentsResponse?.total_check_ins || 0}
                 </Text>
                {comentsResponse?.total_check_ins > 0 && (
   <Text style={styles.checkInBreakdown}>
@@ -542,7 +538,7 @@ const setEmoji = (emoji:any) => {
                   style={styles.commentItem}
                   onPress={() => {
                     setShowCheckInsModal(false);
-                    handleCheckInUserPress(ci.userId);
+                    handleCheckInUserPress(ci);
                   }}
                   activeOpacity={0.8}
                 >
@@ -601,20 +597,15 @@ const setEmoji = (emoji:any) => {
           )}
         </View>
         <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
-          {isLoadingUserDetail ? (
-            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-              <ActivityIndicator size="small" color="#40E0D0" />
-              <Text style={{ marginTop: 8, color: '#666', fontSize: 14 }}>Loading user...</Text>
-            </View>
-          ) : selectedUserDetail ? (
+         selectedUserDetail ? (
             // Show single user for hugs
             <TouchableOpacity style={styles.locationCard} activeOpacity={0.85} onPress={() =>
             { setShowSelectUserButton(true) }}>
               <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
-                {selectedUserDetail?.name || selectedUserDetail?.username || 'User'}
+                {selectedUserDetail?.location_opt_in ? 'Anonymous User' :  selectedUserDetail?.user?.username }
               </Text>
-              {selectedUserDetail?.email ? (
-                <Text style={{ fontSize: 14, color: '#666' }}>{selectedUserDetail.email}</Text>
+              {selectedUserDetail?.user?.email ? (
+                <Text style={{ fontSize: 14, color: '#666' }}>{selectedUserDetail?.location_opt_in ? 'Anonymous Email' :selectedUserDetail?.user?.email}</Text>
               ) : null}
               {/* {selectedUserDetail?.bio ? (
                 <Text style={{ fontSize: 14, color: '#666', marginTop: 8 }}>{selectedUserDetail.bio}</Text>
@@ -625,7 +616,7 @@ const setEmoji = (emoji:any) => {
                 <TouchableOpacity
                   style={[styles.sendHugButton, { marginTop: 16 }]}
                   onPress={() => {
-                    if(user_id === selectedUserDetail.id) {
+                    if(user_id === selectedUserDetail.user?.id) {
                       Alert.alert("Action Not Allowed", "You cannot send a virtual hug to yourself.");
                       return;
                     }
@@ -852,11 +843,11 @@ const setEmoji = (emoji:any) => {
                     exploreTab === tab && styles.exploreTabButtonSelected
                   ]}
                   onPress={() => {
-                    if (tab === 'Mood-Specific') {
-                      setShowFilterModal(true);
-                    } else {
+                    // if (tab === 'Mood-Specific') {
+                    //   setShowFilterModal(true);
+                    // } else {
                       handleExploreTabPress(tab as any);
-                    }
+                    //}
                   }}
                   activeOpacity={0.85}
                 >

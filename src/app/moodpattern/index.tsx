@@ -190,7 +190,7 @@ export default function MoodPatternScreen() {
           contentContainerStyle={styles.correlationScrollContainer}
         >
           {moodPattern?.MoodCorrelationTags?.map((tag, index) => (
-            <TouchableOpacity key={index} style={styles.correlationTag}>
+            <TouchableOpacity key={index} style={styles.correlationTag} onPress={() => {router.push(`/Check_Ins/mood-checkIns-activities`)}}>
               <Text style={styles.correlationTagText}>{tag}</Text>
             </TouchableOpacity>
           ))}

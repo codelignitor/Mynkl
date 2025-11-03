@@ -11,7 +11,7 @@ export function useExplore(args: {
   setSelectedMood: (m: string) => void;
   setMoodData: (d: any[]) => void;
 }) {
-  const { mapRegion, clearMoodFilter, setSelectedMood, setMoodData } = args;
+  const { mapRegion, clearMoodFilter, setSelectedMood, setMoodData , } = args;
 
   const [showExploreSheet, setShowExploreSheet] = useState(false);
   const [exploreTab, setExploreTab] = useState<'Nearby' | 'Trending' | 'Mood-Specific'>('Nearby');
@@ -63,6 +63,7 @@ export function useExplore(args: {
     exploreTab,
     handleExploreTabPress,
     exploreLoading,
+    setExploreTab
   } as const;
 }
 

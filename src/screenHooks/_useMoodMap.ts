@@ -122,10 +122,10 @@ export function useMoodMap(currentUserId?: string, currentUsername?: string) {
     handleMoodSelection,
     handleMood,
     clearSelectedFilterMoods,
-  } = useFilters({ mapData, filteredMapData, setMoodData, setSearchInput, selectedMood, setSelectedMood });
+  } = useFilters({ mapData, filteredMapData, setMoodData, setSearchInput, selectedMood, setSelectedMood ,setShowFilterModal });
 
   // Explore logic
-  const { showExploreSheet, setShowExploreSheet, exploreTab, handleExploreTabPress, exploreLoading } = useExplore({
+  const { showExploreSheet, setShowExploreSheet, exploreTab, exploreLoading , setExploreTab } = useExplore({
     mapRegion,
     clearMoodFilter,
     setSelectedMood,
@@ -134,6 +134,34 @@ export function useMoodMap(currentUserId?: string, currentUsername?: string) {
 
   // Comments sub-hook (depends on selectedLocationDetail, mapRegion, user/mood)
  
+
+   const handleExploreTabPress = useCallback(
+    async (tab: 'Nearby' | 'Trending' | 'Mood-Specific') => {
+      setExploreTab(tab);
+      if (tab === 'Nearby') {
+        // await fetchExploreData('nearby');
+         const moodSpecificItems = (mapData || []).filter((item: any) =>
+          item?.nearby === true || item?.nearby === 'true'
+        );
+        setMoodData(moodSpecificItems);
+      } else if (tab === 'Trending') {
+ const moodSpecificItems = (mapData || []).filter((item: any) =>
+          item?.highlighted === true || item?.highlighted === 'true'
+        );
+        setMoodData(moodSpecificItems);        // await fetchExploreData('highlighted');
+      } else if (tab === 'Mood-Specific') {
+        // Filter mapData to only items flagged as mood-specific and update moodData
+        const moodSpecificItems = (mapData || []).filter((item: any) =>
+          item?.mood_specific === true || item?.mood_specific === 'true'
+        );
+        setMoodData(moodSpecificItems);
+        // open filter modal in parent; no data fetch here
+      }
+    },
+    [moodData, mapData, setMoodData]
+  );
+
+  console.log("Mood Specific" , moodData);
 
   const callBackMapHandler = (location: any) => {
 
@@ -365,27 +393,23 @@ export function useMoodMap(currentUserId?: string, currentUsername?: string) {
   // Removed unused openCheckInsModal
 
   const handleCheckInUserPress = React.useCallback(async (userId?: string) => {
-    if (!userId) return;
-    try {
+    
+   
 
      setShowCheckInsModal(false)
-      setTimeout(() => {
-      setIsLoadingUserDetail(true);
-      }
-      , 100);
-      const user = await updatedUserProfile(userId);
-      // Ensure the selected user detail always contains a stable id
-      const normalizedUser = {
-        ...user,
-        id: (user as any)?.id || (user as any)?.user_id || (user as any)?.userId || (user as any)?._id || userId,
-      } as any;
-      setSelectedUserDetail(normalizedUser);
-      setShowUserDetailModal(true);
-    } catch (e) {
-    } finally {
-      setIsLoadingUserDetail(false);
+    
+      // const user = await updatedUserProfile(userId);
+      // // Ensure the selected user detail always contains a stable id
+      // const normalizedUser = {
+      //   ...user,
+      //   id: (user as any)?.id || (user as any)?.user_id || (user as any)?.userId || (user as any)?._id || userId,
+      // } as any;
+    setSelectedUserDetail(userId);
+    setShowUserDetailModal(true);
+
+     
     }
-  }, []);
+  , []);
 
   const handleSelectHugTarget = React.useCallback(async (user: any) => {
 

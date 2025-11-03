@@ -7,8 +7,9 @@ export function useFilters(args: {
   setSearchInput: (val: string) => void;
   selectedMood: string;
   setSelectedMood: (val: string) => void;
+  setShowFilterModal: (val: boolean) => void;
 }) {
-  const { mapData, filteredMapData, setMoodData, setSearchInput, selectedMood, setSelectedMood } = args;
+  const { mapData, filteredMapData, setMoodData, setSearchInput, selectedMood, setSelectedMood, setShowFilterModal } = args;
 
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [selectedFilterMoods, setSelectedFilterMoods] = useState<string[]>([]);
@@ -35,6 +36,7 @@ export function useFilters(args: {
           return normalizedSelected.some(mood => expandedItemMoods.includes(mood));
         });
         setMoodData(filtered);
+        setShowFilterModal(false);
       }
     },
     [mapData, setMoodData, setSearchInput, setSelectedMood]
@@ -46,6 +48,7 @@ export function useFilters(args: {
     setSearchInput('');
     const filteredData = mapData.filter((item: any) => item.type !== 'check-in');
     setMoodData(filteredData);
+    setShowFilterModal(false);
   }, [mapData, setMoodData, setSearchInput, setSelectedMood]);
 
   const handleMoodSelection = useCallback(

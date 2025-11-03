@@ -255,8 +255,8 @@ export default function AddCheckIn() {
             <View style={styles.locationContent}>
               <Text style={styles.locationIcon}>📍</Text>
               <View style={styles.locationTextContainer}>
-                <Text style={styles.locationText}>Private Check-in</Text>
-                <Text style={styles.locationSubtext}>Hide your identity and location when checking in</Text>
+                <Text style={styles.locationText}>Anonymous Check-in</Text>
+                <Text style={styles.locationSubtext}>Hide your identity when checking in</Text>
               </View>
             </View>
             <Switch

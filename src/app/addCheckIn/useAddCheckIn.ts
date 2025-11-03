@@ -124,7 +124,7 @@ export function useAddCheckIn() {
           formData.append('checkin_ref', selectedLocation?.place_id || '');
       } 
 
-      formData.append('location_opt_in', AnonymousCheckIn ? 'false' : 'true'); 
+      formData.append('location_opt_in', AnonymousCheckIn ? 'true' : 'false'); 
       // formData.append('anonymous_checkin', AnonymousCheckIn ? 'true' : 'false');
 
       if (isAudioRecording && recordedUri) {

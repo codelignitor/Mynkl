@@ -213,7 +213,7 @@ export const styles = StyleSheet.create({
         borderBottomColor: '#F0F0F0',
     },
     filterBackButton: {
-        padding: 4,
+       backgroundColor:'red'
     },
     filterHeaderTitle: {
         flex: 1,

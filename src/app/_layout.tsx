@@ -16,6 +16,7 @@ import { Platform } from 'react-native';
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {ChatWrapper} from '../components/common/chatWrapper';
 import { AppProvider } from '../contexts/AppContext';
+// import { setAndroidKeyboardHandler } from 'expo-system-ui'; // New in SDK 53
 
 
 SplashScreen.preventAutoHideAsync();
@@ -38,6 +39,13 @@ function MainLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  //  useEffect(() => {
+  //   if (Platform.OS === 'android') {
+  //     // Disable keyboard transition animation causing the bottom sheet effect
+  //     setAndroidKeyboardHandler({ mode: 'pan' }); // or 'resize' depending on layout
+  //   }
+  // }, []);
 
 
   return (
