@@ -375,3 +375,27 @@ export const getPlaceDetails = async (placeId: string) => {
   const response = await axiosInstance.get(`/home/places/details/${placeId}`);
   return response.data;
 };
+
+
+// moodDiary API's
+
+export const getMoodCalendar = async () => {
+  try {
+    const response = await axiosInstance.get('/home/mood-calendar');
+    return response.data;
+  } catch (error) {
+    console.error('❌ Error fetching mood calendar:', error);
+    throw error;
+  }
+};
+
+//Dailydetail page APi (dynamic)
+export const getMoodDayDetail = async (date: string) => {
+  try {
+    const response = await axiosInstance.get(`/home/mood-calendar/day?date=${date}`);
+    return response.data;
+  } catch (error) {
+    console.error('❌ Error fetching mood day detail:', error);
+    throw error;
+  }
+};
