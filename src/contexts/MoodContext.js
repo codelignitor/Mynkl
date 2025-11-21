@@ -1,21 +1,20 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { getMoodCalendar } from '@/src/services/apis';
 
-// Map API moods to your app's mood system
 const moodMap = {
-  happy: { mood: "Happy", value: 3, emoji: "😁" },
-  excited: { mood: "Happy", value: 3, emoji: "😁" },
-  sad: { mood: "Sad", value: 1, emoji: "😢" },
-  calm: { mood: "Calm", value: 2, emoji: "😌" },
-  grateful: { mood: "Grateful", value: 3, emoji: "😊" },
-  annoyed: { mood: "Annoyed", value: 2, emoji: "😠" },
-  stressed: { mood: "Stressed", value: 1, emoji: "😫" },
-  anxious: { mood: "Stressed", value: 1, emoji: "😰" },
-  tired: { mood: "Calm", value: 2, emoji: "😴" },
-  neutral: { mood: "Calm", value: 2, emoji: "😐" },
+  // Direct matches - use lowercase
+  happy: { mood: "happy" },
+  calm: { mood: "calm" },
+  stressed: { mood: "stressed" },
+  grateful: { mood: "grateful" },
+  sad: { mood: "sad" },
+  lonely: { mood: "lonely" },
+  frustrated: { mood: "frustrated" },
+  excited: { mood: "excited" },
+  annoyed: { mood: "frustrated" },
 };
 
-const defaultMoodEntry = { mood: "Unknown", value: 0, emoji: "😶" };
+const defaultMoodEntry = { mood: "calm" }; // Fallback to calm
 
 const MoodContext = createContext();
 
@@ -30,7 +29,25 @@ export function MoodProvider({ children }) {
 
     Object.entries(apiData.calendar).forEach(([date, dayData]) => {
       if (dayData.dominant_mood && dayData.dominant_mood !== null) {
-        transformedEntries[date] = moodMap[dayData.dominant_mood] || defaultMoodEntry;
+        // Convert API mood to lowercase to match our keys
+        const apiMood = dayData.dominant_mood.toLowerCase();
+        
+        // Count number of checkins for this day
+        const checkinsCount = dayData.checkins ? dayData.checkins.length : 0;
+        
+        transformedEntries[date] = {
+          ...(moodMap[apiMood] || defaultMoodEntry),
+          value: checkinsCount // Dynamic value from API checkins array
+        };
+      } else if (dayData.checkins && dayData.checkins.length > 0) {
+        // If no dominant mood but has checkins, use first checkin mood
+        const apiMood = dayData.checkins[0].toLowerCase();
+        const checkinsCount = dayData.checkins.length;
+        
+        transformedEntries[date] = {
+          ...(moodMap[apiMood] || defaultMoodEntry),
+          value: checkinsCount
+        };
       }
     });
 

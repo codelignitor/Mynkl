@@ -5,12 +5,14 @@ import { Calendar } from "react-native-calendars";
 import { useRouter } from "expo-router";
 
 const moodColors = {
-  Calm: "#1E90FF",
-  Grateful: "#32CD32",
-  Annoyed: "#FFD700",
-  Happy: "#FF6347",
-  Sad: "#9370DB",
-  Stressed: "#FF4500",
+  happy: "#FFD700",      
+  calm: "#1E90FF",       
+  stressed: "#FF4500",   
+  grateful: "#32CD32",   
+  sad: "#9370DB",        
+  lonely: "#8A2BE2",     
+  frustrated: "#FF6347", 
+  excited: "#FFD700",    
   Unknown: "#CCCCCC",
 };
 
@@ -80,9 +82,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     width: "94%", 
     alignSelf: "center",  
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 200,
+    
   },
   title: {
     fontSize: 18,

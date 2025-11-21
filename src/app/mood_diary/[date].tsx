@@ -2,6 +2,8 @@ import { useLocalSearchParams } from "expo-router";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useEffect, useState } from "react";
 import { getMoodDayDetail } from "@/src/services/apis";
+import MoodIcon from "@/src/components/MoodIcons/moodIcons";
+// import MoodIcon from "@/src/components/mood/MoodIcon";
 
 interface LatestCheckin {
   mood: string;
@@ -24,21 +26,20 @@ export default function DailyDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Map API moods to your UI mood system
-  const moodMap: Record<string, { mood: string; emoji: string }> = {
-    happy: { mood: "Happy", emoji: "😁" },
-    excited: { mood: "Happy", emoji: "😁" },
-    sad: { mood: "Sad", emoji: "😢" },
-    calm: { mood: "Calm", emoji: "😌" },
-    grateful: { mood: "Grateful", emoji: "😊" },
-    annoyed: { mood: "Annoyed", emoji: "😠" },
-    stressed: { mood: "Stressed", emoji: "😫" },
-    anxious: { mood: "Stressed", emoji: "😰" },
-    tired: { mood: "Calm", emoji: "😴" },
-    neutral: { mood: "Calm", emoji: "😐" },
+  // Map API moods to your 7 specific mood names
+  const moodMap: Record<string, { mood: string }> = {
+    happy: { mood: "Happy" },
+    excited: { mood: "Excited" },
+    calm: { mood: "Calm" },
+    stressed: { mood: "Stressed" },
+    grateful: { mood: "Grateful" },
+    sad: { mood: "Sad" },
+    annoyed: { mood: "Frustrated" },
+    frustrated: { mood: "Frustrated" },
+    lonely: { mood: "Lonely" },
   };
 
-  const defaultMood = { mood: "Unknown", emoji: "😶" };
+  const defaultMood = { mood: "Calm" }; // Fallback to Calm
 
   useEffect(() => {
     const fetchDayDetail = async () => {
@@ -96,13 +97,15 @@ export default function DailyDetailScreen() {
       {/* Date */}
       <Text style={styles.dateText}>{date}</Text>
 
-      {/* Emoji in bubble */}
-      <View style={styles.emojiWrapper}>
-        <Text style={styles.bigEmoji}>{moodInfo.emoji}</Text>
+      {/* Mood Icon */}
+      <View style={styles.moodIconWrapper}>
+        <MoodIcon mood={latestCheckin.mood} size="large" />
       </View>
 
-      {/* Mood */}
-      <Text style={styles.moodText}>You were {moodInfo.mood} {moodInfo.emoji}</Text>
+      {/* Mood Text */}
+      <Text style={styles.moodText}>
+        You were {moodInfo.mood}
+      </Text>
 
       {/* Time */}
       <View style={styles.pill}>
@@ -120,13 +123,6 @@ export default function DailyDetailScreen() {
           <Text style={styles.pillText}>📍 {latestCheckin.details.place_name}</Text>
         </View>
       )}
-
-      {/* Check-in Type */}
-      {/* <View style={styles.pill}>
-        <Text style={styles.pillText}>
-          📝 {latestCheckin.checkin_type || "Regular check-in"}
-        </Text>
-      </View> */}
 
       {/* Note Card */}
       <View style={styles.card}>
@@ -148,22 +144,11 @@ export default function DailyDetailScreen() {
         </View>
       </View>
 
-      {/* Location Settings */}
-      {/* <View style={styles.card}>
-        <Text style={styles.cardTitle}>Privacy</Text>
-        <View style={styles.tag}>
-          <Text style={styles.tagText}>
-            {latestCheckin.location_opt_in ? 
-              "📍 Location shared" : 
-              "🔒 Location private"}
-          </Text>
-        </View>
-      </View> */}
-
     </View>
   );
 }
 
+// Your existing styles remain the same...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -172,7 +157,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 40,
   },
-
   dateText: {
     marginTop: 10,
     textAlign: "center",
@@ -180,16 +164,12 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#1A1A1A",
   },
-
-  emojiWrapper: {
+  moodIconWrapper: {
     alignSelf: "center",
     marginVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-
-  bigEmoji: { 
-    fontSize: 90 
-  },
-
   moodText: {
     textAlign: "center",
     fontSize: 26,
@@ -197,23 +177,17 @@ const styles = StyleSheet.create({
     color: "#1A1A1A",
     marginBottom: 10,
   },
-
   pill: {
     alignSelf: "center",
-    // backgroundColor: "white",
     paddingVertical: 6,
     paddingHorizontal: 26,
-    // borderRadius: 20,
     marginBottom: 8,
-    elevation: 2,
   },
-  
   pillText: {
     fontSize: 18,
     color: "#333",
     fontWeight: "500",
   },
-
   card: {
     backgroundColor: "white",
     padding: 18,
@@ -224,19 +198,16 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
-
   cardTitle: {
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 6,
   },
-
   cardContent: {
     fontSize: 16,
     color: "#444",
     lineHeight: 22,
   },
-
   tag: {
     backgroundColor: "#EAF1FF",
     paddingVertical: 8,
@@ -245,36 +216,30 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     marginTop: 5,
   },
-  
   tagText: { 
     fontSize: 16, 
     fontWeight: "500", 
     color: "#2F4F82" 
   },
-
   noData: { 
     fontSize: 18, 
     color: "#555" 
   },
-
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-
   loadingText: {
     marginTop: 10,
     fontSize: 16,
     color: "#666",
   },
-
   errorText: {
     fontSize: 18,
     color: "red",
     marginBottom: 8,
   },
-
   errorSubtext: {
     fontSize: 14,
     color: "#666",
