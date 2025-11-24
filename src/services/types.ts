@@ -22,3 +22,39 @@ export type MapSearchParams = {
   radius?: number;
   limit?: number;
 };
+
+
+//mood-related types 
+export interface MoodCheckin {
+  id: number;
+  mood: string;
+  text: string;
+  timestamp: string;
+  location_opt_in: boolean;
+  checkin_type: string;
+  checkin_ref: string;
+  details: MoodCheckinDetails;
+}
+
+export interface MoodCheckinDetails {
+  type: string;
+  place_name?: string;
+  lat?: number;
+  lng?: number;
+}
+
+export interface MoodDayData {
+  dominant_mood: string | null;
+  checkins: string[];
+}
+
+export interface MoodCalendarResponse {
+  calendar: {
+    [date: string]: MoodDayData;
+  };
+}
+
+export interface MoodDayDetailResponse {
+  date: string;
+  latest_checkin: MoodCheckin | null;
+}

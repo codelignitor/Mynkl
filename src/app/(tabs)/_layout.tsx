@@ -48,6 +48,17 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) =>  <Ionicons name="map-sharp" size={24} color={color} />,
         }}
       />
+
+      <Tabs.Screen
+  name="mood_diary/index"
+  options={{
+    title: 'Mood Diary',
+    tabBarIcon: ({ color }) => (
+      <Ionicons name="bar-chart-outline" size={24} color={color} />
+    ),
+  }}
+/>
+
       <Tabs.Screen
         name="recevie_hugs/index"
         options={{

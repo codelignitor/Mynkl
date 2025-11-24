@@ -194,6 +194,18 @@ const MoodMapScreen = () => {
           </TouchableOpacity>
         </View>
 
+        <View style={styles.rowContainer}>
+          <TouchableOpacity
+            style={styles.appIconCard}
+            onPress={() => router.push('/mood_diary')}
+          >
+            <View style={styles.iconContainer}>
+              <Icon name="chart-line" size={24} color="#4b7bec" />
+            </View>
+            <Text style={styles.appIconText}>Mood Trends</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.menuSectionContainer}>
           <TouchableOpacity 
             style={[

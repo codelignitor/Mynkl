@@ -80,7 +80,7 @@ const HugAnimationScreen = () => {
         {
           text: "OK",
           onPress: () => {
-            router.push('/(tabs)/hugs'); // Navigate using Expo Router
+            router.push('/hugs'); // Navigate using Expo Router
           },
         },
       ]
