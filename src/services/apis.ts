@@ -172,6 +172,16 @@ export const getEvents = async () => {
   return response.data;
 };
 
+export const weatherGraph = async () => {
+  const response = await axiosInstance.get(`/home/weather-graph`);
+  return response.data;
+};
+
+export const getActivityFeedbackGraph = async () => {
+  const response = await axiosInstance.get(`/activity/activity-feedback/graph`);
+  return response.data;
+};
+
 export const uploadImage = async (payload) => {
   const response = await axiosInstance.post(`/events/upload_image`, payload);
   return response.data;

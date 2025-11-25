@@ -8,8 +8,8 @@ import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
 
 const axiosInstance = axios.create({
-    baseURL: 'http://18.199.96.45:8000',
-  //  baseURL: 'https://f538f0def9ae.ngrok-free.app/',
+   baseURL: 'http://18.199.96.45:8000',
+  //  baseURL: 'https://5825f0be7d14.ngrok-free.app/',
 
 
  // timeout: 10000,

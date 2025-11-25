@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-chart-kit';
 import { MaterialIcons } from '@expo/vector-icons';
+import {getActivityFeedbackGraph } from '@/src/services/apis';
+
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -31,6 +33,20 @@ export default function ActivitiesScreen() {
 
   const aiInsight =
     'Your mood improves by 35% on days you engage in creative activities.';
+
+    const fetchActivityFeedbackGraph = async () => {
+      try {
+        const data = await getActivityFeedbackGraph();
+        // Process and set the data as needed
+        console.log('Activity Feedback Graph Data:', data);
+      } catch (error) {
+        console.log('Error fetching activity feedback graph:', error);
+      }
+    }
+
+    useEffect(() => {
+      fetchActivityFeedbackGraph();
+    }, []);
 
   // ----- Component UI -----
   return (

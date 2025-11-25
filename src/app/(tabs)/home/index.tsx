@@ -246,6 +246,26 @@ const MoodMapScreen = () => {
               <Icon name="chevron-right" size={24} color="#8c8c8c" style={styles.chevronIcon} />
             </View>
           </TouchableOpacity>
+           <TouchableOpacity 
+            style={[styles.largeMenuCard, { backgroundColor: '#b7c2cc' }]}
+            onPress={() => { 
+              router.push({
+                // pathname: '/journal',
+                pathname: '/journal',
+                params: { data: JSON.stringify(selectedMood) }
+              });
+            }}
+          >
+            <View style={styles.largeMenuCardContent}>
+              <View style={styles.largeMenuIconContainer}>
+                <Icon name="pin" size={28} color="#ffffff" />
+              </View>
+              <View style={styles.menuTextContainer}>
+                <Text style={styles.largeMenuCardTitle}>Journals</Text>
+              </View>
+              <Icon name="chevron-right" size={24} color="#8c8c8c" style={styles.chevronIcon} />
+            </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>

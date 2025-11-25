@@ -189,11 +189,24 @@ export default function MoodPatternScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.correlationScrollContainer}
         >
-          {moodPattern?.MoodCorrelationTags?.map((tag, index) => (
-            <TouchableOpacity key={index} style={styles.correlationTag} onPress={() => {router.push(`/Check_Ins/mood-checkIns-activities`)}}>
-              <Text style={styles.correlationTagText}>{tag}</Text>
-            </TouchableOpacity>
-          ))}
+         
+
+          {/* Static entries (not from API) */}
+          <TouchableOpacity
+            key="static-activities"
+            style={styles.correlationTag}
+            onPress={() => router.push('/correlation-tags/mood-checkIns-activities')}
+          >
+            <Text style={styles.correlationTagText}>Activities</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            key="static-weather"
+            style={styles.correlationTag}
+            onPress={() => router.push( '/correlation-tags/weather')}
+          >
+            <Text style={styles.correlationTagText}>Weather</Text>
+          </TouchableOpacity>
         </ScrollView>
        
       </ScrollView>

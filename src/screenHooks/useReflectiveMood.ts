@@ -48,6 +48,9 @@ export function useReflectiveMood() {
 
 
   const submitReflectionHandler = async () => {
+
+      router.push('/wellnesssuggestions')
+      return
     try {
          const payload = {
     reflections: reflection,
