@@ -8,16 +8,24 @@ import {
   SafeAreaView,
   StatusBar,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useReflectiveMood } from '@/src/screenHooks/useReflectiveMood';
+import AudioRecorderPlayer from '@/src/components/common/audioRecorder';
 
 export default function MoodReflectionScreen() {
  
   const router = useRouter();
 
   const  {reflectivePrompt , isLoading , reflection, setReflection , selectedMoods, setSelectedMoods , submitReflectionHandler } = useReflectiveMood();
+  
+  const [recordedUri, setRecordedUri] = useState(null);
+  const [showRecorder, setShowRecorder] = useState(false);
+  
+  const [recorderHeight] = useState(new Animated.Value(0));
+
 
   const moods = ['Focus', 'Calm', 'Anxious', 'Inspired'];
 
@@ -81,10 +89,33 @@ export default function MoodReflectionScreen() {
           numberOfLines={4}
           textAlignVertical="top"
         />
-        {/* <TouchableOpacity style={styles.micButton}>
+
+        {/* 🎤 Mic Button → Opens Recorder */}
+        <TouchableOpacity
+          style={styles.micButton}
+          onPress={() => {
+            setShowRecorder(!showRecorder);
+
+            Animated.timing(recorderHeight, {
+              toValue: showRecorder ? 0 : 140,   // height of recorder area
+              duration: 250,
+              useNativeDriver: false,
+            }).start();
+          }}
+        >
           <Ionicons name="mic" size={20} color="#8B7355" />
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
+
+      {/* 🎧 Recorder UI Shown Below Input */}
+      <Animated.View style={{ height: recorderHeight, overflow: "hidden", marginBottom: 20 }}>
+      {showRecorder && (
+        <AudioRecorderPlayer
+          recordedUri={recordedUri}
+          setRecordedUri={setRecordedUri}
+        />
+      )}
+    </Animated.View>
 
       {/* Mood Tagging Section */}
       <Text style={styles.moodTaggingTitle}>Mood Tagging</Text>
@@ -114,7 +145,7 @@ export default function MoodReflectionScreen() {
       {/* Submit Button */}
       <TouchableOpacity
         style={styles.submitButton}
-        onPress={submitReflectionHandler}
+        onPress={() => submitReflectionHandler(recordedUri)}
       >
         <Text style={styles.submitButtonText}>Submit and continue</Text>
       </TouchableOpacity>

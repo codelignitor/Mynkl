@@ -127,7 +127,8 @@ export default function AudioRecorderPlayer({recordedUri, setRecordedUri}) {
       
 
       {recordedUri ? (
-        <>
+       
+       <>
         <View >
          
         <View style={{ alignItems: 'center', justifyContent: 'center', position: 'absolute', left: 70, right: 0, top: 22 }}>

@@ -77,7 +77,7 @@ export default function WellnessSuggestionsScreen() {
             Your evenings tend to feel low —{'\n'}want a 10-min wind-down routine?
           </Text>
           <View style={styles.actionButtonsContainer}>
-            <TouchableOpacity style={styles.startButton}>
+            <TouchableOpacity  style={styles.startButton}>   {/*onPress={()=> router.push('/(tabs)/startActivity')} */}
               <Text style={styles.startButtonText}>Start activity</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.remindButton}>
@@ -165,11 +165,11 @@ const styles = StyleSheet.create({
     width: 30, // matches backButton width to keep title centered
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 38,
     fontWeight: '600',
     color: '#2C2C2C',
-    textAlign: 'center',
-    lineHeight: 24,
+    // textAlign: 'center',
+    lineHeight: 42,
   },
   suggestionCard: {
     backgroundColor: '#F5F1E8',
@@ -177,6 +177,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     marginBottom: 30,
+    marginTop: 20,
   },
   illustrationContainer: {
     alignItems: 'center',
@@ -189,12 +190,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   suggestionSubtitle: {
-    fontSize: 16,
+    fontSize: 17,
     color: '#2C2C2C',
     marginBottom: 20,
   },
   secondaryText: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#6B6B6B',
     lineHeight: 20,
     marginBottom: 24,
@@ -222,6 +223,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,
+    borderColor:"#2C2C2C",
     flex: 1,
   },
   remindButtonText: {

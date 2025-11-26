@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     
     borderBottomColor: '#eee',
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
     paddingBottom:18
   },
   backButton: {

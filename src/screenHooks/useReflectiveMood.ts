@@ -16,9 +16,10 @@ export function useReflectiveMood() {
     const dispatch = useDispatch();
      const [reflection, setReflection] = useState('');
       const [selectedMoods, setSelectedMoods] = useState([]);
-
-    const [reflectivePrompt , setReflectivePrompt] = useState<Object>(null);
     
+    const [reflectivePrompt , setReflectivePrompt] = useState<Object>(null);
+    const [audioFile, setAudioFile] = useState(null);
+
    
     const [isLoading , setIsLoading] = useState<boolean>(false);
        
@@ -47,37 +48,40 @@ export function useReflectiveMood() {
   console.log('selected Moods' , selectedMoods)
 
 
-  const submitReflectionHandler = async () => {
+  const submitReflectionHandler = async (audioFile) => {
+  try {
 
-      router.push('/wellnesssuggestions')
-      return
-    try {
-         const payload = {
-    reflections: reflection,
-    mood: selectedMoods?.[0]
+    const formData = new FormData();
+    formData.append("mood", selectedMoods?.[0]);
+    formData.append("reflection", reflection);
+
+    if (audioFile) {
+      formData.append("audio", {
+        uri: audioFile,
+        name: "audiofile.ogg",
+        type: "audio/ogg",
+      });
+    }
 
 
+    const response = await submitJournal(formData);
+
+    if (response?.message === "Reflection saved successfully") {
+      Toast.show({
+        type: "success",
+        text1: "Reflection saved successfully",
+        position: "top",
+        visibilityTime: 2000,
+      });
+
+      router.push("/wellnesssuggestions");
+    }
+
+  } catch (error) {
+    console.log("Upload error: ", error);
+  }
 };
-console.log('payload', payload)
 
- 
-       const response = await submitJournal(payload);
-       if(response?.message =="Reflection saved"){
-        Toast.show({
-            type: 'success',
-            text1: 'Reflection saved successfully',
-            position: 'top',
-            visibilityTime: 2000,
-        });
-       
-
-        
-    }
-    router.push('/wellnesssuggestions')
-    } catch (error) {
-        
-    }
-}
    
     useEffect(() => {
     getMoodPattern();

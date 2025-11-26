@@ -278,8 +278,17 @@ export const getaiMessage = async () => {
 };
 
 
-export const submitJournal = async (payload) => {
-  const response = await axiosInstance.post(`/home/journal`, payload);
+// export const submitJournal = async (payload) => {
+//   const response = await axiosInstance.post(`/home/journal`, payload);
+//   return response.data;
+// };
+
+export const submitJournal = async (formData) => {
+  const response = await axiosInstance.post(`/home/journal`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };
 
