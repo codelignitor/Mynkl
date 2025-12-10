@@ -16,7 +16,7 @@ const MoodIcon: React.FC<MoodIconProps> = ({ mood, size = 'medium' }) => {
     grateful: require('../../assets/images/grateful-icon.png'),
     sad: require('../../assets/images/sad-icon.png'),
     excited: require('../../assets/images/excited-icon.png'),
-    annoyed: require('../../assets/images/frustrated.png'), 
+    frustrated: require('../../assets/images/frustrated.png'), 
     
     // Your additional moods
     lonely: require('../../assets/images/lonely-icon.png'),
@@ -31,7 +31,7 @@ const MoodIcon: React.FC<MoodIconProps> = ({ mood, size = 'medium' }) => {
       lonely: { width: 35, height: 33 },
       grateful: { width: 36, height: 33 },
       sad: { width: 35, height: 33 },
-      annoyed: { width: 35, height: 33 },
+      frustrated: { width: 35, height: 33 },
     },
     medium: {
       happy: { width: 40, height: 40 },
@@ -40,7 +40,7 @@ const MoodIcon: React.FC<MoodIconProps> = ({ mood, size = 'medium' }) => {
       lonely: { width: 52, height: 52 },
       grateful: { width: 42, height: 38 },
       sad: { width: 43, height: 42 },
-      annoyed: { width: 34, height: 38 },
+      frustrated: { width: 34, height: 38 },
     },
     large: {
       happy: { width: 120, height: 120 },
@@ -49,7 +49,7 @@ const MoodIcon: React.FC<MoodIconProps> = ({ mood, size = 'medium' }) => {
       lonely: { width: 120, height: 120 },
       grateful: { width: 120, height: 120 },
       sad: { width: 120, height: 120 },
-      annoyed: { width: 120, height: 120 },
+      frustrated: { width: 120, height: 120 },
     }
   };
 

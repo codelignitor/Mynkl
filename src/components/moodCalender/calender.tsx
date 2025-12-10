@@ -6,11 +6,11 @@ import { useRouter } from "expo-router";
 
 const moodColors = {
   happy: "#FFD700",      
-  calm: "#1E90FF",       
-  stressed: "#FF4500",   
+  calm: "#09ededff",       
+  stressed: "#8A2BE2",   
   grateful: "#32CD32",   
-  sad: "#9370DB",        
-  lonely: "#8A2BE2",     
+  sad: "#5226cdff",        
+  lonely: "#00b3ffff",     
   frustrated: "#FF6347", 
   excited: "#FFD700",    
   Unknown: "#CCCCCC",
@@ -18,7 +18,7 @@ const moodColors = {
 
 export default function CalendarSection() {
   const { entries, loading, error, setSelectedDate, refetchCalendar } = useMood();
-  const [selectedMonth, setSelectedMonth] = useState("2025-11");
+  const [selectedMonth, setSelectedMonth] = useState();
   const router = useRouter();
   
   // Convert entries → calendar dots
@@ -62,7 +62,7 @@ export default function CalendarSection() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>NOV 2025</Text>
+      {/* <Text style={styles.title}>NOV 2025</Text> */}
 
       <Calendar
         markingType="multi-dot"

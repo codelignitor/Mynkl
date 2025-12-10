@@ -2,7 +2,6 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { getMoodCalendar } from '@/src/services/apis';
 
 const moodMap = {
-  // Direct matches - use lowercase
   happy: { mood: "happy" },
   calm: { mood: "calm" },
   stressed: { mood: "stressed" },
@@ -14,7 +13,7 @@ const moodMap = {
   annoyed: { mood: "frustrated" },
 };
 
-const defaultMoodEntry = { mood: "calm" }; // Fallback to calm
+const defaultMoodEntry = { mood: "calm" };
 
 const MoodContext = createContext();
 
@@ -26,21 +25,17 @@ export function MoodProvider({ children }) {
 
   const transformApiDataToEntries = (apiData) => {
     const transformedEntries = {};
-
+    
     Object.entries(apiData.calendar).forEach(([date, dayData]) => {
       if (dayData.dominant_mood && dayData.dominant_mood !== null) {
-        // Convert API mood to lowercase to match our keys
         const apiMood = dayData.dominant_mood.toLowerCase();
-        
-        // Count number of checkins for this day
         const checkinsCount = dayData.checkins ? dayData.checkins.length : 0;
         
         transformedEntries[date] = {
           ...(moodMap[apiMood] || defaultMoodEntry),
-          value: checkinsCount // Dynamic value from API checkins array
+          value: checkinsCount
         };
       } else if (dayData.checkins && dayData.checkins.length > 0) {
-        // If no dominant mood but has checkins, use first checkin mood
         const apiMood = dayData.checkins[0].toLowerCase();
         const checkinsCount = dayData.checkins.length;
         
@@ -50,35 +45,42 @@ export function MoodProvider({ children }) {
         };
       }
     });
-
+    
     return transformedEntries;
   };
 
-  const fetchMoodCalendar = async () => {
+  // Modified to accept year and month parameters
+  const fetchMoodCalendar = async (year?: number, month?: number) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getMoodCalendar();
+      
+      // If no year/month provided, use current date
+      const now = new Date();
+      const targetYear = year ?? now.getFullYear();
+      const targetMonth = month ?? (now.getMonth() + 1); // API expects 1-12, not 0-11
+      
+      const data = await getMoodCalendar(targetYear, targetMonth);
       const transformedEntries = transformApiDataToEntries(data);
       setEntries(transformedEntries);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch mood calendar';
       setError(errorMessage);
       console.error('Error fetching mood calendar:', err);
-      
-      // Fallback to empty data
       setEntries({});
     } finally {
       setLoading(false);
     }
   };
 
+  // Initial fetch for current month
   useEffect(() => {
     fetchMoodCalendar();
   }, []);
 
-  const refetchCalendar = async () => {
-    await fetchMoodCalendar();
+  // Modified refetch to accept year and month
+  const refetchCalendar = async (year?: number, month?: number) => {
+    await fetchMoodCalendar(year, month);
   };
 
   return (

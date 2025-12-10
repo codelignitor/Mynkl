@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, ScrollView, Image } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
@@ -18,6 +18,17 @@ enum WeatherType {
   Thunderstorm = "Thunderstorm",
 }
 
+// Import weather icons
+const weatherIcons = {
+  Sunny: require("@/src/assets/icons/Sunny.png"),
+  Cloudy: require("@/src/assets/icons/Cloudy.png"),
+  Foggy: require("@/src/assets/icons/Cloudy.png"),
+  Drizzle: require("@/src/assets/icons/Rainy.png"),
+  Rainy: require("@/src/assets/icons/Rainy.png"),
+  Snowy: require("@/src/assets/icons/Snowy.png"),
+  Thunderstorm: require("@/src/assets/icons/Lightning.png"),
+};
+
 /* ─────────── Mood → Value Mapping ──────────── */
 const moodToValue = (mood?: string | null) => {
   switch (mood?.toLowerCase()) {
@@ -32,9 +43,18 @@ const moodToValue = (mood?: string | null) => {
 const WeatherTag = ({ weather }: { weather?: string | null }) => {
   if (!weather) return null;
 
+  const iconSource = weatherIcons[weather as keyof typeof weatherIcons];
+
   return (
     <View style={styles.tagContainer}>
-      <Text style={styles.tagText}>{weather}</Text>
+      {iconSource && (
+        <Image 
+          source={iconSource} 
+          style={styles.weatherIcon}
+          resizeMode="contain"
+        />
+      )}
+      {/* <Text style={styles.tagText}>{weather}</Text> */}
     </View>
   );
 };
@@ -99,10 +119,10 @@ const WeatherScreen = () => {
             }}
             width={Dimensions.get("window").width * 0.9}
             height={160}
-            withVerticalLabels={false}
+            withVerticalLabels={true}
             withHorizontalLabels={false}
             withInnerLines={false}
-            withOuterLines={false}
+            withOuterLines={true}
             chartConfig={{
               color: () => `rgba(255,255,255,1)`,
               backgroundGradientFromOpacity: 0,
@@ -160,7 +180,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 30, fontWeight: "800", color: "#012b4e" },
   subtitle: { fontSize: 14, color: "#01385d90", marginBottom: 15 },
   sectionTitle: { color: "#01385d", fontWeight: "600" },
-  chart: { marginVertical: 10, borderRadius: 16 },
+  chart: { marginVertical: 10, borderRadius: 16 , marginLeft: -50},
   noData: { color: "#01385d", marginTop: 8 },
   
   /* Weather Tag */
@@ -171,8 +191,13 @@ const styles = StyleSheet.create({
     gap: 10,
     marginVertical: 12,
   },
+  weatherIcon: {
+  width: 39,
+  height: 39,
+  marginRight: 6,
+},
   tagContainer: {
-    backgroundColor: "#ffffff90",
+    // backgroundColor: "#ffffff90",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,

@@ -218,6 +218,10 @@ export const getCheckInAiAnalysis = async () => {
   return response.data;
 };
 
+export const getMoodSuggestions = async () => {
+  const response = await axiosInstance.get('/activity/AI-Suggestions'); 
+};
+
 export const getAiActivitySuggestions = async (token: string) => {
   try {
     const response = await axiosInstance.get('/activity/AI-Suggestions', {
@@ -292,11 +296,69 @@ export const submitJournal = async (formData) => {
   return response.data;
 };
 
+export const createJournalEntry = async (payload: {
+  mood: string;
+  reflections?: string;
+  audio?: any; // For file uploads
+}) => {
+  const formData = new FormData();
+  
+  // Required field
+  formData.append('mood', payload.mood);
+  
+  // Optional fields
+  if (payload.reflections) {
+    formData.append('reflections', payload.reflections);
+  }
+  
+  if (payload.audio) {
+    formData.append('audio', payload.audio);
+  }
+
+  const response = await axiosInstance.post('/home/journal', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+
+export interface JournalEntry {
+  id: string;
+  mood: string;
+  reflection_text: string;
+  created_at: string;
+}
+
+export interface JournalResponse {
+  page: number;
+  limit: number;
+  total: number;
+  total_pages: number;
+  reflections: JournalEntry[];
+}
+
+export const getJournalEntries = async (page: number = 1, limit: number = 10): Promise<JournalResponse> => {
+  try {
+    const response = await axiosInstance.get(`/home/journal?page=${page}&limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error('❌ Error fetching journal entries:', error);
+    throw error;
+  }
+};
+
+
 export const getActivityMoodPattern = async () => {
   const response = await axiosInstance.get(`/activity/activity-mood-tracker`);
   return response.data;
 };
 
+export const getActivityGraph = async () => {
+  const response = await axiosInstance.get('activity/activity-feedback/graph');
+  return  response.data;
+};
 
 export const receiveHugsList = async () => {
   const response = await axiosInstance.get(`/virtual_hugs/received` );
@@ -398,9 +460,9 @@ export const getPlaceDetails = async (placeId: string) => {
 
 // moodDiary API's
 
-export const getMoodCalendar = async () => {
+export const getMoodCalendar = async (year: number, month: number) => {
   try {
-    const response = await axiosInstance.get('/home/mood-calendar');
+    const response = await axiosInstance.get('/home/mood-calendar', { params: { year, month } });
     return response.data;
   } catch (error) {
     console.error('❌ Error fetching mood calendar:', error);
@@ -417,4 +479,10 @@ export const getMoodDayDetail = async (date: string) => {
     console.error('❌ Error fetching mood day detail:', error);
     throw error;
   }
+};
+
+
+export const getWellnessSuggestions = async () => {
+  const response = await axiosInstance.get(`/Wellness/wellness-suggestion`);
+  return response.data;
 };

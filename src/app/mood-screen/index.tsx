@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,10 @@ import {
   SafeAreaView,
   StatusBar,
   ActivityIndicator,
-  Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
 import { useReflectiveMood } from '@/src/screenHooks/useReflectiveMood';
 import AudioRecorderPlayer from '@/src/components/common/audioRecorder';
 
@@ -22,10 +22,8 @@ export default function MoodReflectionScreen() {
   const  {reflectivePrompt , isLoading , reflection, setReflection , selectedMoods, setSelectedMoods , submitReflectionHandler } = useReflectiveMood();
   
   const [recordedUri, setRecordedUri] = useState(null);
-  const [showRecorder, setShowRecorder] = useState(false);
-  
-  const [recorderHeight] = useState(new Animated.Value(0));
-
+  const [isAudioRecording, setIsAudioRecording] = useState(false);
+  const [sound, setSound] = useState(null);
 
   const moods = ['Focus', 'Calm', 'Anxious', 'Inspired'];
 
@@ -37,6 +35,60 @@ export default function MoodReflectionScreen() {
         return prev.concat(mood);
       }
     });
+  };
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return sound
+      ? () => {
+          sound.unloadAsync();
+        }
+      : undefined;
+  }, [sound]);
+
+  // Handle skip button press
+  const handleSkip = () => {
+    router.push("/wellnesssuggestions");
+  };
+
+  // Clear recording
+  const clearRecording = () => {
+    setRecordedUri(null);
+    if (sound) {
+      sound.unloadAsync();
+      setSound(null);
+    }
+  };
+
+  // Play recorded audio
+  const playSound = async () => {
+    if (!recordedUri) return;
+    try {
+      const { sound: audioSound } = await Audio.Sound.createAsync({ uri: recordedUri });
+      setSound(audioSound);
+      await audioSound.playAsync();
+    } catch (err) {
+      console.error('Failed to play audio:', err);
+    }
+  };
+
+  // Handle recording completion
+  const handleRecordingComplete = (uri) => {
+    setRecordedUri(uri);
+    setIsAudioRecording(false); // Switch back to text input after recording
+  };
+
+  const toggleAudioRecorder = () => {
+    // Don't allow toggling if there's already a recording
+    if (recordedUri) return;
+    setIsAudioRecording(!isAudioRecording);
+  };
+
+  const handleSetRecordedUri = (uri) => {
+    setRecordedUri(uri);
+    if (uri) {
+      handleRecordingComplete(uri);
+    }
   };
 
   if (isLoading) {
@@ -77,45 +129,68 @@ export default function MoodReflectionScreen() {
         <Text style={styles.icebreakerText}>AI ICEBREAKER</Text>
       </View>
 
-      {/* Text Input */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder="Share your reflection..."
-          placeholderTextColor="#8B7355"
-          value={reflection}
-          onChangeText={setReflection}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-        />
-
-        {/* 🎤 Mic Button → Opens Recorder */}
-        <TouchableOpacity
-          style={styles.micButton}
-          onPress={() => {
-            setShowRecorder(!showRecorder);
-
-            Animated.timing(recorderHeight, {
-              toValue: showRecorder ? 0 : 140,   // height of recorder area
-              duration: 250,
-              useNativeDriver: false,
-            }).start();
-          }}
-        >
-          <Ionicons name="mic" size={20} color="#8B7355" />
-        </TouchableOpacity>
+      {/* Note Container - Contains both TextInput and AudioRecorder */}
+      <View style={styles.noteContainer}>
+        {isAudioRecording ? (
+          // Show Audio Recorder when recording is active
+          <View style={styles.recorderWrapper}>
+            <AudioRecorderPlayer 
+              recordedUri={recordedUri} 
+              setRecordedUri={handleSetRecordedUri}
+              onClose={() => setIsAudioRecording(false)}
+            />
+          </View>
+        ) : (
+          // Show TextInput when not recording
+          <TextInput
+            style={styles.textInput}
+            placeholder="Share your reflection..."
+            placeholderTextColor="#8B7355"
+            value={reflection}
+            onChangeText={setReflection}
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+          />
+        )}
+        
+        {/* Mic Button - Only visible when no recording exists */}
+        {!recordedUri && (
+          <TouchableOpacity 
+            onPress={toggleAudioRecorder} 
+            style={styles.voiceButton}
+          >
+            <Ionicons 
+              name={isAudioRecording ? "close" : "mic"} 
+              size={20} 
+              color="#8B7355" 
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
-      {/* 🎧 Recorder UI Shown Below Input */}
-      <Animated.View style={{ height: recorderHeight, overflow: "hidden", marginBottom: 20 }}>
-      {showRecorder && (
-        <AudioRecorderPlayer
-          recordedUri={recordedUri}
-          setRecordedUri={setRecordedUri}
-        />
+      {/* Audio Playback UI - Shows when recording is complete */}
+      {recordedUri && (
+        <View style={styles.audioPlaybackContainer}>
+          <View style={styles.audioControls}>
+            <TouchableOpacity 
+              style={styles.audioPlayButton} 
+              onPress={playSound}
+            >
+              <Ionicons name="play-circle" size={20} color="#345C4D" />
+              <Text style={styles.playText}>Play Recording</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.clearButton} 
+              onPress={clearRecording}
+            >
+              <Ionicons name="close-circle" size={20} color="#d9534f" />
+              <Text style={styles.clearText}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
-    </Animated.View>
 
       {/* Mood Tagging Section */}
       <Text style={styles.moodTaggingTitle}>Mood Tagging</Text>
@@ -149,6 +224,14 @@ export default function MoodReflectionScreen() {
       >
         <Text style={styles.submitButtonText}>Submit and continue</Text>
       </TouchableOpacity>
+      
+      {/*  Skip for now button CTA*/}
+       <TouchableOpacity 
+        style={styles.skipButton}
+        onPress={handleSkip}
+      >
+        <Text style={styles.skipButtonText}>Skip for now</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -159,7 +242,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F1E8',
     paddingHorizontal: 24,
     paddingTop: 20,
-
   },
   backButton: {
     marginTop:20,
@@ -226,14 +308,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 12,
   },
-  inputContainer: {
+  noteContainer: {
     backgroundColor: '#E8DCC6',
     borderRadius: 16,
     padding: 16,
-    marginBottom: 32,
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginHorizontal:16
+    marginHorizontal: 16,
+    marginBottom: 20,
+    minHeight: 120,
   },
   textInput: {
     flex: 1,
@@ -242,9 +325,46 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     minHeight: 60,
   },
-  micButton: {
+  voiceButton: {
     marginLeft: 12,
     marginTop: 4,
+    padding: 4,
+  },
+  recorderWrapper: {
+    flex: 1,
+    width: '100%',
+  },
+  audioPlaybackContainer: {
+    backgroundColor: 'rgba(232, 220, 198, 0.5)',
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 20,
+  },
+  audioControls: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  audioPlayButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  playText: {
+    fontSize: 14,
+    color: '#345C4D',
+    fontWeight: '500',
+  },
+  clearButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  clearText: {
+    fontSize: 14,
+    color: '#d9534f',
+    fontWeight: '500',
   },
   moodTaggingTitle: {
     fontSize: 18,
@@ -289,5 +409,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: '#FFFFFF',
+  },
+  skipButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginBottom: 20,
+  },
+  skipButtonText: {
+    fontSize: 16,
+    color: '#8B7355',
+    fontWeight: '500',
+    textDecorationLine: 'underline',
   },
 });

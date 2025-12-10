@@ -9,7 +9,7 @@ import { router } from 'expo-router';
 
 const axiosInstance = axios.create({
    baseURL: 'http://18.199.96.45:8000',
-  //  baseURL: 'https://5825f0be7d14.ngrok-free.app/',
+  //  baseURL: 'https://3f0a2799d41e.ngrok-free.app/',
 
 
  // timeout: 10000,
@@ -44,7 +44,14 @@ axiosInstance.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     const message = error.response?.data?.message || 'Something went wrong';
+    const url = error.config?.url;
+    
+    //  Suppress toast for "No check-in in last 24 hours"
+    if (url?.includes('/Check_Ins/mood_check-in') && status === 400) {
+      return Promise.reject(error);
+    }
 
+    
     if (status === 401) {
       // Token expired or unauthorized
       store.dispatch(logout());

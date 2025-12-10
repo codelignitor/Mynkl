@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,13 +7,17 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { getWellnessSuggestions } from '@/src/services/apis';
 
 export default function WellnessSuggestionsScreen() {
   const [selectedAnchors, setSelectedAnchors] = useState([]);
+  const [suggestionData, setSuggestionData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const moodAnchors = [
@@ -24,6 +28,38 @@ export default function WellnessSuggestionsScreen() {
     'Nature sounds',
     'Walk outside'
   ];
+
+  useEffect(() => {
+    fetchWellnessSuggestions();
+  }, []);
+
+  const fetchWellnessSuggestions = async () => {
+    try {
+      setLoading(true);
+      const response = await getWellnessSuggestions();
+      setSuggestionData(response);
+    } catch (error) {
+      console.error('Error fetching wellness suggestions:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartActivity = () => {
+    if (!suggestionData) {
+      router.push('/startActivity');
+      return;
+    }
+
+    const { suggestionType } = suggestionData;
+
+    // Check if suggestionType is "selfcare" (case-insensitive)
+    if (suggestionType === 'Self-Care Tip') {
+      router.push('/Selfcare_tips/breathingSuggestion');
+    } else {
+      router.push('/startActivity');
+    }
+  };
 
   const toggleAnchor = (anchor) => {
     setSelectedAnchors((prev) => {
@@ -71,22 +107,34 @@ export default function WellnessSuggestionsScreen() {
           <View style={styles.illustrationContainer}>
             <IllustrationSVG />
           </View>
-          <Text style={styles.suggestionTitle}>3 Days Feeling Unmotivated?</Text>
-          <Text style={styles.suggestionSubtitle}>Try energizing outdoor walks.</Text>
-          <Text style={styles.secondaryText}>
-            Your evenings tend to feel low —{'\n'}want a 10-min wind-down routine?
-          </Text>
-          <View style={styles.actionButtonsContainer}>
-            <TouchableOpacity  style={styles.startButton}>   {/*onPress={()=> router.push('/(tabs)/startActivity')} */}
-              <Text style={styles.startButtonText}>Start activity</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.remindButton}>
-              <Text style={styles.remindButtonText}>Remind me</Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity onPress={()=> router.push('/(tabs)/home')} style={styles.notNowButton}>
-            <Text style={styles.notNowButtonText}>Not now</Text>
-          </TouchableOpacity>
+          
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#E67E22" />
+              <Text style={styles.loadingText}>Loading suggestions...</Text>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.suggestionTitle}>3 Days Feeling Unmotivated?</Text>
+              <Text style={styles.suggestionSubtitle}>Try energizing outdoor walks.</Text>
+             
+
+              <Text style={styles.secondaryText}>
+                Your evenings tend to feel low —{'\n'}want a 10-min wind-down routine?
+              </Text>
+              <View style={styles.actionButtonsContainer}>
+                <TouchableOpacity onPress={handleStartActivity} style={styles.startButton}>
+                  <Text style={styles.startButtonText}>Start activity</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.remindButton}>
+                  <Text style={styles.remindButtonText}>Remind me</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity onPress={()=> router.push('/(tabs)/home')} style={styles.notNowButton}>
+                <Text style={styles.notNowButtonText}>Not now</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         {/* Mood Anchors */}
@@ -94,38 +142,31 @@ export default function WellnessSuggestionsScreen() {
           <Text style={styles.moodAnchorsTitle}>Mood anchors</Text>
           <View style={styles.anchorsContainer}>
             <View style={styles.anchorsRow}>
-              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Deep breathing') && styles.selectedAnchorTag]} onPress={() => toggleAnchor('Deep breathing')}>
+              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Deep breathing') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/breathingSuggestion')}>
                 <Text style={[styles.anchorText, selectedAnchors.includes('Deep breathing') && styles.selectedAnchorText]}>
                   Deep breathing
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Gratitude') && styles.selectedAnchorTag]} onPress={() => toggleAnchor('Gratitude')}>
-                <Text style={[styles.anchorText, selectedAnchors.includes('Gratitude') && styles.selectedAnchorText]}>
-                  Gratitude
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Nature sounds') && styles.selectedAnchorTag]} onPress={() => toggleAnchor('Nature sounds')}>
+              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Nature sounds') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/Audiosession')}>
                 <Text style={[styles.anchorText, selectedAnchors.includes('Nature sounds') && styles.selectedAnchorText]}>
                   Nature sounds
                 </Text>
               </TouchableOpacity>
-            </View>
-            <View style={styles.anchorsRow}>
-              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Deep breathing2') && styles.selectedAnchorTag]} onPress={() => toggleAnchor('Deep breathing2')}>
-                <Text style={[styles.anchorText, selectedAnchors.includes('Deep breathing2') && styles.selectedAnchorText]}>
-                  Deep breathing
+              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Gratitude') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/Gratitute')}>
+                <Text style={[styles.anchorText, selectedAnchors.includes('Gratitude') && styles.selectedAnchorText]}>
+                   Gratitude
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Nature sounds2') && styles.selectedAnchorTag]} onPress={() => toggleAnchor('Nature sounds2')}>
-                <Text style={[styles.anchorText, selectedAnchors.includes('Nature sounds2') && styles.selectedAnchorText]}>
-                  Nature sounds
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.anchorsRow}>
               <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Walk outside') && styles.selectedAnchorTag]} onPress={() => toggleAnchor('Walk outside')}>
                 <Text style={[styles.anchorText, selectedAnchors.includes('Walk outside') && styles.selectedAnchorText]}>
                   Walk outside
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.anchorsRow}>
+              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Feel Calm') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/FeelCalm')}>
+                <Text style={[styles.anchorText, selectedAnchors.includes('Feel calm') && styles.selectedAnchorText]}>
+                  Feel Calm
                 </Text>
               </TouchableOpacity>
             </View>
@@ -162,13 +203,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   rightPlaceholder: {
-    width: 30, // matches backButton width to keep title centered
+    width: 30,
   },
   headerTitle: {
     fontSize: 38,
     fontWeight: '600',
     color: '#2C2C2C',
-    // textAlign: 'center',
     lineHeight: 42,
   },
   suggestionCard: {
@@ -182,6 +222,15 @@ const styles = StyleSheet.create({
   illustrationContainer: {
     alignItems: 'center',
     marginBottom: 20,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 30,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#6B6B6B',
   },
   suggestionTitle: {
     fontSize: 20,

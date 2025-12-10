@@ -10,29 +10,66 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-chart-kit';
+import { getActivityGraph } from '@/src/services/apis';
 import { MaterialIcons } from '@expo/vector-icons';
 import {getActivityFeedbackGraph } from '@/src/services/apis';
+import { useRouter } from 'expo-router';
 
 
 const screenWidth = Dimensions.get('window').width;
 
 export default function ActivitiesScreen() {
   const [activeTab, setActiveTab] = useState('Activities');
+  const router = useRouter(); // Initialize router
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [{ data: [], color: () => '#7C3AED', strokeWidth: 3 }],
+  });
 
-  // ----- Stub Data -----
-  const chartData = {
-    labels: ['1', '2', '3', '4', '5'],
-    datasets: [
-      {
-        data: [20, 30, 45, 60, 80],
-        color: () => '#7C3AED',
-        strokeWidth: 3,
-      },
-    ],
-  };
+  const [aiInsight, setAiInsight] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const aiInsight =
-    'Your mood improves by 35% on days you engage in creative activities.';
+  // ========== API Call ==========
+  useEffect(() => {
+    fetchGraph();
+  }, []);
+
+  const fetchGraph = async () => {
+  try {
+    
+    const res = await getActivityGraph();
+    
+    const graph = res?.data?.graph || [];
+    const summary = res?.data?.ai_summary || '';
+
+    // Convert feelings to numeric values for chart
+    const moodMap = {
+      great: 80,
+      good: 60,
+      ok: 40,
+      bad: 20,
+      awful: 10,
+    };
+
+    const labels = graph.map((item) => item.date.slice(5)); // "10-31"
+    const values = graph.map((item) => moodMap[item.feeling] || 0);
+
+    setChartData({
+      labels,
+      datasets: [{ data: values, color: () => '#7C3AED', strokeWidth: 3 }],
+    });
+
+    setAiInsight(summary);
+
+  } catch (error) {
+    console.log('❌ Graph fetch error:', error);
+    // Set fallback data for testing
+    setAiInsight('Sample insight: Your mood varies with activity levels.');
+  }
+  finally {
+    setLoading(false);
+  }
+};
 
     const fetchActivityFeedbackGraph = async () => {
       try {
@@ -55,15 +92,29 @@ export default function ActivitiesScreen() {
       style={styles.gradientBackground}
     >
       <SafeAreaView style={styles.safeArea}>
+        
+        {/* ✅ ADDED: Header with Back Button */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <MaterialIcons name="arrow-back" size={24} color="#111" />
+          </TouchableOpacity>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.title}>Activities</Text>
+            <Text style={styles.subtitle}>What you do = how you feel.</Text>
+          </View>
+        </View>
+
+
         <ScrollView contentContainerStyle={styles.container}>
           {/* Title */}
-          <Text style={styles.title}>Activities</Text>
-          <Text style={styles.subtitle}>What you do = how you feel.</Text>
+          {/* <Text style={styles.title}>Activities</Text>
+          <Text style={styles.subtitle}>What you do = how you feel.</Text> */}
 
           {/* Chart Section */}
           <View style={styles.chartSection}>
             <Text style={styles.chartHeading}>Past 30 Days</Text>
 
+            {chartData.labels.length > 0 ? (
             <LineChart
               data={chartData}
               width={screenWidth - 50}
@@ -71,7 +122,7 @@ export default function ActivitiesScreen() {
               chartConfig={{
                 backgroundColor: '#FFB347',
                 backgroundGradientFrom: '#FFB347',
-                backgroundGradientTo: '#FFB347t',
+                backgroundGradientTo: '#FFB347',
                 decimalPlaces: 0,
                 color: () => '#fff',
                 labelColor: () => '#fff',
@@ -84,12 +135,25 @@ export default function ActivitiesScreen() {
               bezier
               style={styles.chartStyle}
             />
-
-            {/* X/Y Labels */}
-            <View style={styles.axisLabels}>
-              <Text style={styles.axisLabelY}>Mood</Text>
-              <Text style={styles.axisLabelX}>No. of Activities</Text>
+          ) : (
+            <View style={styles.noDataContainer}>
+              <Text style={styles.noDataTitle}>No Activity Data Yet</Text>
+              <Text style={styles.noDataText}>
+                Start tracking your activities and moods to see your insights here!
+              </Text>
+              {/* <TouchableOpacity style={styles.trackButton}>
+                <Text style={styles.trackButtonText}>Start Tracking</Text>
+              </TouchableOpacity> */}
             </View>
+          )}
+          
+            {/* X/Y Labels - Only show when we have data */}
+            {chartData.labels.length > 0 && (
+              <View style={styles.axisLabels}>
+                <Text style={styles.axisLabelY}>Mood</Text>
+                <Text style={styles.axisLabelX}>No. of Activities</Text>
+              </View>
+            )}
           </View>
 
           {/* AI Insight Box */}
@@ -136,9 +200,24 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  header: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+  backButton: { 
+    marginTop: 40, 
+    padding: 5 
+  },
+  headerTextContainer: { 
+    flex: 1, 
+    marginTop: 40, 
+    alignItems: 'center',
+  },
   container: {
     alignItems: 'center',
-    paddingVertical: 30,
+    paddingVertical: 0,
   },
   title: {
     fontSize: 34,
@@ -238,4 +317,51 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
   },
+
+  noDataContainer: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    padding: 30,
+    borderRadius: 16,
+    alignItems: 'center',
+    width: screenWidth - 60,
+    marginVertical: 10,
+  },
+  noDataTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+    marginBottom: 8,
+  },
+  noDataText: {
+    fontSize: 14,
+    color: '#3F3F46',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  trackButton: {
+    backgroundColor: '#FF8A00',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 20,
+  },
+  trackButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  aiLoadingContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  aiLoadingText: {
+    color: '#1A1A1A',
+    fontSize: 14,
+    marginLeft: 10,
+  },
+  aiErrorContainer: {
+    flex: 1,
+  },
+  
 });

@@ -1,9 +1,9 @@
-import { useLocalSearchParams } from "expo-router";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
 import { useEffect, useState } from "react";
 import { getMoodDayDetail } from "@/src/services/apis";
 import MoodIcon from "@/src/components/MoodIcons/moodIcons";
-// import MoodIcon from "@/src/components/mood/MoodIcon";
+import { MaterialIcons } from "@expo/vector-icons";
 
 interface LatestCheckin {
   mood: string;
@@ -25,8 +25,8 @@ export default function DailyDetailScreen() {
   const [dayData, setDayData] = useState<DayData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Map API moods to your 7 specific mood names
+  const router = useRouter();
+  
   const moodMap: Record<string, { mood: string }> = {
     happy: { mood: "Happy" },
     excited: { mood: "Excited" },
@@ -39,7 +39,25 @@ export default function DailyDetailScreen() {
     lonely: { mood: "Lonely" },
   };
 
-  const defaultMood = { mood: "Calm" }; // Fallback to Calm
+  const defaultMood = { mood: "Calm" };
+
+  // Format date to "Month Day" format (e.g., "November 20")
+  const formatDate = (dateString: string | string[]) => {
+    if (Array.isArray(dateString)) {
+      dateString = dateString[0];
+    }
+    
+    const dateObj = new Date(dateString + 'T00:00:00');
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    
+    const month = monthNames[dateObj.getMonth()];
+    const day = dateObj.getDate();
+    
+    return `${month} ${day}`;
+  };
 
   useEffect(() => {
     const fetchDayDetail = async () => {
@@ -94,8 +112,14 @@ export default function DailyDetailScreen() {
   return (
     <View style={styles.container}>
       
-      {/* Date */}
-      <Text style={styles.dateText}>{date}</Text>
+      {/* Header with Back Button and Date in Same Line */}
+      <View style={styles.headerContainer}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <MaterialIcons name="arrow-back" size={24} color="#111" />
+        </TouchableOpacity>
+        <Text style={styles.dateText}>{formatDate(date)} Entry</Text>
+        <View style={styles.placeholder} />
+      </View>
 
       {/* Mood Icon */}
       <View style={styles.moodIconWrapper}>
@@ -148,7 +172,6 @@ export default function DailyDetailScreen() {
   );
 }
 
-// Your existing styles remain the same...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -157,12 +180,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 40,
   },
-  dateText: {
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: 10,
-    textAlign: "center",
+    marginBottom: 10,
+  },
+  backButton: {
+    padding: 8,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateText: {
     fontSize: 26,
     fontWeight: "700",
     color: "#1A1A1A",
+    flex: 1,
+    textAlign: 'center',
+  },
+  placeholder: {
+    width: 40, // Same width as back button for balance
   },
   moodIconWrapper: {
     alignSelf: "center",

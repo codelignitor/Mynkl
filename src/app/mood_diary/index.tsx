@@ -1,43 +1,63 @@
-import CalendarSection from '@/src/components/moodCalender/calender';
 import MoodLegend from '@/src/components/moodlegend/mood_legend';
 import MoodTrendsChart from '@/src/components/moodTrend/moodchart';
 import { MoodProvider } from '@/src/contexts/MoodContext';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 
 export default function MoodDiaryScreen() {
   const router = useRouter();
-
+  
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back" size={24} color="#111" />
-        </TouchableOpacity>
-      </View>
       <MoodProvider> 
+        {/* Header with Back Button and Title in Same Line */}
+        <View style={styles.headerContainer}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <MaterialIcons name="arrow-back" size={24} color="#111" />
+          </TouchableOpacity>
+          <Text style={styles.mainTitle}>Mood Diary</Text>
+          <View style={styles.placeholder} />
+        </View>
+
+        {/* Mood Trends Chart without its own title */}
         <MoodTrendsChart />
-        <CalendarSection/>
       </MoodProvider>
       
-      <MoodLegend/>
+      <MoodLegend />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
-  },
-  backButton: { marginTop: 40, marginRight: 10, padding: 5 },
   container: {
     flexGrow: 1,
     padding: 18,
-    backgroundColor: '#BCE3FF', // light gradient-like color
+    backgroundColor: '#BCE3FF',
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 40,
+    marginBottom: 20,
+    paddingHorizontal: 5,
+  },
+  backButton: {
+    padding: 8,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mainTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+  },
+  placeholder: {
+    width: 40, // Same width as back button for balance
   },
 });
