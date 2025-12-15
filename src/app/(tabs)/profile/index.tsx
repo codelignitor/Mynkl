@@ -214,6 +214,13 @@ const ProfileScreen = () => {
                 )}
             </View>
 
+              <TouchableOpacity
+                        style={[styles.actionButton, styles.editButton]}
+                        onPress={() => router.push('/mood_diary')}
+                    >
+                        <Text style={styles.editButtonText}>Mood Diay</Text>
+                    </TouchableOpacity>
+
             {/* Navigation Options */}
             <View style={styles.navigationContainer}>
                 <TouchableOpacity

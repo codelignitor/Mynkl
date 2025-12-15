@@ -194,18 +194,6 @@ const MoodMapScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.rowContainer}>
-          <TouchableOpacity
-            style={styles.appIconCard}
-            onPress={() => router.push('/mood_diary')}
-          >
-            <View style={styles.iconContainer}>
-              <Icon name="chart-line" size={24} color="#4b7bec" />
-            </View>
-            <Text style={styles.appIconText}>Mood Trends</Text>
-          </TouchableOpacity>
-        </View>
-
         <View style={styles.menuSectionContainer}>
           <TouchableOpacity 
             style={[
@@ -262,6 +250,26 @@ const MoodMapScreen = () => {
               </View>
               <View style={styles.menuTextContainer}>
                 <Text style={styles.largeMenuCardTitle}>Journals</Text>
+              </View>
+              <Icon name="chevron-right" size={24} color="#8c8c8c" style={styles.chevronIcon} />
+            </View>
+          </TouchableOpacity>
+           <TouchableOpacity 
+            style={[styles.largeMenuCard, { backgroundColor: '#b7c2cc' }]}
+            onPress={() => { 
+              router.push({
+                // pathname: '/journal',
+                pathname: '/onboarding/onboarding-splash',
+                params: { data: JSON.stringify(selectedMood) }
+              });
+            }}
+          >
+            <View style={styles.largeMenuCardContent}>
+              <View style={styles.largeMenuIconContainer}>
+                <Icon name="pin" size={28} color="#ffffff" />
+              </View>
+              <View style={styles.menuTextContainer}>
+                <Text style={styles.largeMenuCardTitle}>Onboarding UI's</Text>
               </View>
               <Icon name="chevron-right" size={24} color="#8c8c8c" style={styles.chevronIcon} />
             </View>
