@@ -3,6 +3,7 @@ import {
   CheckInPayload,
   MapSearchParams,
   OpenToTalkPayload,
+  WellnessSuggestion,
 } from './types';
 
 //  Badge status API with auth token check
@@ -219,7 +220,8 @@ export const getCheckInAiAnalysis = async () => {
 };
 
 export const getMoodSuggestions = async () => {
-  const response = await axiosInstance.get('/activity/AI-Suggestions'); 
+  const response = await axiosInstance.get('/activity/AI-Suggestions');
+  return response.data; 
 };
 
 export const getAiActivitySuggestions = async (token: string) => {
@@ -243,11 +245,6 @@ export const getAiActivitySuggestions = async (token: string) => {
   }
 };
 
-
-// export const getAiActivitySuggestions = async () => {
-//   const response = await axiosInstance.get(`/activity/AI-Suggestions`);
-//   return response.data;
-// };
 
 export const getAiMoodPattern = async () => {
   const response = await axiosInstance.get(`/home/mood-pattern`);
@@ -486,3 +483,44 @@ export const getWellnessSuggestions = async () => {
   const response = await axiosInstance.get(`/Wellness/wellness-suggestion`);
   return response.data;
 };
+
+
+//AI-wellnessSuggestionDetails API 
+export const getWellnessSuggestionDetail = async (contentId: string): Promise<WellnessSuggestion> => {
+  try {
+    console.log(`📋 Fetching wellness suggestion for content_id: ${contentId}`);
+    
+    const response = await axiosInstance.get(`/Wellness/wellness-suggestion/${contentId}`);
+    
+    console.log('✅ Wellness suggestion fetched successfully');
+    return response.data;
+    
+  } catch (error) {
+    console.error('❌ Error fetching wellness suggestion:', error);
+    
+    // For debugging - check the exact error
+    if (error.response) {
+      console.error('Error response:', error.response.status, error.response.data);
+    }
+    
+    throw error;
+  }
+};
+
+
+export const getMindfulMovements = async () => {
+  const response = await axiosInstance.get(`/Wellness/wellness/movement-flows`);
+  return response.data;
+};
+
+//Sleep Relaxtion flow API
+export const getSleepSuggestions = async () => {
+  const response = await axiosInstance.get(`/Wellness/wellness/sleep-relaxation`);
+  return response.data;
+};
+
+export const getRecommendedSessions = async () => {
+  const response = await axiosInstance.get(`/Wellness/wellness/guided-meditations`);
+  return response.data;
+};
+

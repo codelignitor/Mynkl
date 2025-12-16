@@ -58,3 +58,15 @@ export interface MoodDayDetailResponse {
   date: string;
   latest_checkin: MoodCheckin | null;
 }
+
+export interface WellnessSuggestion {
+  id: string;
+  suggestion_type: string;
+  content_id: string;
+  content_type: string;
+  title: string;
+  duration: number; // Duration in seconds
+  description: string;
+  file_url: string;
+  thumbnail_url: string | null;
+}

@@ -97,100 +97,145 @@ export default function MoodScreen() {
   };
 
   const renderSuggestionDetails = (suggestion, index) => {
-  const isExpanded = expandedSuggestion === index;
+    const isExpanded = expandedSuggestion === index;
 
-  // Add null checks
-  if (!isExpanded || !suggestion?.details) return null;
+    if (!isExpanded || !suggestion?.details) return null;
 
-  const { details } = suggestion;
+    const { details } = suggestion;
 
-  switch (details.type) {
-    case "message_suggestion":
+    // Determine suggestion type based on the presence of specific fields
+    if (details.place_id) {
+      // This is a place suggestion
       return (
         <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>Suggested Message:</Text>
-          <Text style={styles.detailsMessage}>
-            "{details.ai_generated_message}"
-          </Text>
-          {details.note && (
-            <Text style={styles.detailsNote}>{details.note}</Text>
+          <Text style={styles.detailsTitle}>📍 Place Details:</Text>
+          <Text style={styles.detailsName}>{details.name}</Text>
+          <Text style={styles.detailsAddress}>{details.address}</Text>
+          
+          {details.rating && (
+            <View style={styles.ratingContainer}>
+              <Text style={styles.ratingText}>⭐ {details.rating} ({details.user_ratings_total} reviews)</Text>
+            </View>
           )}
+          
+          {details.types && (
+            <View style={styles.tagsContainer}>
+              {details.types.slice(0, 3).map((type, idx) => (
+                <View key={idx} style={styles.tag}>
+                  <Text style={styles.tagText}>{type}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+          
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => {
-              // Handle copy or send message
-              console.log("Send message");
+              // Open in Google Maps or Apple Maps
+              const url = `https://www.google.com/maps/search/?api=1&query=${details.lat},${details.lng}&query_place_id=${details.place_id}`;
+              Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
             }}
           >
-            <Text style={styles.actionButtonText}>Use This Message</Text>
+            <Text style={styles.actionButtonText}>Open in Maps</Text>
           </TouchableOpacity>
         </View>
       );
-
-    case "mindful_activity":
+    } else if (details.url && details.url.includes('spotify')) {
+      // This is a Spotify playlist suggestion
       return (
         <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>Instructions:</Text>
-          <Text style={styles.detailsInstructions}>
-            {details.instructions}
+          <Text style={styles.detailsTitle}>🎵 Spotify Playlist:</Text>
+          <Text style={styles.detailsName}>{details.name}</Text>
+          
+          {details.description && (
+            <Text style={styles.detailsDescription}>
+              {details.description.replace(/<[^>]*>/g, '')}
+            </Text>
+          )}
+          
+          {details.tracks_total && (
+            <Text style={styles.detailsTracks}>{details.tracks_total} tracks</Text>
+          )}
+          
+          {details.image && (
+            <Image 
+              source={{ uri: details.image }} 
+              style={styles.playlistImage}
+              resizeMode="cover"
+            />
+          )}
+          
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => {
+              Linking.openURL(details.url).catch(err => console.error("Couldn't open Spotify:", err));
+            }}
+          >
+            <Text style={styles.actionButtonText}>Open in Spotify</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    } else if (!details.url && !details.place_id) {
+      // This is a reflection prompt (details is null or just a message)
+      return (
+        <View style={styles.detailsContainer}>
+          <Text style={styles.detailsTitle}>💭 Reflection Prompt:</Text>
+          <Text style={styles.detailsMessage}>
+            "{suggestion.suggestion}"
           </Text>
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => {
-              // Navigate to activity
-              console.log("Start activity");
+              // Navigate to journal or reflection screen
+              router.push('/journal');
             }}
           >
-            <Text style={styles.actionButtonText}>Start Activity</Text>
+            <Text style={styles.actionButtonText}>Write in Journal</Text>
           </TouchableOpacity>
         </View>
       );
+    }
 
-    case "reflection_prompt":
-      return (
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>Reflection Question:</Text>
-          <Text style={styles.detailsQuestion}>{details.question}</Text>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => {
-              // Open reflection journal
-              console.log("Start reflection");
-            }}
-          >
-            <Text style={styles.actionButtonText}>Write Reflection</Text>
-          </TouchableOpacity>
-        </View>
-      );
+    return null;
+  };
 
-    default:
-      return null;
-  }
-};
-
-const getSuggestionIcon = (type) => {
-  // Add null check
-  if (!type) return "✨";
-  
-  switch (type) {
-    case "message_suggestion":
-      return "💌";
-    case "mindful_activity":
+  const getSuggestionIcon = (suggestion) => {
+    if (!suggestion?.details) return "💭"; // Reflection prompt icon
+    
+    const { details } = suggestion;
+    
+    if (details.place_id) {
+      return "📍";
+    } else if (details.url && details.url.includes('spotify')) {
+      return "🎵";
+    } else if (details.url && details.url.includes('youtube')) {
+      return "🎬";
+    } else if (details.activity_type) {
       return "🧘‍♀️";
-    case "reflection_prompt":
-      return "💭";
-    case "activity":
-      return "🎯";
-    case "place":
-      return "🎡";
-    case "food":
-      return "🍦";
-    case "camera":
-      return "📸";
-    default:
-      return "✨";
-  }
-};
+    }
+    
+    return "✨";
+  };
+
+  const handleSuggestionPress = (suggestion, index) => {
+    // If details is null, don't do anything (non-clickable)
+    if (!suggestion?.details) return;
+    
+    const { details } = suggestion;
+    
+    // Handle direct CTA without expansion
+    if (details?.url && details.url.includes('spotify')) {
+      Linking.openURL(details.url).catch(err => console.error("Couldn't open Spotify:", err));
+      return;
+    } else if (details?.place_id) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${details.lat},${details.lng}&query_place_id=${details.place_id}`;
+      Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
+      return;
+    }
+    
+    // For other suggestions, toggle expansion
+    setExpandedSuggestion(expandedSuggestion === index ? null : index);
+  };
 
   const moodGradient = getMoodGradient(data?.last_check_in_mood);
 
@@ -281,9 +326,6 @@ const getSuggestionIcon = (type) => {
     );
   }
 
-  /*
-    NORMAL CHECK-IN UI - WITH NEW SUGGESTIONS
-  */
   return (
     <LinearGradient colors={moodGradient} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -341,23 +383,37 @@ const getSuggestionIcon = (type) => {
 
           {/* NEW SUGGESTIONS FROM API */}
           {suggestions?.suggestions?.length > 0 && suggestions.suggestions.map((suggestion, idx) => {
-            // Add null check for suggestion object
             if (!suggestion) return null;
+            
+            // Determine if the suggestion should be clickable
+            const hasDetails = !!suggestion?.details;
+            const shouldShow = hasDetails || suggestion?.suggestion; // Show if there's at least a suggestion text
+            
+            if (!shouldShow) return null;
             
             return (
               <TouchableOpacity
                 key={idx}
-                style={[styles.suggestionCard, { backgroundColor: moodGradient[1] }]}
-                onPress={() =>
-                  setExpandedSuggestion(expandedSuggestion === idx ? null : idx)
-                }
-                activeOpacity={0.8}
+                style={[
+                  styles.suggestionCard, 
+                  { 
+                    backgroundColor: moodGradient[1],
+                    // If no details, make it appear non-clickable
+                    opacity: hasDetails ? 1 : 0.7,
+                  }
+                ]}
+                onPress={() => hasDetails && handleSuggestionPress(suggestion, idx)}
+                activeOpacity={hasDetails ? 0.8 : 1} // No opacity change if not clickable
+                disabled={!hasDetails} // Disable touch if no details
               >
                 <View style={styles.suggestionHeader}>
                   <Text style={styles.suggestionIcon}>
-                    {getSuggestionIcon(suggestion?.details?.type)}
+                    {getSuggestionIcon(suggestion)}
                   </Text>
-                  <Text style={styles.suggestionText}>
+                  <Text style={[
+                    styles.suggestionText,
+                    !hasDetails && styles.nonClickableText // Different style for non-clickable items
+                  ]}>
                     {suggestion?.suggestion || "Suggestion"}
                   </Text>
                 </View>
@@ -367,7 +423,7 @@ const getSuggestionIcon = (type) => {
           })}
 
           {/* OLD SUGGESTED ACTIONS - Keep if needed */}
-          {data?.suggested_actions?.map((action, idx) => (
+          {/* {data?.suggested_actions?.map((action, idx) => (
             <TouchableOpacity
               key={`action-${idx}`}
               style={[styles.actionBtn, { backgroundColor: moodGradient[1] }]}
@@ -382,13 +438,13 @@ const getSuggestionIcon = (type) => {
               <Text style={{ fontSize: 20 }}>{action.emoji}</Text>
               <Text style={styles.btnText}>{action.description}</Text>
             </TouchableOpacity>
-          ))}
+          ))} */}
 
           <TouchableOpacity
             style={[styles.checkInBtn, { backgroundColor: moodGradient[0] }]}
             onPress={() => router.push("/moodpattern")}
           >
-            <Text style={styles.checkInText}>View my Mood Pattern</Text>
+            <Text style={styles.checkInText}>View Mood Pattern</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -481,6 +537,10 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 22,
   },
+  nonClickableText: {
+    opacity: 0.7,
+    fontStyle: 'italic',
+  },
   detailsContainer: {
     marginTop: 16,
     paddingTop: 16,
@@ -494,30 +554,69 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     opacity: 0.9,
   },
+  detailsName: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  detailsAddress: {
+    color: "white",
+    fontSize: 14,
+    opacity: 0.9,
+    marginBottom: 8,
+  },
+  detailsDescription: {
+    color: "white",
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 8,
+    opacity: 0.9,
+  },
   detailsMessage: {
     color: "white",
     fontSize: 15,
     lineHeight: 22,
     fontStyle: "italic",
+    marginBottom: 12,
+  },
+  detailsTracks: {
+    color: "white",
+    fontSize: 13,
+    opacity: 0.8,
     marginBottom: 8,
   },
-  detailsNote: {
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  ratingText: {
+    color: "white",
+    fontSize: 14,
+    opacity: 0.9,
+  },
+  tagsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 12,
+  },
+  tag: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginRight: 6,
+    marginBottom: 6,
+  },
+  tagText: {
     color: "white",
     fontSize: 12,
-    opacity: 0.8,
-    marginBottom: 12,
   },
-  detailsInstructions: {
-    color: "white",
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 12,
-  },
-  detailsQuestion: {
-    color: "white",
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "500",
+  playlistImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
     marginBottom: 12,
   },
   actionButton: {
@@ -526,7 +625,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 10,
     alignItems: "center",
-    marginTop: 4,
+    marginTop: 8,
   },
   actionButtonText: {
     color: "white",

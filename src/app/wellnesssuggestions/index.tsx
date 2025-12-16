@@ -53,11 +53,29 @@ export default function WellnessSuggestionsScreen() {
 
     const { suggestionType } = suggestionData;
 
-    // Check if suggestionType is "selfcare" (case-insensitive)
+    // Check if suggestionType is "selfcare"
     if (suggestionType === 'Self-Care Tip') {
       router.push('/Selfcare_tips/breathingSuggestion');
-    } else {
-      router.push('/startActivity');
+    
+    } else if(suggestionType === 'Emotional Comfort') {
+      router.push('/Selfcare_tips/Audiosession');
+    
+    } else if(suggestionType === 'Wellness Boost') {
+      router.push('/Selfcare_tips/FeelCalm');
+    
+    } else if(suggestionType === 'Energy Release') {
+      router.push('/Selfcare_tips/Mindful_Movement');
+    
+    } 
+    else if(suggestionType === 'Reflection') {
+      router.push('/Selfcare_tips/Gratitute');
+    }
+    // else if(suggestionType === 'Sleep Support') {
+    //   router.push('/Selfcare_tips/Sleep_Relaxation');
+    // }
+    else{
+    //  router.push('/Selfcare_tips/Mindful_Movement'); 
+     router.push('/startActivity');
     }
   };
 
@@ -142,7 +160,7 @@ export default function WellnessSuggestionsScreen() {
           <Text style={styles.moodAnchorsTitle}>Mood anchors</Text>
           <View style={styles.anchorsContainer}>
             <View style={styles.anchorsRow}>
-              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Deep breathing') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/breathingSuggestion')}>
+              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Deep breathing') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/Digital_detox')}>
                 <Text style={[styles.anchorText, selectedAnchors.includes('Deep breathing') && styles.selectedAnchorText]}>
                   Deep breathing
                 </Text>
@@ -152,7 +170,7 @@ export default function WellnessSuggestionsScreen() {
                   Nature sounds
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Gratitude') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/Gratitute')}>
+              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Gratitude') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/Mindful_Movement')}>
                 <Text style={[styles.anchorText, selectedAnchors.includes('Gratitude') && styles.selectedAnchorText]}>
                    Gratitude
                 </Text>
@@ -164,9 +182,14 @@ export default function WellnessSuggestionsScreen() {
               </TouchableOpacity>
             </View>
             <View style={styles.anchorsRow}>
-              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Feel Calm') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/FeelCalm')}>
+              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Feel Calm') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/Guided-meditation')}>
                 <Text style={[styles.anchorText, selectedAnchors.includes('Feel calm') && styles.selectedAnchorText]}>
                   Feel Calm
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Sleep') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/Sleep_Relaxation')}>
+                <Text style={[styles.anchorText, selectedAnchors.includes('Sleep') && styles.selectedAnchorText]}>
+                  Sleep
                 </Text>
               </TouchableOpacity>
             </View>
