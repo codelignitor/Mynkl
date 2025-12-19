@@ -308,7 +308,9 @@ export default function MoodScreen() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.tile}>
+          <TouchableOpacity style={styles.tile}
+          onPress={() => router.push("/moodpattern")}
+          >
             <Text style={styles.tileEmoji}>💡</Text>
             <Text style={styles.tileText}>
               Read a gentle insight from your past check-ins.

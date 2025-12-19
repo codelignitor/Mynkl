@@ -35,7 +35,9 @@ export default function BreathingBubbleScreen() {
   const bubbleScale = useRef(new Animated.Value(1)).current;
   const progressWidth = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
-  
+  const [isInhaling, setIsInhaling] = useState(true);
+  const breathIntervalRef = useRef(null);
+
   // Fetch wellness data on component mount
   useEffect(() => {
     fetchWellnessData();
@@ -59,8 +61,6 @@ export default function BreathingBubbleScreen() {
       setTotalDuration(data.duration);
       setTimeLeft(data.duration);
       
-      console.log('✅ Wellness data loaded:', data);
-      
     } catch (err) {
       console.error('❌ Failed to fetch wellness data:', err);
       setError(err.message || 'Failed to load breathing exercise');
@@ -75,68 +75,102 @@ export default function BreathingBubbleScreen() {
   };
 
   // Start the breathing bubble animation
-  const startBubbleAnimation = () => {
-    // Create a continuous breathing animation
-    Animated.loop(
-      Animated.sequence([
-        // Inhale: bubble expands
+  
+const startBubbleAnimation = () => {
+  // Clear any existing interval
+  if (breathIntervalRef.current) {
+    clearInterval(breathIntervalRef.current);
+  }
+  
+  // Set initial state
+  setIsInhaling(true);
+  
+  // Create the animation sequence
+  const breatheSequence = Animated.loop(
+    Animated.sequence([
+      // Inhale phase
+      Animated.parallel([
         Animated.timing(bubbleScale, {
           toValue: 1.3,
-          duration: 4000, // 4 seconds to inhale
+          duration: 4000,
           useNativeDriver: true,
         }),
-        // Hold breath
-        Animated.timing(bubbleScale, {
-          toValue: 1.3,
-          duration: 2000, // 2 seconds hold
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 4000,
           useNativeDriver: true,
-        }),
-        // Exhale: bubble shrinks
+        })
+      ]),
+      // Hold breath (keep inhaling text)
+      Animated.delay(2000),
+      // Exhale phase
+      Animated.parallel([
         Animated.timing(bubbleScale, {
           toValue: 1,
-          duration: 4000, // 4 seconds to exhale
+          duration: 4000,
           useNativeDriver: true,
         }),
-        // Rest
-        Animated.timing(bubbleScale, {
-          toValue: 1,
-          duration: 2000, // 2 seconds rest
+        Animated.timing(opacityAnim, {
+          toValue: 0.8,
+          duration: 4000,
           useNativeDriver: true,
-        }),
-      ])
-    ).start();
+        })
+      ]),
+      // Rest (keep exhaling text)
+      Animated.delay(2000),
+    ])
+  );
+  
+  // Start the animation
+  breatheSequence.start();
+  
+  // Set up text change intervals
+  breathIntervalRef.current = setInterval(() => {
+    setIsInhaling(prev => !prev);
+  }, 6000); // Change text every 6 seconds (4s inhale + 2s hold)
+  
+  // Return cleanup function
+  return () => {
+    if (breathIntervalRef.current) {
+      clearInterval(breathIntervalRef.current);
+    }
   };
+};
 
-  // Start the practice timer
-  const startPractice = () => {
-    if (!wellnessData) return;
-    
-    setIsPracticeStarted(true);
-    startBubbleAnimation();
-    
-    // Start progress animation
-    Animated.timing(progressWidth, {
-      toValue: width - 60, // Full width minus padding
-      duration: totalDuration * 1000, // Convert seconds to milliseconds
-      useNativeDriver: false,
-    }).start();
-    
-    // Start countdown timer
-    const interval = setInterval(() => {
-      setTimeLeft(prevTime => {
-        if (prevTime <= 1) {
-          clearInterval(interval);
-          setTimeout(() => {
-            router.push('/Selfcare_tips/breathingSuggestion/BreathingCompleted'); // Replace with your next screen
-          }, 500);
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-    
-    setTimerInterval(interval);
-  };
+  // Update the startPractice function to handle the breath interval
+const startPractice = () => {
+  if (!wellnessData) return;
+  
+  setIsPracticeStarted(true);
+  const cleanup = startBubbleAnimation();
+  
+  // Start progress animation
+  Animated.timing(progressWidth, {
+    toValue: width - 60, // Full width minus padding
+    duration: totalDuration * 1000, // Convert seconds to milliseconds
+    useNativeDriver: false,
+  }).start();
+  
+  // Start countdown timer
+  const interval = setInterval(() => {
+    setTimeLeft(prevTime => {
+      if (prevTime <= 1) {
+        clearInterval(interval);
+        if (cleanup) cleanup(); // Clean up breath interval
+        setTimeout(() => {
+          router.push('/Selfcare_tips/breathingSuggestion/BreathingCompleted');
+        }, 500);
+        return 0;
+      }
+      return prevTime - 1;
+    });
+  }, 1000);
+  
+  setTimerInterval(interval);
+  
+  // Return cleanup function
+  return cleanup;
+};
 
   // Format seconds to MM:SS
   const formatTime = (seconds) => {
@@ -240,16 +274,12 @@ export default function BreathingBubbleScreen() {
             ]}
           >
             <Text style={styles.bubbleText}>
-              {isPracticeStarted ? 'Inhale' : 'Inhale'}
+              {isPracticeStarted 
+                ? (isInhaling ? 'Inhale gently' : 'Exhale slowly')
+                : 'Inhale'
+              }
             </Text>
             
-            {/* Timer display inside bubble when practice is active */}
-            {/* {isPracticeStarted && (
-              <View style={styles.timerInsideBubble}>
-                <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
-                <Text style={styles.timerLabel}>remaining</Text>
-              </View>
-            )} */}
           </Animated.View>
         </View>
 
@@ -388,7 +418,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 40,
-    marginBottom: 20,
   },
   bubbleInner: {
     width: 200,

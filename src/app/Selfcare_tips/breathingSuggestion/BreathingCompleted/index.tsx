@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 
 export default function BreathingCompleteScreen() {
+ const router = useRouter();
   return (
     <LinearGradient
       colors={['#6dbac1ff', '#70beb7ff']}
@@ -29,7 +31,7 @@ export default function BreathingCompleteScreen() {
         <TouchableOpacity 
           style={styles.primaryButton}
           activeOpacity={0.8}
-          onPress={() => {/* Log feelings */}}
+          onPress={()=> router.push('/addCheckIn')}
         >
           <Text style={styles.primaryButtonText}>Log how you feel</Text>
         </TouchableOpacity>
@@ -37,7 +39,7 @@ export default function BreathingCompleteScreen() {
         <TouchableOpacity 
           style={styles.actionItem}
           activeOpacity={0.7}
-          onPress={() => {/* Do another round */}}
+          onPress={() => router.push('/Selfcare_tips/breathingSuggestion')}
         >
           <View style={styles.actionIcon}>
             <Text style={styles.iconText}>🎧</Text>
@@ -48,7 +50,7 @@ export default function BreathingCompleteScreen() {
         <TouchableOpacity 
           style={styles.actionItem}
           activeOpacity={0.7}
-          onPress={() => {/* Try different exercise */}}
+          onPress={() => router.push('/Selfcare_tips/Digital_detox')}
         >
           <View style={styles.actionIcon}>
             <Text style={styles.iconText}>🏆</Text>

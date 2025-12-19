@@ -33,7 +33,7 @@ export default function SleepRelaxationMenuScreen() {
       console.log('🌙 Fetching sleep relaxation sessions...');
       const response = await getSleepSuggestions();
       
-      console.log('✅ API Response:', response);
+      // console.log('✅ API Response:', response);
       
       // Transform API data to match your UI structure
       const transformedActivities = response?.sessions?.map(session => ({

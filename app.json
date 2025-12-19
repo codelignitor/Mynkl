@@ -7,38 +7,40 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "newArchEnabled": true,
-
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.mynkl",
       "infoPlist": {
-        "UIBackgroundModes": ["audio"],
+        "UIBackgroundModes": [
+          "audio"
+        ],
         "NSLocationWhenInUseUsageDescription": "We need your location to show nearby moods.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         }
       }
     },
-
     "android": {
       "package": "com.mynkl",
       "googleServicesFile": "./google-services.json",
       "useNextNotificationsApi": true,
-     "permissions": [
-    "ACCESS_FINE_LOCATION",
-    "ACCESS_COARSE_LOCATION",
-    "INTERNET",
-    "ACCESS_NETWORK_STATE"
-  ],
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyDnoc6XxrzYXuCC2Tg-QKcoIs3RLcHmuS0"
         }
       }
     },
-
     "build": {
       "development": {
         "developmentClient": true,
@@ -56,17 +58,14 @@
         }
       }
     },
-
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-
     "plugins": [
       "expo-notifications",
       "expo-router",
-     
       [
         "expo-splash-screen",
         {
@@ -76,23 +75,18 @@
           "backgroundColor": "#ffffff"
         }
       ],
-    
       "@react-native-firebase/app",
       "@react-native-firebase/messaging"
     ],
-
     "experiments": {
       "typedRoutes": true
     },
-
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "a7c307cb-d26e-4645-9a1f-6231ee6834be"
+        "projectId": "7dbc5d92-2a29-4e85-8b1a-2ce562a505cf"
       }
     },
-
-    "owner": "abdullahsheikh"
+    "owner": "haris078"
   }
 }
-

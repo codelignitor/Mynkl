@@ -151,13 +151,17 @@ const OutdoorWalkScreen = () => {
 
           {/* Action Buttons - Similar to WellnessSuggestionsScreen */}
           <View style={styles.actionButtonsContainer}>
-            <TouchableOpacity style={styles.logButton}>
+            <TouchableOpacity style={styles.logButton}
+            onPress={() => router.push('/addCheckIn')}
+            >
               <Text style={styles.logButtonText}>Log How You Feel</Text>
             </TouchableOpacity>
           </View>
 
           {/* Footer Link - Similar to "Not now" button */}
-          <TouchableOpacity style={styles.browseLink}>
+          <TouchableOpacity style={styles.browseLink}
+           onPress={() => router.push('/activity_suggestions/activity_card')}
+          >
             <Text style={styles.browseLinkText}>Want more? Browse Library</Text>
           </TouchableOpacity>
         </View>

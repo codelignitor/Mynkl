@@ -61,7 +61,12 @@ export default function WellnessSuggestionsScreen() {
       router.push('/Selfcare_tips/Audiosession');
     
     } else if(suggestionType === 'Wellness Boost') {
-      router.push('/Selfcare_tips/FeelCalm');
+      // router.push('/wellnesssuggestions/mindfulness-videos/BreathingSuggestion');
+      // router.push('/wellnesssuggestions/mindfulness-videos/Guidedmeditation');
+      router.push('/wellnesssuggestions/mindfulness-videos/MindfulMovement');
+      // router.push('/wellnesssuggestions/mindfulness-videos/MindfulRelationships');
+      // router.push('/wellnesssuggestions/mindfulness-videos/SleepStories');
+      // router.push('/wellnesssuggestions/mindfulness-videos/Visualization_Imagery');
     
     } else if(suggestionType === 'Energy Release') {
       router.push('/Selfcare_tips/Mindful_Movement');
@@ -70,11 +75,10 @@ export default function WellnessSuggestionsScreen() {
     else if(suggestionType === 'Reflection') {
       router.push('/Selfcare_tips/Gratitute');
     }
-    // else if(suggestionType === 'Sleep Support') {
-    //   router.push('/Selfcare_tips/Sleep_Relaxation');
-    // }
+    else if(suggestionType === 'Sleep Support') {
+      router.push('/Selfcare_tips/Sleep_Relaxation');
+    }
     else{
-    //  router.push('/Selfcare_tips/Mindful_Movement'); 
      router.push('/startActivity');
     }
   };
@@ -170,7 +174,7 @@ export default function WellnessSuggestionsScreen() {
                   Nature sounds
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Gratitude') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/Mindful_Movement')}>
+              <TouchableOpacity style={[styles.anchorTag, selectedAnchors.includes('Gratitude') && styles.selectedAnchorTag]} onPress={() => router.push('/Selfcare_tips/Gratitute')}>
                 <Text style={[styles.anchorText, selectedAnchors.includes('Gratitude') && styles.selectedAnchorText]}>
                    Gratitude
                 </Text>

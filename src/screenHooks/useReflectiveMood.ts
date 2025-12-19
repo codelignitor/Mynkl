@@ -50,11 +50,13 @@ export function useReflectiveMood() {
 
   const submitReflectionHandler = async (audioFile) => {
   try {
-
     const formData = new FormData();
-    formData.append("mood", selectedMoods?.[0]);
-    formData.append("reflection", reflection);
-
+    
+    // Always append mood and reflection
+    formData.append("mood", selectedMoods[0]);
+    formData.append("reflections", reflection.trim());
+    
+    // Only append audio if it exists
     if (audioFile) {
       formData.append("audio", {
         uri: audioFile,
@@ -63,6 +65,10 @@ export function useReflectiveMood() {
       });
     }
 
+    console.log('DEBUG - FormData entries:');
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ': ', pair[1]);
+    }
 
     const response = await submitJournal(formData);
 
@@ -79,9 +85,16 @@ export function useReflectiveMood() {
 
   } catch (error) {
     console.log("Upload error: ", error);
+    console.log("Error response data:", error.response?.data);
+    
+    Toast.show({
+      type: "error",
+      text1: "Failed to save reflection",
+      text2: error.response?.data?.message || error.message || "Please try again",
+      position: "top",
+    });
   }
 };
-
    
     useEffect(() => {
     getMoodPattern();

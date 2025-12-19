@@ -23,6 +23,7 @@ export default function SuggestionScreen() {
       (prevIndex + 1) % suggestedActivities.suggestions.length
     );
   };
+  
 
   const handlePrevious = () => {
     if (!suggestedActivities?.suggestions?.length) return;
@@ -69,19 +70,58 @@ export default function SuggestionScreen() {
 
       <Text style={styles.subHeader}>
         {suggestedActivities?.emotion_message
-          ? `${suggestedActivities.emotion_message}?`
+          ? suggestedActivities.emotion_message
           : ""}
       </Text>
 
       <Animated.View {...panResponder.panHandlers} style={styles.card}>
         <View style={styles.iconContainer}>
-          <Text style={styles.icon}>{currentCard?.emoji}</Text>
+          <Text style={styles.icon}>
+            {currentCard?.details?.type === "social_feature" ? "💬" : 
+             currentCard?.details?.type === "virtual_connection" ? "🤗" : 
+             currentCard?.details?.fallback ? "📍" : "💡"}
+          </Text>
         </View>
 
-        <Text style={styles.mainEmoji}>{currentCard?.emoji}</Text>
+        <Text style={styles.mainEmoji}>
+          {currentCard?.details?.type === "social_feature" ? "💬" : 
+           currentCard?.details?.type === "virtual_connection" ? "🤗" : 
+           currentCard?.details?.fallback ? "📍" : "💡"}
+        </Text>
 
-        <Text style={styles.cardText}>{currentCard?.activity?.name}</Text>
+        <Text style={styles.cardText}>{currentCard?.suggestion}</Text>
 
+        {/* <TouchableOpacity
+          style={styles.joinButton}
+          onPress={() => {
+            // Handle different suggestion types
+            if (currentCard?.details?.type === "social_feature") {
+              // Navigate to app settings or open settings
+              // router.push("/settings");
+            } else if (currentCard?.details?.type === "virtual_connection") {
+              // Navigate to virtual hug feature
+              // router.push("/virtual-hug");
+            } else if (currentCard?.details?.fallback) {
+              // For fallback suggestions, show details
+              router.push({
+                pathname: "/activity_details",
+                params: { 
+                  suggestion: currentCard.suggestion,
+                  details: JSON.stringify(currentCard.details)
+                }
+              });
+            } else {
+              // Default fallback
+              // router.push("/explore");
+            }
+          }}
+        >
+          <Text style={styles.joinButtonText}>
+            {currentCard?.details?.type === "social_feature" ? "Configure" : 
+             currentCard?.details?.type === "virtual_connection" ? "Send Hug" : 
+             "Explore"}
+          </Text>
+        </TouchableOpacity> */}
         <TouchableOpacity
           style={styles.joinButton}
           onPress={() => {
@@ -98,8 +138,12 @@ export default function SuggestionScreen() {
         </TouchableOpacity>
 
         <Text style={styles.bestFor}>
-          Best for:{" "}
-          <Text style={styles.bestHighlight}>{currentCard?.moods?.[0]}</Text>
+          Type:{" "}
+          <Text style={styles.bestHighlight}>
+            {currentCard?.details?.type === "social_feature" ? "Social Feature" : 
+             currentCard?.details?.type === "virtual_connection" ? "Virtual Connection" : 
+             currentCard?.details?.fallback ? "Local Activities" : "Suggestion"}
+          </Text>
         </Text>
       </Animated.View>
 
@@ -109,7 +153,7 @@ export default function SuggestionScreen() {
 
       <TouchableOpacity
         onPress={() => router.push("/activity_suggestions/activity_card")}
-        style={styles.swapButton}
+        style={styles.exploreButton}
       >
         <Text style={styles.swapText}>Explore Activities</Text>
       </TouchableOpacity>
@@ -216,8 +260,28 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#2c5f5d",
   },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "90%",
+    maxWidth: 320,
+    marginTop: 40,
+  },
   swapButton: {
     marginTop: 40,
+    backgroundColor: "#ffffff",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 4,
+    minWidth: 80,
+  },
+  exploreButton: {
+    marginTop: 20,
     backgroundColor: "#ffffff",
     paddingVertical: 12,
     paddingHorizontal: 30,

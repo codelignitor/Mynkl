@@ -14,7 +14,6 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { getMindfulMovements } from '@/src/services/apis';
-// import { getMindfulMovements } from '@/src/services/apis'; // Import your API function
 
 export default function MindfulFlowSelectionScreen() {
   const router = useRouter();
@@ -36,7 +35,7 @@ export default function MindfulFlowSelectionScreen() {
       console.log('🔄 Fetching mindful movements...');
       const response = await getMindfulMovements();
       
-      console.log('✅ API Response:', response);
+      // console.log('✅ API Response:', response);
       
       // Transform API data to match your UI structure
       const transformedFlows = response?.flows?.map(flow => ({

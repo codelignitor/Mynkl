@@ -233,8 +233,6 @@ export const getAiActivitySuggestions = async (token: string) => {
       // timeout: 5000, // 5 seconds max
       responseType: 'json',
     });
-
-    console.log('✅ Response:', response);
     return response.data;
   } catch (err: any) {
     console.log('❌ Failed AI Suggestion:', err.message);
@@ -284,7 +282,7 @@ export const getaiMessage = async () => {
 //   return response.data;
 // };
 
-export const submitJournal = async (formData) => {
+export const submitJournal = async (formData: FormData) => {
   const response = await axiosInstance.post(`/home/journal`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -488,11 +486,8 @@ export const getWellnessSuggestions = async () => {
 //AI-wellnessSuggestionDetails API 
 export const getWellnessSuggestionDetail = async (contentId: string): Promise<WellnessSuggestion> => {
   try {
-    console.log(`📋 Fetching wellness suggestion for content_id: ${contentId}`);
     
     const response = await axiosInstance.get(`/Wellness/wellness-suggestion/${contentId}`);
-    
-    console.log('✅ Wellness suggestion fetched successfully');
     return response.data;
     
   } catch (error) {
