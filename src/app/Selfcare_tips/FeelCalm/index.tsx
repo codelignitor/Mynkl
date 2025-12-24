@@ -80,10 +80,9 @@ export default function MindfulnessVideoScreen({ navigation }) {
               <Video
                 ref={videoRef}
                 style={styles.video}
-                source={{
-                  uri: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', // Replace with your video URL
-                  // Example: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
-                }}
+                source=
+                  // uri: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+                  {require('../../../assets/videos/Copy of Gentle Mindful Stretching.mp4')}
                 useNativeControls={false}
                 resizeMode={ResizeMode.COVER}
                 isLooping

@@ -30,7 +30,7 @@ export default function BreathingPracticesScreen() {
       title: 'Coherent Breathing',
       subtitle: '(4s-4s technique)',
       duration: '5 min',
-      videoUri: require('../../../../assets/videos/Copy of Coherent Breathing.mp4'), // Update with your actual video path
+      videoUri: null //require('../../../../assets/videos/Copy of Coherent Breathing.mp4'), // Update with your actual video path
     },
     {
       id: 2,

@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'; 
 import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import SearchIcon from '../../../assets/svgs/SerachIcon';
-import * as SplashScreen from 'expo-splash-screen';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Components

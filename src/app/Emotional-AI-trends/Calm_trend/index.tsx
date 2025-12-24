@@ -19,7 +19,9 @@ export default function CalmEnergyScreen({ navigation }: { navigation: Navigatio
     const handleContinue = () => {
     // Add navigation logic here
     if (navigation) {
-      console.log('Continue Calm Routine pressed');
+      // console.log('Continue Calm Routine pressed');
+      // navigation.navigate('/Selfcare_tips/FeelCalm');
+     
     } else {
       console.log('Back button pressed');
     }
@@ -91,7 +93,7 @@ export default function CalmEnergyScreen({ navigation }: { navigation: Navigatio
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.primaryButton}
-              onPress={handleContinue}
+              onPress={() => router.push('/Selfcare_tips/FeelCalm')}
               activeOpacity={0.8}
             >
               <Text style={styles.primaryButtonText}>Continue Calm Routine</Text>

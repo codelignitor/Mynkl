@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   StatusBar,
   ActivityIndicator,
+  ScrollView, // Add this import
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -108,130 +109,138 @@ export default function MoodReflectionScreen() {
         <Ionicons name="arrow-back" size={24} color="#8B7355" />
       </TouchableOpacity>
 
-      {/* Peaceful Face Icon */}
-      <View style={styles.iconContainer}>
-        <View style={styles.faceIcon}>
-          <View style={styles.eyesContainer}>
-            <View style={styles.eye} />
-            <View style={styles.eye} />
-          </View>
-          <View style={styles.smile} />
-        </View>
-      </View>
-
-      {/* Main Question */}
-      <Text style={styles.mainQuestion}>
-       {reflectivePrompt ?? 'Something went wrong'}
-      </Text>
-
-      {/* AI Icebreaker Label */}
-      <View style={styles.icebreakerContainer}>
-        <Text style={styles.icebreakerText}>AI ICEBREAKER</Text>
-      </View>
-
-      {/* Note Container - Contains both TextInput and AudioRecorder */}
-      <View style={styles.noteContainer}>
-        {isAudioRecording ? (
-          // Show Audio Recorder when recording is active
-          <View style={styles.recorderWrapper}>
-            <AudioRecorderPlayer 
-              recordedUri={recordedUri} 
-              setRecordedUri={handleSetRecordedUri}
-              onClose={() => setIsAudioRecording(false)}
-            />
-          </View>
-        ) : (
-          // Show TextInput when not recording
-          <TextInput
-            style={styles.textInput}
-            placeholder="Share your reflection..."
-            placeholderTextColor="#8B7355"
-            value={reflection}
-            onChangeText={setReflection}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-          />
-        )}
-        
-        {/* Mic Button - Only visible when no recording exists */}
-        {!recordedUri && (
-          <TouchableOpacity 
-            onPress={toggleAudioRecorder} 
-            style={styles.voiceButton}
-          >
-            <Ionicons 
-              name={isAudioRecording ? "close" : "mic"} 
-              size={20} 
-              color="#8B7355" 
-            />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Audio Playback UI - Shows when recording is complete */}
-      {recordedUri && (
-        <View style={styles.audioPlaybackContainer}>
-          <View style={styles.audioControls}>
-            <TouchableOpacity 
-              style={styles.audioPlayButton} 
-              onPress={playSound}
-            >
-              <Ionicons name="play-circle" size={20} color="#345C4D" />
-              <Text style={styles.playText}>Play Recording</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.clearButton} 
-              onPress={clearRecording}
-            >
-              <Ionicons name="close-circle" size={20} color="#d9534f" />
-              <Text style={styles.clearText}>Clear</Text>
-            </TouchableOpacity>
+      {/* Wrap content in ScrollView */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Peaceful Face Icon */}
+        <View style={styles.iconContainer}>
+          <View style={styles.faceIcon}>
+            <View style={styles.eyesContainer}>
+              <View style={styles.eye} />
+              <View style={styles.eye} />
+            </View>
+            <View style={styles.smile} />
           </View>
         </View>
-      )}
 
-      {/* Mood Tagging Section */}
-      <Text style={styles.moodTaggingTitle}>Mood Tagging</Text>
+        {/* Main Question */}
+        <Text style={styles.mainQuestion}>
+         {reflectivePrompt ?? 'Something went wrong'}
+        </Text>
 
-      <View style={styles.moodTagsContainer}>
-        {moods.map((mood) => (
-          <TouchableOpacity
-            key={mood}
-            style={[
-              styles.moodTag,
-              selectedMoods.includes(mood) && styles.selectedMoodTag,
-            ]}
-            onPress={() => toggleMood(mood)}
-          >
-            <Text
+        {/* AI Icebreaker Label */}
+        <View style={styles.icebreakerContainer}>
+          <Text style={styles.icebreakerText}>AI ICEBREAKER</Text>
+        </View>
+
+        {/* Note Container - Contains both TextInput and AudioRecorder */}
+        <View style={styles.noteContainer}>
+          {isAudioRecording ? (
+            // Show Audio Recorder when recording is active
+            <View style={styles.recorderWrapper}>
+              <AudioRecorderPlayer 
+                recordedUri={recordedUri} 
+                setRecordedUri={handleSetRecordedUri}
+                onClose={() => setIsAudioRecording(false)}
+              />
+            </View>
+          ) : (
+            // Show TextInput when not recording
+            <TextInput
+              style={styles.textInput}
+              placeholder="Share your reflection..."
+              placeholderTextColor="#8B7355"
+              value={reflection}
+              onChangeText={setReflection}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+            />
+          )}
+          
+          {/* Mic Button - Only visible when no recording exists */}
+          {!recordedUri && (
+            <TouchableOpacity 
+              onPress={toggleAudioRecorder} 
+              style={styles.voiceButton}
+            >
+              <Ionicons 
+                name={isAudioRecording ? "close" : "mic"} 
+                size={20} 
+                color="#8B7355" 
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Audio Playback UI - Shows when recording is complete */}
+        {recordedUri && (
+          <View style={styles.audioPlaybackContainer}>
+            <View style={styles.audioControls}>
+              <TouchableOpacity 
+                style={styles.audioPlayButton} 
+                onPress={playSound}
+              >
+                <Ionicons name="play-circle" size={20} color="#345C4D" />
+                <Text style={styles.playText}>Play Recording</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.clearButton} 
+                onPress={clearRecording}
+              >
+                <Ionicons name="close-circle" size={20} color="#d9534f" />
+                <Text style={styles.clearText}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Mood Tagging Section */}
+        <Text style={styles.moodTaggingTitle}>Mood Tagging</Text>
+
+        <View style={styles.moodTagsContainer}>
+          {moods.map((mood) => (
+            <TouchableOpacity
+              key={mood}
               style={[
-                styles.moodTagText,
-                selectedMoods.includes(mood) && styles.selectedMoodTagText,
+                styles.moodTag,
+                selectedMoods.includes(mood) && styles.selectedMoodTag,
               ]}
+              onPress={() => toggleMood(mood)}
             >
-              {mood}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+              <Text
+                style={[
+                  styles.moodTagText,
+                  selectedMoods.includes(mood) && styles.selectedMoodTagText,
+                ]}
+              >
+                {mood}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-      {/* Submit Button */}
-      <TouchableOpacity
-        style={styles.submitButton}
-        onPress={() => submitReflectionHandler(recordedUri)}
-      >
-        <Text style={styles.submitButtonText}>Submit and continue</Text>
-      </TouchableOpacity>
-      
-      {/*  Skip for now button CTA*/}
-       <TouchableOpacity 
-        style={styles.skipButton}
-        onPress={handleSkip}
-      >
-        <Text style={styles.skipButtonText}>Skip for now</Text>
-      </TouchableOpacity>
+        {/* Submit Button */}
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={() => submitReflectionHandler(recordedUri)}
+        >
+          <Text style={styles.submitButtonText}>Submit and continue</Text>
+        </TouchableOpacity>
+        
+        {/*  Skip for now button CTA*/}
+         <TouchableOpacity 
+          style={styles.skipButton}
+          onPress={handleSkip}
+        >
+          <Text style={styles.skipButtonText}>Skip for now</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -240,13 +249,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F1E8',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
     paddingHorizontal: 24,
-    paddingTop: 20,
+    paddingTop: 60, // Adjusted for back button
+    paddingBottom: 40, // Added padding at bottom
   },
   backButton: {
-    marginTop:20,
     position: 'absolute',
-    top: 20,
+    top: 50,
     left: 20,
     zIndex: 10,
     padding: 6,
@@ -254,7 +268,6 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: 'center',
     marginBottom: 32,
-    marginTop: 40,
   },
   faceIcon: {
     width: 80,
@@ -314,7 +327,6 @@ const styles = StyleSheet.create({
     padding: 16,
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginHorizontal: 16,
     marginBottom: 20,
     minHeight: 120,
   },
@@ -338,7 +350,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(232, 220, 198, 0.5)',
     borderRadius: 12,
     padding: 12,
-    marginHorizontal: 16,
     marginBottom: 20,
   },
   audioControls: {
@@ -403,7 +414,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 20,
-    marginHorizontal: 16,
   },
   submitButtonText: {
     fontSize: 18,

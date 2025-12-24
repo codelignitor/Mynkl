@@ -519,3 +519,53 @@ export const getRecommendedSessions = async () => {
   return response.data;
 };
 
+// Add this function to your existing apis.ts file
+
+// Onboarding API types
+export interface OnboardingRequest {
+  q1_expression: string;
+  q2_coping: string;
+  q3_suggestions: string;
+  q4_location: string;
+  q5_hugs: string;
+  q6_reminders: string;
+  q7_motivation: string;
+  q8_support: string;
+  q9_open_to_talk: string;
+  note: string;
+}
+
+export interface OnboardingResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    user_id: string;
+    onboarding_completed: boolean;
+    timestamp: string;
+  };
+}
+
+// Onboarding API function
+export const submitOnboarding = async (data: OnboardingRequest): Promise<OnboardingResponse> => {
+  try {
+    const response = await axiosInstance.post(`/home/onboarding`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // Add any authentication headers if needed
+        // 'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const responseData: OnboardingResponse = await response.json();
+    return responseData;
+  } catch (error) {
+    console.error('Error submitting onboarding data:', error);
+    throw error;
+  }
+};

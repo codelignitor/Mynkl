@@ -62,8 +62,8 @@ export default function WellnessSuggestionsScreen() {
     
     } else if(suggestionType === 'Wellness Boost') {
       // router.push('/wellnesssuggestions/mindfulness-videos/BreathingSuggestion');
-      // router.push('/wellnesssuggestions/mindfulness-videos/Guidedmeditation');
-      router.push('/wellnesssuggestions/mindfulness-videos/MindfulMovement');
+       router.push('/wellnesssuggestions/mindfulness-videos/Guidedmeditation');
+      //router.push('/wellnesssuggestions/mindfulness-videos/MindfulMovement');
       // router.push('/wellnesssuggestions/mindfulness-videos/MindfulRelationships');
       // router.push('/wellnesssuggestions/mindfulness-videos/SleepStories');
       // router.push('/wellnesssuggestions/mindfulness-videos/Visualization_Imagery');

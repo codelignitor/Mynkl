@@ -32,7 +32,7 @@ export default function GuidedMeditationsScreen() {
       subtitle: null,
       color: '#E8D4F8',
       playButtonColor: '#6B4C9A',
-      videoUri: require('../../../../assets/videos/Copy of 2Calming Anxiety Meditation.mp4'), // Update with your actual video path
+      videoUri:  require('../../../../assets/videos/Copy of 2Calming Anxiety Meditation.mp4'), // Update with your actual video path
     },
     {
       id: 2,
@@ -41,7 +41,7 @@ export default function GuidedMeditationsScreen() {
       duration: null,
       color: '#F5D89A',
       playButtonColor: '#8B6B2A',
-      videoUri: require('../../../../assets/videos/Copy of 2Calming Anxiety Meditation.mp4'), // Update with your actual video path
+      videoUri:null// require('../../../../assets/videos/Copy of 2Calming Anxiety Meditation.mp4'), // Update with your actual video path
     },
     {
       id: 3,
@@ -50,7 +50,7 @@ export default function GuidedMeditationsScreen() {
       duration: null,
       color: '#B8CEE8',
       playButtonColor: '#4A6B8A',
-      videoUri: require('../../../../assets/videos/Copy of 2Calming Anxiety Meditation.mp4'), // Update with your actual video path
+      videoUri: null //require('../../../../assets/videos/Copy of 2Calming Anxiety Meditation.mp4'), // Update with your actual video path
     },
   ];
 
