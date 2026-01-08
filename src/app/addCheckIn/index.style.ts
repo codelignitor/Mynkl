@@ -38,7 +38,7 @@ export const styles = StyleSheet.create({
   noteContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 20,
-    padding: 20,
+    padding: 10,
     marginBottom: 30,
     minHeight: 120,
   },
@@ -218,4 +218,82 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
     fontWeight: '400',
   },
+  // Recording indicator styles
+  recordingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  recordingDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#FF3B30',
+    marginRight: 6,
+  },
+  recordingText: {
+    fontSize: 12,
+    color: '#FF3B30',
+    fontWeight: '600',
+  },
+  
+  // Transcribing status styles
+  transcribingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F9FF',
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  transcribingText: {
+    marginLeft: 8,
+    color: '#4A9B9B',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  
+  // Transcription preview styles
+  transcriptionPreview: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    backgroundColor: '#F8F9FA',
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  transcriptionPreviewText: {
+    flex: 1,
+    color: '#495057',
+    fontSize: 14,
+    lineHeight: 20,
+    marginRight: 8,
+  },
+  clearTranscriptionButton: {
+    padding: 4,
+  },
+  
+  // Error container styles
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF5F5',
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#FED7D7',
+  },
+  errorText: {
+    marginLeft: 8,
+    color: '#E53E3E',
+    fontSize: 14,
+    flex: 1,
+  },
+  
 });

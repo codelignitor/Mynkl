@@ -5,8 +5,8 @@ import { useRouter } from 'expo-router';
 
 export default function GuidedMeditationScreen() {
   // Animation for floating effect
-    const floatAnim = useRef(new Animated.Value(0)).current;
-    const glowAnim = useRef(new Animated.Value(0.6)).current;
+    const floatAnim = useRef(new Animated.Value(10)).current;
+    const glowAnim = useRef(new Animated.Value(0.9)).current;
     const router = useRouter();
 
   useEffect(() => {
@@ -14,12 +14,12 @@ export default function GuidedMeditationScreen() {
     Animated.loop(
       Animated.sequence([
         Animated.timing(floatAnim, {
-          toValue: -15,
+          toValue: 30,
           duration: 3000,
           useNativeDriver: true,
         }),
         Animated.timing(floatAnim, {
-          toValue: 0,
+          toValue: -10,
           duration: 3000,
           useNativeDriver: true,
         }),
@@ -31,12 +31,12 @@ export default function GuidedMeditationScreen() {
       Animated.sequence([
         Animated.timing(glowAnim, {
           toValue: 1,
-          duration: 2500,
+          duration: 2000,
           useNativeDriver: true,
         }),
         Animated.timing(glowAnim, {
           toValue: 0.6,
-          duration: 2500,
+          duration: 2000,
           useNativeDriver: true,
         }),
       ])

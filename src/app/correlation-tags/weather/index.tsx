@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, ScrollView, Image } from "react-native";
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Dimensions, 
+  TouchableOpacity, 
+  ActivityIndicator, 
+  ScrollView, 
+  Image 
+} from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
@@ -16,6 +25,7 @@ enum WeatherType {
   FreezingRain = "Freezing Rain",
   Snowy = "Snowy",
   Thunderstorm = "Thunderstorm",
+  Clear = "Clear", // Add Clear to enum
 }
 
 // Import weather icons
@@ -27,23 +37,39 @@ const weatherIcons = {
   Rainy: require("@/src/assets/icons/Rainy.png"),
   Snowy: require("@/src/assets/icons/Snowy.png"),
   Thunderstorm: require("@/src/assets/icons/Lightning.png"),
+  Clear: require("@/src/assets/icons/Sunny.png"), // Map Clear to Sunny icon
 };
 
 /* ─────────── Mood → Value Mapping ──────────── */
 const moodToValue = (mood?: string | null) => {
   switch (mood?.toLowerCase()) {
     case "happy": return 8;
+    case "calm": return 7;
     case "neutral": return 5;
-    case "sad": return 2;
+    case "sad": return 3;
+    case "lonely": return 3;
+    case "frustrated": return 2;
+    case "stressed": return 2;
     default: return 5;
   }
 };
 
 /* ─────────── Weather Tag Component ──────────── */
-const WeatherTag = ({ weather }: { weather?: string | null }) => {
+const WeatherTag = ({ weather, timestamp }: { weather?: string | null; timestamp?: string }) => {
   if (!weather) return null;
 
-  const iconSource = weatherIcons[weather as keyof typeof weatherIcons];
+  const iconSource = weatherIcons[weather as keyof typeof weatherIcons] || weatherIcons.Sunny;
+
+  // Format date for display
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return `${date.getDate()}/${date.getMonth() + 1}`; // Day/Month
+    } catch {
+      return '';
+    }
+  };
 
   return (
     <View style={styles.tagContainer}>
@@ -54,7 +80,9 @@ const WeatherTag = ({ weather }: { weather?: string | null }) => {
           resizeMode="contain"
         />
       )}
-      {/* <Text style={styles.tagText}>{weather}</Text> */}
+      {timestamp && (
+        <Text style={styles.dateText}>{formatDate(timestamp)}</Text>
+      )}
     </View>
   );
 };
@@ -82,18 +110,7 @@ const WeatherScreen = () => {
     }
   };
 
-  /* Extract unique valid weather tags */
-  const VALID_WEATHER = Object.values(WeatherType);
-  const uniqueWeather = [
-    ...new Set(
-      graphData.map((item) =>
-        VALID_WEATHER.includes(item.weather) ? item.weather : null
-      )
-    ),
-  ].filter(Boolean);
-
   const chartPoints = graphData.map((item) => moodToValue(item.mood));
-
 
   if (loading) {
     return (
@@ -104,8 +121,11 @@ const WeatherScreen = () => {
   }
 
   return (
-    <LinearGradient colors={["#8fd3f4", "#84fab0"]} style={styles.container}>
-      <ScrollView contentContainerStyle={{ alignItems: "center" }} showsVerticalScrollIndicator={false}>
+     <LinearGradient colors={["#8fd3f4", "#84fab0"]} style={styles.container}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+      >
         
         <Text style={styles.title}>Weather</Text>
         <Text style={styles.subtitle}>Rain or shine = mood decline.</Text>
@@ -136,15 +156,25 @@ const WeatherScreen = () => {
           <Text style={styles.noData}>No chart data available</Text>
         )}
 
-        {/* Weather Tag Row */}
-        <View style={styles.tagRow}>
-          {uniqueWeather.length > 0 ? (
-            uniqueWeather.map((weather, index) => (
-              <WeatherTag key={index} weather={weather} />
-            ))
-          ) : (
-            <Text style={styles.noData}>No weather tags available</Text>
-          )}
+        {/* Horizontal Scrollable Weather Icons */}
+        <View style={styles.weatherScrollContainer}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={true}
+            contentContainerStyle={styles.horizontalScrollContent}
+          >
+            {graphData.length > 0 ? (
+              graphData.map((item, index) => (
+                <WeatherTag 
+                  key={index} 
+                  weather={item.weather} 
+                  timestamp={item.timestamp}
+                />
+              ))
+            ) : (
+              <Text style={styles.noData}>No weather data available</Text>
+            )}
+          </ScrollView>
         </View>
 
         {/* AI Insight Box */}
@@ -175,34 +205,78 @@ const WeatherScreen = () => {
 
 /* ─────────── Styles ──────────── */
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 70 },
-  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 30, fontWeight: "800", color: "#012b4e" },
-  subtitle: { fontSize: 14, color: "#01385d90", marginBottom: 15 },
-  sectionTitle: { color: "#01385d", fontWeight: "600" },
-  chart: { marginVertical: 10, borderRadius: 16 , marginLeft: -50},
-  noData: { color: "#01385d", marginTop: 8 },
+  container: { 
+    flex: 1, 
+    paddingTop: 70 
+  },
+  scrollContent: { 
+    alignItems: "center",
+    paddingBottom: 30,
+  },
+  loader: { 
+    flex: 1, 
+    justifyContent: "center", 
+    alignItems: "center" 
+  },
+  title: { 
+    fontSize: 30, 
+    fontWeight: "800", 
+    color: "#012b4e" 
+  },
+  subtitle: { 
+    fontSize: 14, 
+    color: "#01385d90", 
+    marginBottom: 15 
+  },
+  sectionTitle: { 
+    color: "#01385d", 
+    fontWeight: "600",
+    marginBottom: 10,
+  },
+  chart: { 
+    marginVertical: 10, 
+    borderRadius: 16, 
+    marginLeft: -50
+  },
+  noData: { 
+    color: "#01385d", 
+    marginTop: 8 
+  },
   
-  /* Weather Tag */
-  tagRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: 10,
+  /* Weather Scroll Container */
+  weatherScrollContainer: {
+    width: Dimensions.get('window').width - 40, // Full width minus padding
+    height: 80, // Fixed height for scroll area
     marginVertical: 12,
   },
-  weatherIcon: {
-  width: 39,
-  height: 39,
-  marginRight: 6,
-},
-  tagContainer: {
-    // backgroundColor: "#ffffff90",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+  horizontalScrollContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
   },
-  tagText: { fontSize: 13, fontWeight: "600", color: "#01385d" },
+  
+  /* Weather Tag */
+  tagContainer: {
+    alignItems: 'center',
+    marginHorizontal: 8,
+    minWidth: 50, // Minimum width for each tag
+  },
+  weatherIcon: {
+    width: 39,
+    height: 39,
+  },
+  dateText: {
+    fontSize: 10,
+    color: "#01385d",
+    marginTop: 4,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  tagText: { 
+    fontSize: 13, 
+    fontWeight: "600", 
+    color: "#01385d" 
+  },
 
   /* AI Box */
   aiBox: {
@@ -212,7 +286,8 @@ const styles = StyleSheet.create({
     padding: 15,
     width: "88%",
     borderRadius: 14,
-    marginTop: 10,
+    marginTop: 20,
+    marginBottom: 10,
   },
   aiBadge: {
     backgroundColor: "#ff6b3d",
@@ -221,8 +296,18 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     marginRight: 10,
   },
-  aiBadgeText: { color: "#fff", fontWeight: "700" },
-  aiMessage: { flex: 1, color: "#012b4e", fontWeight: "500" },
+  aiBadgeText: { 
+    color: "#fff", 
+    fontWeight: "700",
+    fontSize: 12,
+  },
+  aiMessage: { 
+    flex: 1, 
+    color: "#012b4e", 
+    fontWeight: "500",
+    fontSize: 14,
+    lineHeight: 20,
+  },
 
   /* Tabs */
   tabRow: {
@@ -238,9 +323,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderRadius: 20,
   },
-  activeTab: { backgroundColor: "#007aff" },
-  tabText: { color: "#00284a", fontWeight: "500" },
-  activeTabText: { color: "#fff" },
+  activeTab: { 
+    backgroundColor: "#007aff" 
+  },
+  tabText: { 
+    color: "#00284a", 
+    fontWeight: "500" 
+  },
+  activeTabText: { 
+    color: "#fff" 
+  },
 });
 
 export default WeatherScreen;

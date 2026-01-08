@@ -74,7 +74,7 @@ export default function SupportScreen({  }) {
               <View style={styles.optionTop}>
                 <Text style={styles.weatherEmoji}>⛅</Text>
                 <Text style={styles.optionText}>
-                  Try a 2-minute{'\n'}re-centering exercise
+                  Try a re-centering exercise
                 </Text>
               </View>
               <View style={styles.startButton}>

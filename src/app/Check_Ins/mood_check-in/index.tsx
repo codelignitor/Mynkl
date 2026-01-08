@@ -26,6 +26,7 @@ import Frustrated from "../../../assets/svgs/frustrated.svg";
 import Grateful from "../../../assets/svgs/grateful-icon.svg";
 
 import StaticEmotionalEmoji from "../../../assets/images/Static emotional emoji.png";
+import { normalizeSuggestion } from "@/src/utils/normalizeSuggestions";
 
 export default function MoodScreen() {
   const [data, setData] = useState(null);
@@ -216,26 +217,109 @@ export default function MoodScreen() {
     
     return "✨";
   };
+const resolveSuggestionAction = (suggestion) => {
+  const details = suggestion?.details;
+  if (!details) return { type: "none" };
 
-  const handleSuggestionPress = (suggestion, index) => {
-    // If details is null, don't do anything (non-clickable)
-    if (!suggestion?.details) return;
+  // 1. PLACE → Maps
+  if (details.place_id && details.lat && details.lng) {
+    return {
+      type: "map",
+      payload: details,
+    };
+  }
+
+  // 2. SPOTIFY → External
+  if (details.url && details.url.includes("spotify")) {
+    return {
+      type: "spotify",
+      payload: details.url,
+    };
+  }
+
+  // 3. ACTIVITIES (emotional care, reflection, etc.)
+  if (details.activities && Array.isArray(details.activities)) {
+    return {
+      type: "activities",
+      payload: {
+        activities: details.activities,
+        prompt: details.prompt,
+        activityType: details.type, // emotional_care
+      },
+    };
+  }
+
+  // 4. FALLBACK (text-only suggestion)
+  return { type: "expand" };
+};
+
+  // const handleSuggestionPress = (suggestion, index) => {
+  //   // If details is null, don't do anything (non-clickable)
+  //   if (!suggestion?.details) return;
     
-    const { details } = suggestion;
+  //   const { details } = suggestion;
     
-    // Handle direct CTA without expansion
-    if (details?.url && details.url.includes('spotify')) {
-      Linking.openURL(details.url).catch(err => console.error("Couldn't open Spotify:", err));
-      return;
-    } else if (details?.place_id) {
-      const url = `https://www.google.com/maps/search/?api=1&query=${details.lat},${details.lng}&query_place_id=${details.place_id}`;
-      Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
-      return;
-    }
+  //   // Handle direct CTA without expansion
+  //   if (details?.url && details.url.includes('spotify')) {
+  //     Linking.openURL(details.url).catch(err => console.error("Couldn't open Spotify:", err));
+  //     return;
+  //   } else if (details?.place_id) {
+  //     const url = `https://www.google.com/maps/search/?api=1&query=${details.lat},${details.lng}&query_place_id=${details.place_id}`;
+  //     Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
+  //     return;
+  //   }
     
-    // For other suggestions, toggle expansion
-    setExpandedSuggestion(expandedSuggestion === index ? null : index);
-  };
+  //   // For other suggestions, toggle expansion
+  //   setExpandedSuggestion(expandedSuggestion === index ? null : index);
+  // };
+
+
+const handleSuggestionPress = (suggestion) => {
+  const action = normalizeSuggestion(suggestion, data?.last_check_in_mood);
+
+  switch (action.action) {
+    case "MAP":
+      Linking.openURL(
+        `https://www.google.com/maps/search/?api=1&query=${action.lat},${action.lng}&query_place_id=${action.place_id}`
+      );
+      break;
+
+    case "SPOTIFY":
+        // if (details?.url && details.url.includes('spotify')) {
+      Linking.openURL(action.url).catch(err => console.error("Couldn't open Spotify:", err));
+    break;
+
+    case "ROUTE":
+      router.push({
+        pathname: action.route as any,
+        params: action.params,
+      });
+      break;
+
+    case "SHOW_ACTIVITIES":
+      router.push({
+        pathname: "/activity",
+        params: {
+          activities: JSON.stringify(action.activities),
+          prompt: action.prompt,
+        },
+      });
+      break;
+
+    case "SHOW_MESSAGE":
+      router.push({
+        // pathname: "/message-preview",
+        params: { message: action.message, date: new Date().getTime() },
+      });
+      break;
+
+    case "NONE":
+    default:
+      // expand card or do nothing
+      break;
+  }
+};
+
 
   const moodGradient = getMoodGradient(data?.last_check_in_mood);
 
@@ -441,7 +525,8 @@ export default function MoodScreen() {
               <Text style={styles.btnText}>{action.description}</Text>
             </TouchableOpacity>
           ))} */}
-
+          
+          
           <TouchableOpacity
             style={[styles.checkInBtn, { backgroundColor: moodGradient[0] }]}
             onPress={() => router.push("/moodpattern")}
