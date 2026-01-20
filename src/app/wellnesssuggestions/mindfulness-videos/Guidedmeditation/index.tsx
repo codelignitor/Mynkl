@@ -32,7 +32,7 @@ export default function GuidedMeditationsScreen() {
       subtitle: null,
       color: '#E8D4F8',
       playButtonColor: '#6B4C9A',
-      videoUri:  require('../../../../assets/videos/Copy of 2Calming Anxiety Meditation.mp4'), // Update with your actual video path
+      videoUri:  null//require('../../../../assets/videos/Copy of 2Calming Anxiety Meditation.mp4'), // Update with your actual video path
     },
     {
       id: 2,
