@@ -70,7 +70,7 @@ const PendingHugsDetailScreen = ({ onBack }) => {
         </View>
        
         <View style={{ flex: 1, marginLeft: 10 }}>
-          <Text style={styles.hugMessage}>You got a{item?.hug_type}!</Text>
+          <Text style={styles.hugMessage}>You got a {item?.hug_type}!</Text>
           <View style={styles.hugBubble}>
             <Text style={styles.hugSubMessage}>{item?.message}</Text>
           </View>
@@ -144,7 +144,9 @@ export default function PendingHugsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    
+    <SafeAreaView style={styles.container} >
+      
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Mynkl</Text>
@@ -191,6 +193,19 @@ export default function PendingHugsScreen() {
          <Button
             title="Send Hug"
             onPress={() => router.push('/hugs-selection')}
+            color="#8b7cf6"
+          />  
+        </View>
+      )}
+
+      {selectedTab === 'Community' && (
+        <View style={styles.pendingContainer}>
+          <Text style={styles.pendingText}>You want to join community!</Text>
+          <Text style={styles.heart}>💗</Text>
+         <Button
+            title="join Community"
+            onPress={() => router.push('/virtual-hug/hug-community/hug-challenge')}
+            // onPress={() => router.push('/hugsanimation')}
             color="#8b7cf6"
           />  
         </View>

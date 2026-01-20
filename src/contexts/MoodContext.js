@@ -1,19 +1,24 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { getMoodCalendar } from '@/src/services/apis';
 
+// Define mood scores: 1-5 for negative moods, 5-10 for positive moods
 const moodMap = {
-  happy: { mood: "happy" },
-  calm: { mood: "calm" },
-  stressed: { mood: "stressed" },
-  grateful: { mood: "grateful" },
-  sad: { mood: "sad" },
-  lonely: { mood: "lonely" },
-  frustrated: { mood: "frustrated" },
-  excited: { mood: "excited" },
-  annoyed: { mood: "frustrated" },
+  // Negative moods (1-5)
+  stressed: { mood: "stressed", score: 2 },
+  sad: { mood: "sad", score: 1 },
+  lonely: { mood: "lonely", score: 2 },
+  frustrated: { mood: "frustrated", score: 3 },
+  annoyed: { mood: "frustrated", score: 3 }, // Mapping annoyed to frustrated
+  
+  // Positive moods (5-10)
+  happy: { mood: "happy", score: 9 },
+  calm: { mood: "calm", score: 7 },
+  grateful: { mood: "grateful", score: 8 },
+  excited: { mood: "excited", score: 10 },
 };
 
-const defaultMoodEntry = { mood: "calm" };
+// Default mood with neutral score
+const defaultMoodEntry = { mood: "calm", score: 5 };
 
 const MoodContext = createContext();
 
@@ -31,22 +36,71 @@ export function MoodProvider({ children }) {
         const apiMood = dayData.dominant_mood.toLowerCase();
         const checkinsCount = dayData.checkins ? dayData.checkins.length : 0;
         
+        // Use mood score instead of checkins count
+        const moodData = moodMap[apiMood] || defaultMoodEntry;
         transformedEntries[date] = {
-          ...(moodMap[apiMood] || defaultMoodEntry),
-          value: checkinsCount
+          ...moodData,
+          // If there are multiple checkins, you could average or use the dominant mood
+          // For now, using just the mood score
+          value: moodData.score,
+          checkinsCount: checkinsCount, // Keep checkins count for reference if needed
+          moods: dayData.checkins || [] // Store all moods for the day
         };
       } else if (dayData.checkins && dayData.checkins.length > 0) {
-        const apiMood = dayData.checkins[0].toLowerCase();
-        const checkinsCount = dayData.checkins.length;
+        // Calculate average score if there are multiple checkins
+        const checkins = dayData.checkins;
+        const checkinsCount = checkins.length;
+        
+        // Calculate average mood score for the day
+        let totalScore = 0;
+        let validMoods = 0;
+        
+        checkins.forEach(moodName => {
+          const apiMood = moodName.toLowerCase();
+          if (moodMap[apiMood]) {
+            totalScore += moodMap[apiMood].score;
+            validMoods++;
+          }
+        });
+        
+        // Use average score if we have valid moods, otherwise use default
+        const averageScore = validMoods > 0 ? totalScore / validMoods : defaultMoodEntry.score;
+        
+        // Get dominant mood (first mood) for display
+        const dominantMood = checkins[0].toLowerCase();
+        const moodData = moodMap[dominantMood] || defaultMoodEntry;
         
         transformedEntries[date] = {
-          ...(moodMap[apiMood] || defaultMoodEntry),
-          value: checkinsCount
+          ...moodData,
+          value: Math.round(averageScore * 10) / 10, // Round to 1 decimal place
+          checkinsCount: checkinsCount,
+          moods: checkins,
+          isAverage: checkinsCount > 1 // Flag if this is an average value
         };
       }
     });
     
     return transformedEntries;
+  };
+
+  // Helper function to get mood score for a specific mood
+  const getMoodScore = (moodName) => {
+    const mood = moodName.toLowerCase();
+    return moodMap[mood] ? moodMap[mood].score : defaultMoodEntry.score;
+  };
+
+  // Helper function to check if a mood is positive (score > 5)
+  const isPositiveMood = (moodName) => {
+    const score = getMoodScore(moodName);
+    return score > 5;
+  };
+
+  // Helper function to get mood category
+  const getMoodCategory = (moodName) => {
+    const score = getMoodScore(moodName);
+    if (score < 5) return "negative";
+    if (score > 5) return "positive";
+    return "neutral";
   };
 
   // Modified to accept year and month parameters
@@ -91,7 +145,11 @@ export function MoodProvider({ children }) {
       error, 
       refetchCalendar,
       selectedDate,
-      setSelectedDate
+      setSelectedDate,
+      getMoodScore,
+      isPositiveMood,
+      getMoodCategory,
+      moodScores: moodMap // Export mood scores for reference
     }}>
       {children}
     </MoodContext.Provider>

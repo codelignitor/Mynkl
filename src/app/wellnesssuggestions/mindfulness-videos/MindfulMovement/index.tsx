@@ -12,7 +12,7 @@ export default function MovementMindfulnessScreen() {
   const [videoStatus, setVideoStatus] = useState(null);
   const videoRef = useRef(null);
 
-  // This will be replaced with API data
+  
   const [exercises, setExercises] = useState([
     {
       id: 1,

@@ -70,3 +70,29 @@ export interface WellnessSuggestion {
   file_url: string;
   thumbnail_url: string | null;
 }
+
+export interface SuggestedActivity {
+  id: string;
+  title: string;
+}
+
+export interface SuggestionData {
+  suggested_activity?: SuggestedActivity;
+  suggestionType?: string;
+}
+
+
+
+export interface DailyHugGoalResponse {
+  data: {
+    daily_goal: number;
+    hugs_sent_today: number;
+    is_completed: boolean;
+  };
+}
+
+export interface BadgeStatus {
+  badge_code: string;
+  name: string;
+  earned: boolean;
+}

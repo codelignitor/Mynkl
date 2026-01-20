@@ -4,10 +4,15 @@ export const styles = StyleSheet.create({
   // Select Hug Screen Styles
   container: {
     flex: 1,
-    backgroundColor: '#F3F0FF',
+    // backgroundColor: '#F3F0FF',
     alignItems: 'center',
     paddingTop: 20,
   },
+  backgroundImage: {
+  flex: 1,
+  width: '100%',
+  height: '100%',
+},
   header: {
     marginTop: 40,
     width: '100%',
@@ -108,7 +113,7 @@ export const styles = StyleSheet.create({
   // Choose Recipient Screen Styles
   recipientContainer: {
     flex: 1,
-    backgroundColor: '#f8f7ff',
+    // backgroundColor: '#f8f7ff',
   },
   recipientHeader: {
     marginTop: 35,
@@ -116,7 +121,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#f8f7ff',
+    // backgroundColor: '#f8f7ff',
   },
   backButton: {
     padding: 5,
@@ -306,7 +311,7 @@ export const styles = StyleSheet.create({
   // Personal Message Screen Styles
   messageContainer: {
     flex: 1,
-    backgroundColor: '#F5F3FF',
+    // backgroundColor: '#F5F3FF',
   },
   messageHeader: {
     marginTop: 50,

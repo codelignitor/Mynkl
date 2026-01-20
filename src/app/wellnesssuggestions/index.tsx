@@ -13,10 +13,13 @@ import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { getWellnessSuggestions } from '@/src/services/apis';
+import { getRouteForActivity } from '@/src/utils/activityRouting';
+import { SuggestionData } from '@/src/services/types';
+
 
 export default function WellnessSuggestionsScreen() {
-  const [selectedAnchors, setSelectedAnchors] = useState([]);
-  const [suggestionData, setSuggestionData] = useState(null);
+  const [selectedAnchors, setSelectedAnchors] = useState<string[]>([]);
+  const [suggestionData, setSuggestionData] = useState<SuggestionData | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -45,47 +48,95 @@ export default function WellnessSuggestionsScreen() {
     }
   };
 
+  // const handleStartActivity = () => {
+  //   if (!suggestionData) {
+  //     router.push('/startActivity');
+  //     return;
+  //   }
+
+  //   const { suggestionType } = suggestionData;
+
+  //   // Check if suggestionType is "selfcare"
+  //   if (suggestionType === 'Self-Care Tip') {
+  //     router.push('/Selfcare_tips/breathingSuggestion');
+    
+  //   } else if(suggestionType === 'Emotional Comfort') {
+  //     router.push('/Selfcare_tips/Audiosession');
+    
+  //   } else if(suggestionType === 'Wellness Boost') {
+  //     // router.push('/wellnesssuggestions/mindfulness-videos/BreathingSuggestion');
+  //      router.push('/wellnesssuggestions/mindfulness-videos/Guidedmeditation');
+  //     //router.push('/wellnesssuggestions/mindfulness-videos/MindfulMovement');
+  //     // router.push('/wellnesssuggestions/mindfulness-videos/MindfulRelationships');
+  //     // router.push('/wellnesssuggestions/mindfulness-videos/SleepStories');
+  //     // router.push('/wellnesssuggestions/mindfulness-videos/Visualization_Imagery');
+    
+  //   } else if(suggestionType === 'Energy Release') {
+  //     router.push('/Selfcare_tips/Mindful_Movement');
+    
+  //   } 
+  //   else if(suggestionType === 'Reflection') {
+  //     router.push('/Selfcare_tips/Gratitute');
+  //   }
+  //   else if(suggestionType === 'Sleep Support') {
+  //     router.push('/Selfcare_tips/Sleep_Relaxation');
+  //   }
+  //   else{
+  //    router.push('/startActivity');
+  //   }
+  // };
+
+  
   const handleStartActivity = () => {
     if (!suggestionData) {
       router.push('/startActivity');
-      return;
+    return;
     }
 
-    const { suggestionType } = suggestionData;
+    const { suggested_activity } = suggestionData;
 
-    // Check if suggestionType is "selfcare"
-    if (suggestionType === 'Self-Care Tip') {
+    if (suggested_activity && suggested_activity.id) {
+    // Use the new routing system based on suggested_activity.title
+      const route = getRouteForActivity(suggested_activity.id);
+      router.push(route as any);
+    } else {
+     // Fallback to old logic if no suggested_activity.title is available
+      const { suggestionType } = suggestionData;
+
+      // Check if suggestionType is "selfcare"
+      if (suggestionType === 'Self-Care Tip') {
       router.push('/Selfcare_tips/breathingSuggestion');
     
-    } else if(suggestionType === 'Emotional Comfort') {
-      router.push('/Selfcare_tips/Audiosession');
+      } else if(suggestionType === 'Emotional Comfort') {
+        router.push('/Selfcare_tips/Audiosession');
     
-    } else if(suggestionType === 'Wellness Boost') {
-      // router.push('/wellnesssuggestions/mindfulness-videos/BreathingSuggestion');
-       router.push('/wellnesssuggestions/mindfulness-videos/Guidedmeditation');
-      //router.push('/wellnesssuggestions/mindfulness-videos/MindfulMovement');
-      // router.push('/wellnesssuggestions/mindfulness-videos/MindfulRelationships');
-      // router.push('/wellnesssuggestions/mindfulness-videos/SleepStories');
-      // router.push('/wellnesssuggestions/mindfulness-videos/Visualization_Imagery');
+      } else if(suggestionType === 'Wellness Boost') {
+        // router.push('/wellnesssuggestions/mindfulness-videos/BreathingSuggestion');
+        router.push('/wellnesssuggestions/mindfulness-videos/Guidedmeditation');
+        //router.push('/wellnesssuggestions/mindfulness-videos/MindfulMovement');
+        // router.push('/wellnesssuggestions/mindfulness-videos/MindfulRelationships');
+        // router.push('/wellnesssuggestions/mindfulness-videos/SleepStories');
+        // router.push('/wellnesssuggestions/mindfulness-videos/Visualization_Imagery');
+      
+      } else if(suggestionType === 'Energy Release') {
+        router.push('/Selfcare_tips/Mindful_Movement');
     
-    } else if(suggestionType === 'Energy Release') {
-      router.push('/Selfcare_tips/Mindful_Movement');
-    
-    } 
-    else if(suggestionType === 'Reflection') {
-      router.push('/Selfcare_tips/Gratitute');
-    }
-    else if(suggestionType === 'Sleep Support') {
-      router.push('/Selfcare_tips/Sleep_Relaxation');
-    }
-    else{
-     router.push('/startActivity');
+      } 
+      else if(suggestionType === 'Reflection') {
+        router.push('/Selfcare_tips/Gratitute');
+      }
+      else if(suggestionType === 'Sleep Support') {
+        router.push('/Selfcare_tips/Sleep_Relaxation');
+      }
+      else{
+      router.push('/startActivity');
+      }
     }
   };
 
-  const toggleAnchor = (anchor) => {
+  const toggleAnchor = (anchor: string | ConcatArray<string>) => {
     setSelectedAnchors((prev) => {
-      if (prev.includes(anchor)) {
+      if (prev.includes(anchor as any )) {
         return prev.filter((a) => a !== anchor);
       } else {
         return prev.concat(anchor);
@@ -253,6 +304,7 @@ const styles = StyleSheet.create({
   loadingContainer: {
     alignItems: 'center',
     paddingVertical: 30,
+   
   },
   loadingText: {
     marginTop: 12,
@@ -264,17 +316,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#2C2C2C',
     marginBottom: 8,
+    paddingLeft: 10 
   },
   suggestionSubtitle: {
     fontSize: 17,
     color: '#2C2C2C',
     marginBottom: 20,
+    paddingLeft: 10 
   },
   secondaryText: {
     fontSize: 16,
     color: '#6B6B6B',
     lineHeight: 20,
     marginBottom: 24,
+    paddingLeft: 10 
   },
   actionButtonsContainer: {
     flexDirection: 'row',
