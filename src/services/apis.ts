@@ -588,3 +588,21 @@ export const submitOnboarding = async (data: OnboardingRequest): Promise<Onboard
     throw error;
   }
 };
+
+// Get users for a specific ai_tag
+export const getUsersByAiTag = async (ai_tag: string) => {
+  try {
+    const response = await axiosInstance.get('/virtual_hugs/ai-moment-users', {
+      params: { ai_tag }
+    });
+    console.log('✅ Users by AI tag fetched:', response.data);
+    return response.data;
+  } catch (error: any) {
+      console.error('❌ Error fetching users by AI tag:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
+    throw error;
+  }
+};

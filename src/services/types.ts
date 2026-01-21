@@ -96,3 +96,13 @@ export interface BadgeStatus {
   name: string;
   earned: boolean;
 }
+
+
+export interface UserWithAiTag {
+  user_id: string;
+  ai_moment_tag: string;
+}
+
+export interface UsersByAiTagResponse {
+  data: UserWithAiTag[];
+}

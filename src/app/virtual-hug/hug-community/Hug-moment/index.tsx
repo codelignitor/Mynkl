@@ -7,34 +7,62 @@ import {
   StatusBar,
   SafeAreaView,
   ScrollView,
-  ImageBackground,
+  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { AI_TAG_MAPPING, useHugMoment } from '@/src/screenHooks/useHugMoment';
 
-export default function FindMomentToHugScreen({ }) {
-  const [selectedMoment, setSelectedMoment] = useState(null);
+export default function FindMomentToHugScreen() {
+  const {
+    loading,
+    selectedMoment,
+    handleSelectMoment,
+    handleContinue,
+  } = useHugMoment();
 
   const moments = [
-    { id: 1, icon: '💔', text: 'Someone having a rough day', gradient: ['#9B6B9E', '#D88BA0'] },
-    { id: 2, icon: '🌙', text: 'Someone feeling very alone tonight', gradient: ['#4A3B7A', '#7B5FA0'] },
-    { id: 3, icon: '🏥', text: 'Someone waiting for medical news', gradient: ['#5B7BB4', '#7B9BD4'] },
-    { id: 4, icon: '🤍', text: 'Someone who just needs reassurance', gradient: ['#C88BA8', '#E8B8C8'] },
-    { id: 5, icon: '🤖', text: 'Let Mynkl choose a moment for you', gradient: ['#7B6BA8', '#9B8BC8'] },
+    { 
+      id: 1, 
+      icon: '💔', 
+      text: 'Someone having a rough day', 
+      gradient: ['#9B6B9E', '#D88BA0'],
+      aiTag: AI_TAG_MAPPING[1]
+    },
+    { 
+      id: 2, 
+      icon: '🌙', 
+      text: 'Someone feeling very alone tonight', 
+      gradient: ['#4A3B7A', '#7B5FA0'],
+      aiTag: AI_TAG_MAPPING[2]
+    },
+    { 
+      id: 3, 
+      icon: '🏥', 
+      text: 'Someone waiting for medical news', 
+      gradient: ['#5B7BB4', '#7B9BD4'],
+      aiTag: AI_TAG_MAPPING[3]
+    },
+    { 
+      id: 4, 
+      icon: '🤍', 
+      text: 'Someone who just needs reassurance', 
+      gradient: ['#C88BA8', '#E8B8C8'],
+      aiTag: AI_TAG_MAPPING[4]
+    },
+    { 
+      id: 5, 
+      icon: '🤖', 
+      text: 'Let Mynkl choose a moment for you', 
+      gradient: ['#7B6BA8', '#9B8BC8'],
+      aiTag: AI_TAG_MAPPING[5],
+      special: true
+    },
   ];
 
   const handleBack = () => {
-    // if (navigation) {
-    //   navigation.goBack();
-    // }
     router.back();
-  };
-
-  const handleContinue = () => {
-    // console.log('Selected moment:', selectedMoment);
-    // Add navigation logic here
-    // router.push('/virtual-hug/hug-community/Hug-moment/hug-type')
   };
 
   return (
@@ -88,8 +116,9 @@ export default function FindMomentToHugScreen({ }) {
                     styles.momentCard,
                     selectedMoment === moment.id && styles.momentCardSelected,
                   ]}
-                  onPress={() => setSelectedMoment(moment.id)}
+                  onPress={() => handleSelectMoment(moment.id)}
                   activeOpacity={0.8}
+                  disabled={loading}
                 >
                   <LinearGradient
                     colors={moment.gradient}
@@ -100,6 +129,9 @@ export default function FindMomentToHugScreen({ }) {
                     <View style={styles.momentContent}>
                       <Text style={styles.momentIcon}>{moment.icon}</Text>
                       <Text style={styles.momentText}>{moment.text}</Text>
+                      {selectedMoment === moment.id && (
+                        <Ionicons name="checkmark-circle" size={24} color="#FFF" style={styles.checkIcon} />
+                      )}
                     </View>
                     {moment.special && (
                       <View style={styles.sparkles}>
@@ -111,11 +143,15 @@ export default function FindMomentToHugScreen({ }) {
                 </TouchableOpacity>
               ))}
 
-              {/* Continue Button */}
+              {/* Continue Button with Loading */}
               <TouchableOpacity
-                style={styles.continueButton}
+                style={[
+                  styles.continueButton,
+                  (!selectedMoment || loading) && styles.continueButtonDisabled
+                ]}
                 onPress={handleContinue}
                 activeOpacity={0.8}
+                disabled={!selectedMoment || loading}
               >
                 <LinearGradient
                   colors={['#8B7BC8', '#9B8BD8']}
@@ -123,9 +159,26 @@ export default function FindMomentToHugScreen({ }) {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Text style={styles.continueText}>Continue</Text>
+                  {loading ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator size="small" color="#FFF" />
+                      <Text style={styles.continueText}>Finding users...</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.continueText}>Continue</Text>
+                  )}
                 </LinearGradient>
               </TouchableOpacity>
+
+              {/* Loading overlay for full screen */}
+              {/* {loading && (
+                <View style={styles.fullScreenLoading}>
+                  <ActivityIndicator size="large" color="#8B7BC8" />
+                  <Text style={styles.fullScreenLoadingText}>
+                    Finding someone who needs a hug...
+                  </Text>
+                </View>
+              )} */}
             </View>
           </ScrollView>
         </LinearGradient>
@@ -180,6 +233,7 @@ const styles = StyleSheet.create({
   },
   container: {
     paddingHorizontal: 24,
+    position: 'relative',
   },
   title: {
     fontSize: 28,
@@ -194,6 +248,20 @@ const styles = StyleSheet.create({
     color: '#7B6BA8',
     textAlign: 'center',
     marginBottom: 30,
+  },
+  errorContainer: {
+    backgroundColor: 'rgba(255, 100, 100, 0.1)',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+  },
+  errorText: {
+    color: '#FF6B6B',
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
   },
   momentCard: {
     marginBottom: 16,
@@ -211,6 +279,8 @@ const styles = StyleSheet.create({
   momentCardSelected: {
     transform: [{ scale: 0.98 }],
     shadowOpacity: 0.25,
+    shadowColor: '#8B7BC8',
+    shadowRadius: 8,
   },
   momentGradient: {
     padding: 20,
@@ -231,6 +301,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     flex: 1,
+  },
+  checkIcon: {
+    marginLeft: 10,
   },
   sparkles: {
     position: 'absolute',
@@ -258,64 +331,40 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
+  continueButtonDisabled: {
+    opacity: 0.6,
+  },
   continueGradient: {
     paddingVertical: 15,
     alignItems: 'center',
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
   },
   continueText: {
     fontSize: 22,
     fontWeight: '700',
     color: '#FFFFFF',
   },
-  bottomDecor: {
+  fullScreenLoading: {
     position: 'absolute',
-    bottom: 0,
+    top: 0,
     left: 0,
     right: 0,
-    height: 120,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   },
-  cloud1: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    width: 80,
-    height: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 40,
-  },
-  cloud2: {
-    position: 'absolute',
-    bottom: 10,
-    right: 40,
-    width: 100,
-    height: 50,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    borderRadius: 50,
-  },
-  cloud3: {
-    position: 'absolute',
-    bottom: 30,
-    left: '40%',
-    width: 70,
-    height: 35,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 35,
-  },
-  bottomStar: {
-    position: 'absolute',
+  fullScreenLoadingText: {
+    marginTop: 20,
     fontSize: 16,
-    opacity: 0.6,
-    bottom: 50,
-    left: 60,
-  },
-  bottomStar2: {
-    bottom: 70,
-    left: '50%',
-    fontSize: 20,
-  },
-  bottomStar3: {
-    bottom: 40,
-    right: 80,
-    fontSize: 14,
+    color: '#4A3B6A',
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });

@@ -17,7 +17,7 @@ export default function MovementMindfulnessScreen() {
     {
       id: 1,
       title: 'Gentle mindful stretching',
-      videoUri: null//require('../../../../assets/videos/Copy of Gentle Mindful Stretching.mp4'), // Update with your actual video path
+      videoUri: null //require('../../../../assets/videos/Copy of Gentle Mindful Stretching.mp4'), // Update with your actual video path
     },
     {
       id: 2,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,23 +11,35 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path, Circle, Ellipse } from 'react-native-svg';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useHugSending } from '@/src/screenHooks/useHugSending';
 
-export default function ChooseHugTypeScreen({ }) {
+export default function ChooseHugTypeScreen() {
+  const params = useLocalSearchParams();
+  const receiverId = params.receiverId as string;
+
   const [selectedHug, setSelectedHug] = useState('Warm Hug');
 
   const handleBack = () => {
-    // if (navigation) {
-    //   navigation.goBack();
-    // }
     router.back();
   };
 
   const handleNext = () => {
-    console.log('Selected hug type:', selectedHug);
-    // Add navigation logic here
-    router.push('/virtual-hug/hug-community/Hug-moment/hug-message')
-  };
+  router.push({
+    pathname: '/virtual-hug/hug-community/Hug-moment/hug-message',
+    params: {
+      receiverId,
+      hugType: selectedHug,
+      isAiChoice: selectedHug === 'Let Mynkl choose' ? 'true' : 'false',
+      emoji:
+        selectedHug === 'Warm Hug' ? '❤️' :
+        selectedHug === 'Calm Hug' ? '💙' :
+        selectedHug === 'Encouraging Hug' ? '🎉' :
+        '⭐',
+    },
+  });
+};
+
 
   const hugTypes = [
     { id: 'Warm Hug', label: 'Warm Hug', color: '#FFE8D6', icon: '❤️' },
@@ -148,6 +160,7 @@ export default function ChooseHugTypeScreen({ }) {
   );
 }
 
+
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
@@ -244,7 +257,6 @@ const styles = StyleSheet.create({
     color: '#4A3B6A',
   },
   decorBottom: {
-    // marginTop: 40,
     alignItems: 'center',
   },
   nextButton: {
