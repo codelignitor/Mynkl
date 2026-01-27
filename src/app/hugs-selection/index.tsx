@@ -164,7 +164,7 @@ const VirtualHugFlow = () => {
 
     return (
        <ImageBackground
-        source={require('../../assets/images/backgrounds/Sending a hug - Screen 8.png')} // Set your image path
+        source={require('../../assets/images/backgrounds/Sending a hug - Screen 9.png')} // Set your image path
         style={styles.backgroundImage}
         resizeMode="cover"
       >
@@ -186,7 +186,7 @@ const VirtualHugFlow = () => {
         >
           <View style={styles.content}>
             <Text style={styles.recipientTitle}>Choose Recipient</Text>
-            <Text style={styles.recipientSubtitle}>Who would you like to send{'\n'}ta hug to?</Text>
+            <Text style={styles.recipientSubtitle}>Who would you like to send{'\n'}the hug to?</Text>
 
             {/* Tab Navigation */}
             <View style={styles.tabContainer}>
@@ -273,7 +273,7 @@ const VirtualHugFlow = () => {
   const renderPersonalMessageScreen = () => {
     return (
        <ImageBackground
-        source={require('../../assets/images/backgrounds/Sending a hug - Screen 9.png')} // Set your image path
+        source={require('../../assets/images/backgrounds/Sending a hug - Screen 8.png')} // Set your image path
         style={styles.backgroundImage}
         resizeMode="cover"
       >
@@ -360,7 +360,13 @@ const VirtualHugFlow = () => {
 
           {/* Heart Image - Using placeholder since we don't have the image */}
           <View style={styles.heartImagePlaceholder}>
-            <Text style={styles.heartPlaceholderText}>💝</Text>
+            {/* <Text style={styles.heartPlaceholderText}>💝</Text> */}
+            {/* Replace this View with your Image component */}
+              <Image 
+                source={require('../../assets/images/Heart-preview.png')} 
+                style={styles.characterImage}
+                resizeMode="contain"
+              />
           </View>
 
           {/* Subtitle */}

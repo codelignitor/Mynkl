@@ -8,109 +8,204 @@ import {
   SafeAreaView,
   FlatList,
   Button,
+  ImageBackground,
+  ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // ← Added Ionicons
+import { Ionicons } from '@expo/vector-icons';
 import { receiveHugsList } from '@/src/services/apis';
 import { router } from 'expo-router';
-import hugsLogo from '../../../assets/images/hugs_logo.png';
+import hugsLogo from '../../../assets/images/hugs_logo-removebg.png';
+import { LinearGradient } from 'expo-linear-gradient'; 
 
 const PendingHugsDetailScreen = ({ onBack }) => {
 
-  const [hugsData , setHugsData ] = useState(null);
-  const [loadig, setLoading] = useState(false);
+  const [hugsData, setHugsData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // const hugsData = [
-  //   {
-  //     id: 1,
-  //     avatar: '👱‍♀️',
-  //     message: 'You got a warm hug!',
-  //     subMessage: "I'm here for you 💕",
-  //   },
-  //   {
-  //     id: 2,
-  //     avatar: '🧢',
-  //     message: 'You got a calm hug!',
-  //     subMessage: 'Everything is going to be okay',
-  //   },
-  //   {
-  //     id: 3,
-  //     avatar: '👩🏽‍🦱',
-  //     message: 'You got an excited hug!',
-  //     subMessage: 'You did it!👏',
-  //   },
-  // ];
-
-  const receiveHugsListHandler = async ()=>{
+  const receiveHugsListHandler = async () => {
     try {
-       setLoading(true);
+      setLoading(true);
       const response = await receiveHugsList();
       setHugsData(response?.list);
     } catch (error) {
       
-    }
-    finally{
-        setLoading(false);
+    } finally {
+      setLoading(false);
     }
   }
 
   useEffect(() => {
-   
     receiveHugsListHandler();
-  
   }, []);
 
-  const renderHugItem = ({ item }) => (
-    <View style={styles.hugItemCard}>
-      <View style={styles.hugCardContent}>
-         <View style={styles.hugIcon}>
-          <Image
-            source={{ uri:item?.user?.profile_pic ?? 'https://cdn-icons-png.flaticon.com/512/12173/12173945.png' }}
-            style={{ width: 36, height: 36 }}
-          />
-        </View>
+  // Helper function to calculate relative time
+  const getRelativeTime = (dateString) => {
+    if (!dateString) return '';
+    
+    const now = new Date();
+    const past = new Date(dateString);
+    const diffInMs = now - past;
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    
+    if (diffInHours < 24) {
+      return `${diffInHours} ${diffInHours === 1 ? 'hr' : 'hrs'} ago`;
+    } else if (diffInDays < 7) {
+      return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+    } else {
+      return `${diffInWeeks} ${diffInWeeks === 1 ? 'week' : 'weeks'} ago`;
+    }
+  };
+
+  // Helper function to get gradient colors based on hug type
+  const getHugGradient = (hugType) => {
+    const type = hugType?.toLowerCase();
+    if (type?.includes('warm')) {
+      return ['#FFD6E8', '#E8D4F5'];
+    } else if (type?.includes('calm')) {
+      return ['#E8D4F5', '#E8D4F5'];
+    } else if (type?.includes('excited')) {
+      return ['#FFE8F5', '#E8D6FF'];
+    } else {
+      return ['#F5E8FF', '#E8F5FF'];
+    }
+  };
+
+  // Helper function to get avatar background color-
+  const getAvatarBg = (hugType) => {
+    const type = hugType?.toLowerCase();
+    if (type?.includes('warm')) {
+      return '#ffe6d0';
+    } else if (type?.includes('calm')) {
+      return '#C8C8FF';
+    } else if (type?.includes('excited')) {
+      return '#FFD0F0';
+    } else {
+      return '#E0D0FF';
+    }
+  };
+
+  // const renderHugItem = ({ item }) => (
+  //   <TouchableOpacity style={styles.hugItemCard} activeOpacity={0.7}>
+  //     <View style={styles.hugCardContent}>
+  //       {/* Left: Avatar */}
+  //       <View style={styles.avatarContainer}>
+  //         <Image
+  //           source={{ uri: item?.user?.profile_pic ?? 'https://cdn-icons-png.flaticon.com/512/12173/12173945.png' }}
+  //           style={styles.avatarImage}
+  //         />
+  //       </View>
        
-        <View style={{ flex: 1, marginLeft: 10 }}>
-          <Text style={styles.hugMessage}>You got a {item?.hug_type}!</Text>
-          <View style={styles.hugBubble}>
-            <Text style={styles.hugSubMessage}>{item?.message}</Text>
+  //       {/* Center: Hug Info */}
+  //       <View style={styles.hugInfoContainer}>
+  //         <Text style={styles.hugMessage}>You got a {item?.hug_type}</Text>
+  //         <Text style={styles.hugSubMessage}>{item?.message}</Text>
+  //         <Text style={styles.timeStamp}>{getRelativeTime(item?.created_at)}</Text>
+  //       </View>
+
+  //       {/* Right: Chevron */}
+  //       <Ionicons name="chevron-forward" size={24} color="#9B8DC8" />
+  //     </View>
+  //   </TouchableOpacity>
+  // );
+
+  const renderHugItem = ({ item }) => (
+    <TouchableOpacity style={styles.hugCard} activeOpacity={0.8}>
+      <LinearGradient
+        colors={getHugGradient(item?.hug_type)}
+        style={styles.hugGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.hugContent}>
+          {/* Avatar */}
+          <View style={[styles.hugavatar, { backgroundColor: getAvatarBg(item?.hug_type) }]}>
+            {/* {item?.user?.profile_pic ? ( */}
+              <Image
+                source={{ uri: item.user.profile_pic ?? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" }}
+                style={styles.avatarImage}
+              />
+            {/* ) : (
+              <Text style={styles.avatarEmoji}>
+                {'🤗'}
+              </Text>
+            )} */}
+          </View>
+          
+          {/* Content */}
+          <View style={styles.textContainer}>
+            <Text style={styles.hugType}>You got a {item?.hug_type}</Text>
+            <Text style={styles.message}>{item?.message}</Text>
+            <Text style={styles.time}>{getRelativeTime(item?.created_at)}</Text>
+          </View>
+          
+          {/* Chevron */}
+          <Ionicons name="chevron-forward" size={24} color="#7B6BA8" />
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+  
+  return (
+    // <LinearGradient
+    //   colors={['#F5D4E8', '#E8D4F5', '#D4E0F5']}
+    //   style={styles.detailContainer}
+    // >
+      <ImageBackground
+        source={require('../../../assets/images/backgrounds/Pending Hugs, Screen 6 Background.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
+      <SafeAreaView style={styles.safeArea}>
+        {/* Header */}
+        <View style={styles.detailHeader}>
+          <TouchableOpacity onPress={onBack} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={28} color="#6B4C9A" />
+          </TouchableOpacity>
+          
+          {/* Decorative Hearts */}
+          <View style={styles.heartsContainer}>
+            <Text style={styles.smallHeart}>💕</Text>
+            <Text style={styles.bigHeart}>💗</Text>
+            <Text style={styles.sparkle}>✨</Text>
           </View>
         </View>
-        <View style={styles.avatarCircle}>
-          <Text style={styles.avatarEmoji}>💗 </Text>
-          {/* <Text style={styles.avatarEmoji}>{item?.emoji} </Text> */}
+
+        
+        {/* Title and Subtitle */}
+        <View style={styles.titleContainer}>
+          <Text style={styles.detailTitle}>Hugs Waiting for You</Text>
+          <Text style={styles.subtitle}>Open a hug to respond when you're ready.</Text>
         </View>
         
-      </View>
-    </View>
-  );
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hugs List */}
+          <FlatList
+            data={hugsData}
+            renderItem={renderHugItem}
+            keyExtractor={(item) => item?.id?.toString()}
+            style={styles.hugsList}
+            contentContainerStyle={styles.hugsListContent}
+            showsVerticalScrollIndicator={false}
+          />
 
-  return (
-    <SafeAreaView style={styles.detailContainer}>
-      <View style={styles.detailHeader}>
-        <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#6b73ff" />
-        </TouchableOpacity>
-        <Text style={styles.detailTitle}>Pending Hugs</Text>
-        <View style={styles.placeholder} />
-      </View>
-
-      <FlatList
-        data={hugsData}
-        renderItem={renderHugItem}
-        keyExtractor={(item) => item?.id?.toString()}
-        style={styles.hugsList}
-        showsVerticalScrollIndicator={false}
-      />
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.replyButton}>
-          <Text style={styles.replyButtonText}>Reply</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.sendHugButton}>
-          <Text style={styles.sendHugButtonText}>Send a Hug Back</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+          {/* Bottom Supportive Message */}
+          <View style={styles.bottomMessageContainer}>
+            <Text style={styles.cloudIcon}>☁️</Text>
+            <Text style={styles.bottomMessageText}>
+              Take your time. These hugs will be here{'\n'}when you're ready.
+            </Text>
+          </View>
+        </ScrollView>
+        
+      </SafeAreaView>
+    {/* </LinearGradient> */}
+    </ImageBackground>
   );
 };
 
@@ -146,6 +241,11 @@ export default function PendingHugsScreen() {
   return (
     
     <SafeAreaView style={styles.container} >
+      <ImageBackground
+            source={require('../../../assets/images/backgrounds/Main Dashboard, Screen 5 Background.png')}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+      >
       
       {/* Header */}
       <View style={styles.header}>
@@ -205,12 +305,12 @@ export default function PendingHugsScreen() {
          <Button
             title="join Community"
             onPress={() => router.push('/virtual-hug/hug-community/hug-challenge')}
-            // onPress={() => router.push('/hugsanimation')}
             color="#8b7cf6"
           />  
         </View>
       )}
-    </SafeAreaView>
+       </ImageBackground>
+    </SafeAreaView> 
   );
 }
 
@@ -218,14 +318,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingTop: 20,
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   header: {
     marginTop: 40,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
   title: {
     fontSize: 28,
@@ -242,11 +347,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginTop: 20,
+    
   },
   moodText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',
+    paddingLeft: 10,
   },
   emoji: {
     fontSize: 20,
@@ -256,6 +363,7 @@ const styles = StyleSheet.create({
     color: '#333',
     marginTop: 6,
     lineHeight: 20,
+    paddingLeft: 10,
   },
   navTabs: {
     flexDirection: 'row',
@@ -301,121 +409,174 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
 
+  // ==================== REDESIGNED DETAIL SCREEN STYLES ====================
   detailContainer: {
     flex: 1,
-    backgroundColor: '#f8f9ff',
+  },
+  safeArea: {
+    flex: 1,
   },
   detailHeader: {
-    marginTop: 30,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingHorizontal: 20,
-    paddingTop: 40,
-    paddingBottom: 20,
-    backgroundColor: '#fff',
+    paddingTop: 20,
+    marginBottom: 10,
   },
   backButton: {
     padding: 8,
+    marginTop: 20,
+  },
+  heartsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  smallHeart: {
+    fontSize: 24,
+    marginRight: -8,
+    marginTop: 10,
+  },
+  bigHeart: {
+    fontSize: 36,
+  },
+  sparkle: {
+    fontSize: 16,
+    position: 'absolute',
+    right: -5,
+    bottom: 20,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100,
+  },
+  titleContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
   detailTitle: {
-    fontSize: 20,
+    fontSize: 29,
     fontWeight: 'bold',
-    color: '#4a4a68',
+    color: '#4A3B6B',
+    marginBottom: 8,
   },
-  placeholder: {
-    width: 60,
+  subtitle: {
+    fontSize: 16,
+    color: '#7B6B9E',
+    lineHeight: 22,
   },
   hugsList: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 20,
+  },
+  hugsListContent: {
+    paddingBottom: 20,
   },
 
-  // Hug card
-  hugItemCard: {
-    marginTop:15,
-    backgroundColor: '#fff',
+ // Redesigned Hug Card with Gradient
+  hugCard: {
     borderRadius: 20,
-    padding: 20,
     marginBottom: 16,
+    overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  hugCardContent: {
+  hugGradient: {
+    padding: 16,
+  },
+  hugContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    // backgroundColor: '#f2f2f2',
+  hugavatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 16,
+    overflow: 'hidden',
   },
   avatarEmoji: {
-    fontSize: 24,
+    fontSize: 32,
   },
-  hugMessage: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#222',
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  textContainer: {
+    flex: 1,
+  },
+  hugType: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#3D2D4F',
     marginBottom: 4,
   },
-  hugBubble: {
-    backgroundColor: '#f4f4f8',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    alignSelf: 'flex-start',
+  message: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#5D4D6D',
+    marginBottom: 4,
   },
-  hugSubMessage: {
-    fontSize: 14,
-    color: '#444',
-  },
-  hugIcon: {
-    marginLeft: 8,
+  time: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#9B8BC8',
   },
 
-  buttonContainer: {
+  // Bottom Supportive Message
+  bottomMessageContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 30,
-    backgroundColor: '#fff',
-    gap: 12,
-    marginBottom: 50,
-  },
-  replyButton: {
-    flex: 1,
-    borderRadius: 30,
-    paddingVertical: 16,
-    backgroundColor: '#e8e8f0',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    borderRadius: 20,
+    padding: 16,
+    marginHorizontal: 20,
+    marginBottom: 15,
   },
-  replyButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#6b6b6b',
+  cloudIcon: {
+    fontSize: 28,
+    marginRight: 12,
   },
-  sendHugButton: {
+  bottomMessageText: {
     flex: 1,
-    borderRadius: 30,
-    paddingVertical: 16,
-    backgroundColor: '#8b7cf6',
+    fontSize: 14,
+    color: '#7B6B9E',
+    lineHeight: 20,
+  },
+
+  // Bottom Navigation Bar
+  bottomNavBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    paddingVertical: 12,
+    paddingBottom: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  sendHugButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+  navButton: {
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navHeartIcon: {
+    fontSize: 32,
   },
 });

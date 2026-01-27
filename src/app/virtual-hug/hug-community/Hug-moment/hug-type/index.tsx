@@ -7,6 +7,7 @@ import {
   StatusBar,
   SafeAreaView,
   ScrollView,
+  ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,14 +51,19 @@ export default function ChooseHugTypeScreen() {
 
   return (
     <View style={styles.wrapper}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F0E0F8" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.safeArea}>
-        <LinearGradient
+        {/* <LinearGradient
           colors={['#F0E0F8', '#E8D0F0', '#E0C8E8']}
           style={styles.gradientContainer}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
-        >
+        > */}
+          <ImageBackground
+            source={require('../../../../../assets/images/backgrounds/Hug moments, Screen 14.2 Background.png')}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+          >
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity 
@@ -154,7 +160,8 @@ export default function ChooseHugTypeScreen() {
               </TouchableOpacity>
             </View>
           </ScrollView>
-        </LinearGradient>
+          </ImageBackground>
+        {/* </LinearGradient> */}
       </SafeAreaView>
     </View>
   );
@@ -170,6 +177,11 @@ const styles = StyleSheet.create({
   },
   gradientContainer: {
     flex: 1,
+  },
+   backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   header: {
     flexDirection: 'row',
@@ -263,7 +275,7 @@ const styles = StyleSheet.create({
     width: '85%',
     borderRadius: 30,
     overflow: 'hidden',
-    marginTop: -80,
+    marginTop: -130,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

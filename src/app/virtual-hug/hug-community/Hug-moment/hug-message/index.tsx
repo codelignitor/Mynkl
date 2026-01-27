@@ -12,6 +12,7 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -69,7 +70,8 @@ export default function AddFewWordsScreen() {
   const handleSkip = () => {
     console.log('Skipped message');
     // Navigate back or to confirmation screen
-    router.back();
+    handleSendHug();
+    // router.back();
   };
 
   // const handleSendHug = async () => {
@@ -156,14 +158,20 @@ export default function AddFewWordsScreen() {
       style={styles.wrapper}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle="dark-content" backgroundColor="#F0E0F8" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.safeArea}>
-        <LinearGradient
+        {/* <LinearGradient
           colors={['#F0E0F8', '#E8D0F0', '#E0C8E8']}
           style={styles.gradientContainer}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
-        >
+        > */}
+
+        <ImageBackground
+            source={require('../../../../../assets/images/backgrounds/Hug moments, Screen 14.3 Background.png')}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+          >
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity 
@@ -326,7 +334,8 @@ export default function AddFewWordsScreen() {
               </Svg>
             </View>
           </ScrollView>
-        </LinearGradient>
+          </ImageBackground>
+        {/* </LinearGradient> */}
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
@@ -342,6 +351,11 @@ const styles = StyleSheet.create({
   gradientContainer: {
     flex: 1,
     position: 'relative',
+  },
+   backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   header: {
     flexDirection: 'row',

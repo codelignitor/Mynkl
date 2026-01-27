@@ -7,6 +7,7 @@ import {
   StatusBar,
   SafeAreaView,
   Image,
+  ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,12 +30,17 @@ export default function HugOnWayScreen({ }) {
     <View style={styles.wrapper}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.safeArea}>
-        <LinearGradient
+        {/* <LinearGradient
           colors={['#4A5B8C', '#7B6BA8', '#D8A8C8', '#F0C8D8']}
           style={styles.gradientContainer}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
-        >
+        > */}
+        <ImageBackground
+            source={require('../../../../../assets/images/backgrounds/Hug Moments Screen 14.4 Background.png')}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+          >
           <View style={styles.container}>
             {/* Title */}
             <Text style={styles.title}>Your Hug is on its Way!</Text>
@@ -45,19 +51,19 @@ export default function HugOnWayScreen({ }) {
             </Text>
 
             {/* Paper Planes */}
-            <View style={styles.planesContainer}>
+            {/* <View style={styles.planesContainer}>
               <Text style={styles.planeLeft}>✈️</Text>
               <Text style={styles.planeRight}>✈️</Text>
-            </View>
+            </View> */}
 
             {/* Main Image Container - REPLACE WITH YOUR IMAGE */}
             <View style={styles.imageContainer}>
               {/* Replace this View with your Image component */}
-              <Image 
+              {/* <Image 
                 source={require('../../../../../assets/images/Envelop.png')} 
                 style={styles.envelopeImage}
                 resizeMode="contain"
-              />
+              /> */}
               {/* <View style={styles.imagePlaceholder}>
                 <Text style={styles.placeholderText}>
                   Envelope with{'\n'}Heart Image{'\n'}Goes Here
@@ -78,7 +84,7 @@ export default function HugOnWayScreen({ }) {
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={['#7B6BA8', '#8B7BC8']}
+                  colors={['#7464a0', '#8B7BC8']}
                   style={styles.buttonGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -108,7 +114,8 @@ export default function HugOnWayScreen({ }) {
               <Text style={[styles.star, styles.star5]}>✨</Text>
             </View>
           </View>
-        </LinearGradient>
+          </ImageBackground>
+        {/* </LinearGradient> */}
       </SafeAreaView>
     </View>
   );
@@ -123,6 +130,11 @@ const styles = StyleSheet.create({
   },
   gradientContainer: {
     flex: 1,
+  },
+   backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   container: {
     flex: 1,
@@ -198,7 +210,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#5A4B7A',
     textAlign: 'center',
-    marginBottom: 30,
+    marginTop: 230,
+    // marginBottom: 30,
   },
   buttonsContainer: {
     marginTop: 'auto',

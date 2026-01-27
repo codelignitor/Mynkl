@@ -5,12 +5,21 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { updateHugSettings } from '@/src/services/apis';
 import Toast from 'react-native-toast-message';
+import { useCheckInStatus } from '@/src/screenHooks/useCheckInStatus';
 
 export const useOnboardingLogic = () => {
   // Navigation state
   const [currentScreen, setCurrentScreen] = useState<'welcome' | 'whoCanHug' | 'hapticFeedback'>('welcome');
   
-  
+  // Use the check-in status hook
+  const {
+    needsCheckIn,
+    checkInLoading,
+    checkUserCheckInStatus,
+    getCTAText,
+    getNextRoute,
+  } = useCheckInStatus();
+
   // Screen 2: Who Can Hug Screen State
   const [friendsEnabled, setFriendsEnabled] = useState(true);
   const [communityEnabled, setCommunityEnabled] = useState(true);
@@ -74,15 +83,15 @@ export const useOnboardingLogic = () => {
       // Using Expo Haptics (more refined)
       triggerExpoHaptics(intensityLevel);
       
-      if (testMode) {
-        Toast.show({
-          type: 'success',
-          text1: 'Haptic Feedback',
-          // text2: `Test vibration at intensity ${intensityLevel}/10`,
-          visibilityTime: 1500,
-          position: 'top',
-        });
-      }
+      // if (testMode) {
+      //   Toast.show({
+      //     type: 'success',
+      //     text1: 'Haptic Feedback',
+      //     // text2: `Test vibration at intensity ${intensityLevel}/10`,
+      //     visibilityTime: 1500,
+      //     position: 'top',
+      //   });
+      // }
     } catch (error) {
       console.error('Error triggering haptic feedback:', error);
     }
@@ -118,6 +127,8 @@ export const useOnboardingLogic = () => {
       setCurrentScreen('whoCanHug');
     } else if (currentScreen === 'whoCanHug') {
       setCurrentScreen('hapticFeedback');
+       // Check user status when they arrive at haptic screen
+      checkUserCheckInStatus();
     }
   };
 
@@ -136,8 +147,58 @@ export const useOnboardingLogic = () => {
     return 'High';
   };
 
+  // Function to handle check-in user flow
+  const handleCheckInFlow = async () => {
+    setIsLoading(true);
+    
+    try {
+      // First save hug settings
+      const payload = {
+        haptic_feedback: hapticEnabled,
+        intensity: getIntensityForAPI(),
+        send_hugs_to_friends: friendsEnabled,
+        send_hugs_to_community: communityEnabled,
+        anonymous_support: anonymousEnabled,
+        reveal_name_in_hugs: revealNameInHugs,
+      };
+      
+      console.log('Saving hug settings for check-in flow:', payload);
+      
+      const response = await updateHugSettings(payload);
+      console.log('✅ Hug settings saved successfully:', response);
+      
+      // Show success toast
+      Toast.show({
+        type: 'success',
+        text1: 'All Set! 💖',
+        text2: 'Now, let\'s check-in your mood',
+        visibilityTime: 2000,
+        position: 'top',
+      });
+      
+      // Navigate to check-in screen
+      setTimeout(() => {
+        router.push('/addCheckIn');
+      }, 800);
+      
+      return response;
+      
+    } catch (error) {
+      console.error('❌ Error in check-in flow:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to save settings',
+        text2: 'Please try again',
+      });
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   // Main function to save settings
-  const saveHugSettings = async () => {
+  const handleRegularFlow = async () => {
     setIsLoading(true);
     
     try {
@@ -190,8 +251,13 @@ export const useOnboardingLogic = () => {
   };
 
   // Combined complete handler for haptic feedback screen
+  // Main handler that decides which flow to use
   const handleCompleteOnboarding = async () => {
-    await saveHugSettings();
+    if (needsCheckIn) {
+      await handleCheckInFlow();
+    } else {
+      await handleRegularFlow();
+    }
   };
 
   // Test haptic feedback
@@ -220,6 +286,11 @@ export const useOnboardingLogic = () => {
     getIntensityLabel,
     getIntensityForAPI,
     
+    // Check-in status from separate hook
+    needsCheckIn,
+    checkInLoading,
+    getCTAText,
+
     // Additional state
     revealNameInHugs,
     setRevealNameInHugs,
@@ -234,7 +305,8 @@ export const useOnboardingLogic = () => {
     goToPreviousScreen,
     
     // API functions
-    saveHugSettings,
+    handleRegularFlow,
+    handleCheckInFlow,
     handleCompleteOnboarding,
   };
 };

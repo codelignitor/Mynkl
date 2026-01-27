@@ -8,6 +8,8 @@ import {
   SafeAreaView,
   ScrollView,
   ActivityIndicator,
+  ImageBackground,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -27,35 +29,35 @@ export default function FindMomentToHugScreen() {
       id: 1, 
       icon: '💔', 
       text: 'Someone having a rough day', 
-      gradient: ['#9B6B9E', '#D88BA0'],
+      image: require('../../../../assets/images/backgrounds/Hug moments, Gradient screen 14.1.1.png'), // UPDATE THIS PATH
       aiTag: AI_TAG_MAPPING[1]
     },
     { 
       id: 2, 
       icon: '🌙', 
       text: 'Someone feeling very alone tonight', 
-      gradient: ['#4A3B7A', '#7B5FA0'],
+      image: require('../../../../assets/images/backgrounds/Hug moments, Gradient screen 14.1.2.png'), // UPDATE THIS PATH
       aiTag: AI_TAG_MAPPING[2]
     },
     { 
       id: 3, 
       icon: '🏥', 
       text: 'Someone waiting for medical news', 
-      gradient: ['#5B7BB4', '#7B9BD4'],
+      image: require('../../../../assets/images/backgrounds/Hug moments, Gradient screen 14.1.3.png'), // UPDATE THIS PATH
       aiTag: AI_TAG_MAPPING[3]
     },
     { 
       id: 4, 
       icon: '🤍', 
       text: 'Someone who just needs reassurance', 
-      gradient: ['#C88BA8', '#E8B8C8'],
+      image: require('../../../../assets/images/backgrounds/Hug moments, Gradient screen 14.1.4.png'), // UPDATE THIS PATH
       aiTag: AI_TAG_MAPPING[4]
     },
     { 
       id: 5, 
       icon: '🤖', 
       text: 'Let Mynkl choose a moment for you', 
-      gradient: ['#7B6BA8', '#9B8BC8'],
+      image: require('../../../../assets/images/backgrounds/Hug moments, Gradient screen 14.1.5.png'), // UPDATE THIS PATH
       aiTag: AI_TAG_MAPPING[5],
       special: true
     },
@@ -67,14 +69,13 @@ export default function FindMomentToHugScreen() {
 
   return (
     <View style={styles.wrapper}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F0E0F8" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.safeArea}>
-        <LinearGradient
-          colors={['#F0E0F8', '#E8D0F0', '#E0C8E8']}
-          style={styles.gradientContainer}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-        >
+          <ImageBackground
+            source={require('../../../../assets/images/backgrounds/Hug moments, Screen 14.1 Background.png')}
+            style={styles.backgroundImage}
+            resizeMode="cover"
+          >
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity 
@@ -108,7 +109,7 @@ export default function FindMomentToHugScreen() {
               <Text style={styles.title}>Find a Moment to Hug</Text>
               <Text style={styles.subtitle}>Who needs a hug today?</Text>
 
-              {/* Moment Cards */}
+              {/* Image-Based Moment Cards */}
               {moments.map((moment) => (
                 <TouchableOpacity
                   key={moment.id}
@@ -120,26 +121,33 @@ export default function FindMomentToHugScreen() {
                   activeOpacity={0.8}
                   disabled={loading}
                 >
-                  <LinearGradient
-                    colors={moment.gradient}
-                    style={styles.momentGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
+                  <ImageBackground
+                    source={moment.image}
+                    style={styles.momentImageBackground}
+                    imageStyle={styles.momentImage}
+                    resizeMode="cover"
                   >
-                    <View style={styles.momentContent}>
-                      <Text style={styles.momentIcon}>{moment.icon}</Text>
-                      <Text style={styles.momentText}>{moment.text}</Text>
-                      {selectedMoment === moment.id && (
-                        <Ionicons name="checkmark-circle" size={24} color="#FFF" style={styles.checkIcon} />
+                    {/* Overlay for better text readability */}
+                    <View style={styles.momentOverlay}>
+                      <View style={styles.momentContent}>
+                        <View style={styles.momentTextContainer}>
+                          <Text style={styles.momentIcon}>{moment.icon}</Text>
+                          <Text style={styles.momentText}>{moment.text}</Text>
+                        </View>
+                        {selectedMoment === moment.id && (
+                          <View style={styles.checkIconContainer}>
+                            <Ionicons name="checkmark" size={32} color="#FFF" style={styles.checkIcon} />
+                          </View>
+                        )}
+                      </View>
+                      {moment.special && (
+                        <View style={styles.sparkles}>
+                          <Text style={styles.sparkle}>✨</Text>
+                          <Text style={[styles.sparkle, styles.sparkle2]}>✨</Text>
+                        </View>
                       )}
                     </View>
-                    {moment.special && (
-                      <View style={styles.sparkles}>
-                        <Text style={styles.sparkle}>✨</Text>
-                        <Text style={[styles.sparkle, styles.sparkle2]}>✨</Text>
-                      </View>
-                    )}
-                  </LinearGradient>
+                  </ImageBackground>
                 </TouchableOpacity>
               ))}
 
@@ -169,19 +177,9 @@ export default function FindMomentToHugScreen() {
                   )}
                 </LinearGradient>
               </TouchableOpacity>
-
-              {/* Loading overlay for full screen */}
-              {/* {loading && (
-                <View style={styles.fullScreenLoading}>
-                  <ActivityIndicator size="large" color="#8B7BC8" />
-                  <Text style={styles.fullScreenLoadingText}>
-                    Finding someone who needs a hug...
-                  </Text>
-                </View>
-              )} */}
             </View>
           </ScrollView>
-        </LinearGradient>
+          </ImageBackground>
       </SafeAreaView>
     </View>
   );
@@ -194,8 +192,10 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  gradientContainer: {
+  backgroundImage: {
     flex: 1,
+    width: '100%',
+    height: '100%',
   },
   header: {
     flexDirection: 'row',
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 50,
-    paddingBottom: 25,
+    paddingBottom: 10,
   },
   backButton: {
     width: 40,
@@ -249,23 +249,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 30,
   },
-  errorContainer: {
-    backgroundColor: 'rgba(255, 100, 100, 0.1)',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#FF6B6B',
-  },
-  errorText: {
-    color: '#FF6B6B',
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
+  
+  // ==================== IMAGE-BASED MOMENT CARDS ====================
   momentCard: {
     marginBottom: 16,
-    borderRadius: 20,
+    borderRadius: 22,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: {
@@ -274,23 +262,37 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.15,
     shadowRadius: 6,
-    elevation: 4,
+    // height: 120, // Set a fixed height for consistency
   },
   momentCardSelected: {
     transform: [{ scale: 0.98 }],
     shadowOpacity: 0.25,
-    shadowColor: '#8B7BC8',
-    shadowRadius: 8,
   },
-  momentGradient: {
+  momentImageBackground: {
+    flex: 1,
+    width: '100%',
+    height: '105%',
+    justifyContent: 'center',
+  },
+  momentImage: {
+    borderRadius: 20,
+  },
+  momentOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.22)', // Semi-transparent overlay for text readability
     padding: 20,
-    minHeight: 80,
     justifyContent: 'center',
     position: 'relative',
   },
   momentContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  momentTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   momentIcon: {
     fontSize: 36,
@@ -301,9 +303,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     flex: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+  checkIconContainer: {
+    marginLeft: 10,
+    backgroundColor: 'rgba(139, 123, 200, 0.3)',
+    borderRadius: 20,
+    padding: 4,
   },
   checkIcon: {
-    marginLeft: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
   sparkles: {
     position: 'absolute',
@@ -318,6 +332,8 @@ const styles = StyleSheet.create({
     right: -10,
     top: 20,
   },
+  
+  // Continue Button
   continueButton: {
     marginTop: 20,
     borderRadius: 30,
@@ -348,23 +364,5 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: '#FFFFFF',
-  },
-  fullScreenLoading: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  fullScreenLoadingText: {
-    marginTop: 20,
-    fontSize: 16,
-    color: '#4A3B6A',
-    fontWeight: '500',
-    textAlign: 'center',
   },
 });

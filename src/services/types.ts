@@ -106,3 +106,11 @@ export interface UserWithAiTag {
 export interface UsersByAiTagResponse {
   data: UserWithAiTag[];
 }
+
+// Add to your existing types.ts file
+
+export interface CrisisStatusResponse {
+  data: {
+    is_crisis: boolean;
+  };
+}

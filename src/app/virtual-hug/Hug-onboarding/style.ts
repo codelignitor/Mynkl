@@ -315,6 +315,52 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
   },
+
+  // Add to style.ts
+statusMessage: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(124, 58, 237, 0.1)',
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 12,
+  marginBottom: 20,
+},
+
+statusText: {
+  fontSize: 14,
+  color: '#7C3AED',
+  fontWeight: '500',
+  marginLeft: 10,
+},
+
+checkInMessage: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(124, 58, 237, 0.1)',
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 12,
+  marginBottom: 20,
+  borderWidth: 1,
+  borderColor: 'rgba(124, 58, 237, 0.3)',
+},
+
+checkInMessageText: {
+  fontSize: 14,
+  color: '#7C3AED',
+  fontWeight: '500',
+  marginLeft: 10,
+},
+
+destinationHint: {
+  fontSize: 11,
+  color: 'rgba(255, 255, 255, 0.7)',
+  marginTop: 2,
+  fontStyle: 'italic',
+},
 });
 
 export { styles };

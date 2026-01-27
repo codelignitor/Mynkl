@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   ImageBackground,
   Switch,
+  ActivityIndicator,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,7 +38,14 @@ const OnboardingFlow = () => {
     setIntensity,
     getIntensityLabel,
     handleCompleteOnboarding,
-    
+
+    needsCheckIn,
+    handleCheckInFlow,
+    checkInLoading,
+    isLoading,
+    getCTAText,
+
+
     // Navigation functions
     goToNextScreen,
     goToPreviousScreen,
@@ -200,17 +208,7 @@ const OnboardingFlow = () => {
   // Screen 3: Haptic Feedback Screen
   const renderHapticFeedbackScreen = () => {
     const handleComplete = async () => {
-    // Show loading/success message
-    // Toast.show({
-    //   type: 'success',
-    //   text1: 'Success',
-    //   text2: `All Set! saving prefernces💖`,
-    //   // position: 'top',
-    // });
-
-    // Call the API function
-    await handleCompleteOnboarding();
-    
+      await handleCompleteOnboarding();
     // Note: The navigation happens inside saveHugSettings on success
     // On error, it stays on current screen
   };
@@ -299,7 +297,7 @@ const OnboardingFlow = () => {
               </View>
 
               {/* Complete button */}
-              <View style={styles.hapticButtonContainer}>
+              {/* <View style={styles.hapticButtonContainer}>
                 <TouchableOpacity
                   style={styles.hapticCompleteButton}
                   onPress={handleComplete}
@@ -307,7 +305,29 @@ const OnboardingFlow = () => {
                 >
                   <Text style={styles.hapticButtonText}>All Set! Take me in</Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
+               <View style={styles.hapticButtonContainer}>
+              <TouchableOpacity
+                style={[styles.hapticCompleteButton, 
+                  (isLoading || checkInLoading) && { opacity: 0.7 }
+                ]}
+                onPress={handleComplete}
+                activeOpacity={0.8}
+                disabled={isLoading || checkInLoading}
+              >
+                <Text style={styles.hapticButtonText}>
+                  {isLoading ? 'Saving...' : getCTAText()}
+                </Text>
+                
+                {/* Show destination hint */}
+                {/* {!isLoading && !checkInLoading && (
+                  <Text style={styles.destinationHint}>
+                    {needsCheckIn ? '→ Check-in screen' : '→ Hugs dashboard'}
+                  </Text>
+                )} */}
+              </TouchableOpacity>
+            </View>
+
             </View>
           </ImageBackground>
         </SafeAreaView>

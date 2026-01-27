@@ -9,11 +9,13 @@ import {
   ImageBackground,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useHugMission } from '@/src/screenHooks/useHugMission';
 import { ScrollView } from 'react-native-gesture-handler';
-// import { useHugMission } from '@/src/hooks/useHugMission';
+import { useSimpleCrisisCheck } from '@/src/screenHooks/useCrisisCheck';
+// import { useSimpleCrisisCheck } from '@/src/hooks/useSimpleCrisisCheck';
 
 export default function DailyHugMissionScreen() {
   const {
@@ -25,14 +27,37 @@ export default function DailyHugMissionScreen() {
     refreshData,
   } = useHugMission();
 
-  const handleFindPeople = useCallback(() => {
-    // console.log('Hug moment flow pressed');
-      router.push('/virtual-hug/hug-community/Hug-moment');
-  }, []);
+  const { checking, error, checkAndRedirect } = useSimpleCrisisCheck();
+
+  const handleFindPeople = useCallback(async () => {
+    console.log('🎯 Find People CTA pressed');
+    
+    // Define routes
+    const CRISIS_ROUTE = '/virtual-hug/crisisSupport'; // Your crisis support screen
+    const NORMAL_ROUTE = '/virtual-hug/hug-community/Hug-moment'; // Current path
+    
+    try {
+      await checkAndRedirect(CRISIS_ROUTE, NORMAL_ROUTE);
+    } catch (err) {
+      console.error('Error in handleFindPeople:', err);
+      // Fallback to normal route if something goes wrong
+      router.push(NORMAL_ROUTE);
+    }
+  }, [checkAndRedirect]);
 
   const handleInsights = useCallback(() => {
     // router.push('/virtual-hug/hug-Insights');
+    console.log('Insights pressed');
   }, []);
+
+  // Show error alert if crisis check fails
+  const showErrorAlert = useCallback(() => {
+    if (error) {
+      Alert.alert('Error', error, [
+        { text: 'OK', onPress: () => {} }
+      ]);
+    }
+  }, [error]);
 
   // Show reward section only if mission is completed OR hug_hero badge is earned
   const shouldShowReward = dailyGoal.is_completed || isHugHeroEarned;
@@ -52,7 +77,7 @@ export default function DailyHugMissionScreen() {
       <SafeAreaView style={styles.safeArea}>
         
         <ImageBackground
-            source={require('../../../../assets/images/backgrounds/Welcome Screen 3.png')}
+            source={require('../../../../assets/images/backgrounds/Community Hug challenges, Screen 13 Background.png')}
             style={styles.backgroundImage}
             resizeMode="cover"
           >
@@ -96,20 +121,15 @@ export default function DailyHugMissionScreen() {
                 </View>
               </View>
 
-              {/* Status Message */}
-              {/* {dailyGoal.hugs_sent_today === 0 ? (
-                <Text style={styles.statusMessage}>
-                  Start sending hugs to begin your mission! ✨
-                </Text>
-              ) : dailyGoal.is_completed ? (
-                <Text style={styles.statusMessage}>
-                  Mission Completed! 🎉
-                </Text>
-              ) : (
-                <Text style={styles.statusMessage}>
-                  Keep going! {dailyGoal.daily_goal - dailyGoal.hugs_sent_today} more to go
-                </Text>
-              )} */}
+              {/* Error message (if any) */}
+              {error && (
+                <TouchableOpacity 
+                  style={styles.errorContainer}
+                  onPress={showErrorAlert}
+                >
+                  <Text style={styles.errorText}>⚠️ {error}</Text>
+                </TouchableOpacity>
+              )}
 
               {/* Reward Section - Only show if mission completed or badge earned */}
               {shouldShowReward ? (
@@ -160,11 +180,22 @@ export default function DailyHugMissionScreen() {
               {/* Action Buttons */}
               <View style={styles.buttonsContainer}>
                 <TouchableOpacity
-                  style={styles.findButton}
+                  style={[
+                    styles.findButton,
+                    (checking) && styles.buttonDisabled
+                  ]}
                   onPress={handleFindPeople}
                   activeOpacity={0.8}
+                  disabled={checking}
                 >
-                  <Text style={styles.findButtonText}>Find People to Hug</Text>
+                  {checking ? (
+                    <View style={styles.buttonLoading}>
+                      <ActivityIndicator size="small" color="#2D2D4F" />
+                      <Text style={styles.findButtonText}>Checking...</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.findButtonText}>Find People to Hug</Text>
+                  )}
                 </TouchableOpacity>
                
                 <TouchableOpacity
@@ -175,9 +206,7 @@ export default function DailyHugMissionScreen() {
                   <Text style={styles.InsightButtonText}>My Insights</Text>
                 </TouchableOpacity>
               </View>
-            {/* </View> */}
-          {/* </RefreshControl> */}
-          </ScrollView>
+            </ScrollView>
         </ImageBackground>
       </SafeAreaView>
     </View>
@@ -244,13 +273,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 201, 150, 0.99)',
     borderRadius: 6,
   },
-  statusMessage: {
-    fontSize: 16,
+  errorContainer: {
+    backgroundColor: 'rgba(255, 100, 100, 0.2)',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#FF6B6B',
+  },
+  errorText: {
+    color: '#FFF',
+    fontSize: 14,
     fontWeight: '500',
-    color: '#FFFFFF',
-    marginBottom: 30,
     textAlign: 'center',
-    paddingHorizontal: 20,
   },
   rewardCard: {
     backgroundColor: 'rgba(255, 237, 214, 0.66)',
@@ -269,7 +304,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   emptyRewardCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(254, 213, 160, 0.66)',
     borderRadius: 25,
     paddingVertical: 30,
     paddingHorizontal: 40,
@@ -289,7 +324,7 @@ const styles = StyleSheet.create({
   emptyRewardTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(157, 152, 152, 0.8)',
     marginBottom: 25,
   },
   starBadge: {
@@ -316,7 +351,7 @@ const styles = StyleSheet.create({
   },
   emptyBadgeEmoji: {
     fontSize: 55,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(153, 144, 144, 0.8)',
   },
   rewardLabel: {
     fontSize: 20,
@@ -326,7 +361,7 @@ const styles = StyleSheet.create({
   emptyRewardLabel: {
     fontSize: 20,
     fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: 'rgba(105, 98, 98, 0.8)',
     marginBottom: 8,
   },
   rewardDescription: {
@@ -338,17 +373,16 @@ const styles = StyleSheet.create({
   },
   emptyRewardDescription: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(100, 97, 97, 0.7)',
     textAlign: 'center',
     marginTop: 8,
   },
   buttonsContainer: {
     width: '100%',
-    // marginTop: 'auto',
     alignItems: 'center',
   },
   findButton: {
-    backgroundColor: 'rgba(255, 237, 214, 0.66)',
+    backgroundColor: 'rgba(254, 213, 159, 0.73)',
     paddingVertical: 20,
     paddingHorizontal: 50,
     borderRadius: 30,
@@ -362,6 +396,14 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.15,
     shadowRadius: 5,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  buttonLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   findButtonText: {
     fontSize: 20,

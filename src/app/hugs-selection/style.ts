@@ -150,12 +150,14 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
     marginBottom: 8,
+    textAlign: 'center',
   },
   recipientSubtitle: {
     fontSize: 22,
     color: '#666',
     marginBottom: 30,
     lineHeight: 22,
+    textAlign: 'center',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -395,15 +397,16 @@ export const styles = StyleSheet.create({
   },
   confirmationBackButton: {
     position: 'absolute',
-    top: 40,
+    top: 50,
     left: 20,
   },
   confirmationTitle: {
-    fontSize: 28,
+    fontSize: 38,
     fontWeight: '700',
     textAlign: 'center',
     color: '#000',
     marginBottom: 20,
+    marginTop: -40,
   },
   heartImagePlaceholder: {
     width: 180,
@@ -411,18 +414,22 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    // backgroundColor: 'rgba(255, 255, 255, 0.3)',
     borderRadius: 90,
   },
   heartPlaceholderText: {
     fontSize: 80,
   },
+  characterImage:{
+    width: 180,
+    height: 180,
+  },
   confirmationSubtitle: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: '500',
     textAlign: 'center',
     color: '#555',
-    marginBottom: 40,
+    marginBottom: 80,
   },
   sendAnotherButton: {
     backgroundColor: '#7D75FF',
