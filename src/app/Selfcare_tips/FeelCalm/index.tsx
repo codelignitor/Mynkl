@@ -9,15 +9,15 @@ import {
   Dimensions,
   Image
 } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
-export default function MindfulnessVideoScreen({ navigation }) {
+export default function MindfulnessVideoScreen() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef(null);
+  const videoRef = useRef<Video>(null);
   const router = useRouter();
   
   const handlePlayVideo = async () => {
@@ -32,11 +32,12 @@ export default function MindfulnessVideoScreen({ navigation }) {
   };
 
   const handleBack = () => {
-    if (navigation) {
-      navigation.goBack();
-    } else {
-      console.log('Back button pressed');
-    }
+    // if (navigation) {
+    //   navigation.goBack();
+    // } else {
+    //   console.log('Back button pressed');
+    // }
+    router.back();
   };
 
   return (
@@ -81,8 +82,8 @@ export default function MindfulnessVideoScreen({ navigation }) {
                 ref={videoRef}
                 style={styles.video}
                 source=
-                  // uri: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
-                  {require('../../../assets/videos/Copy of Gentle Mindful Stretching.mp4')}
+                 {{ uri: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'}}
+                  // {require('../../../assets/videos/Copy of Gentle Mindful Stretching.mp4')}
                 useNativeControls={false}
                 resizeMode={ResizeMode.COVER}
                 isLooping
