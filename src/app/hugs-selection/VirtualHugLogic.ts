@@ -23,8 +23,8 @@ export const useVirtualHugLogic = () => {
   
   const hugs = [
     { emoji: '😊', label: 'Warm\nHug' , value:'Warm Hug' },
-    { emoji: '🥳', label: 'Excited\nHug' , value: 'Excited Hug' },
-    { emoji: '🧕', label: 'Eccited\nHug', value: 'Excited Hug' },
+    { emoji: '🥳', label: 'Encourgeing\nHug' , value: 'Excited Hug' },
+    { emoji: '🧕', label: 'Excited\nHug', value: 'Excited Hug' },
     { emoji: '💙', label: 'Calm\nHug' , value: 'Calm Hug' },
   ];
 

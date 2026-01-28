@@ -10,7 +10,6 @@ import {
 export const getBadgeStatus = async () => {
   try {
     const response = await axiosInstance.get('/virtual_hugs/badges/status');
-    // console.log('🎯 Badge API response:', response.data); // Inspect structure
     return response.data; // Expected: array of { badge_code, name, earned }
   } catch (error) {
     // console.error('❌ Error fetching badge status:', error);
@@ -41,13 +40,33 @@ export const updateHugSettings = async (payload: {
 }) => {
   try {
     const response = await axiosInstance.post('/virtual_hugs/hug-settings', payload);
-    console.log('✅ Hug settings updated:', response.data);
+    // console.log('✅ Hug settings updated:', response.data);
     return response.data;
   } catch (error) {
-    console.error('❌ Error updating hug settings:', error.response?.data || error);
+    // console.error('❌ Error updating hug settings:', error.response?.data || error);
     throw error;
   }
 };
+
+// Daily Hug Goal API
+export const getDailyHugGoal = async () => {
+  try {
+    const response = await axiosInstance.get('/virtual_hugs/hug-daily-goal');
+    // console.log('✅ Daily hug goal fetched:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('❌ Error fetching daily hug goal:', error);
+    // Return default structure on error
+    return {
+      data: {
+        daily_goal: 5,
+        hugs_sent_today: 0,
+        is_completed: false
+      }
+    };
+  }
+};
+
 
 
 export const checkIn = async (payload: CheckInPayload | FormData) => {
@@ -598,6 +617,20 @@ export const transcribeAudio = async (audioFile: any): Promise<{ text: string }>
       response: error.response?.data,
     });
     
+// Get users for a specific ai_tag
+export const getUsersByAiTag = async (ai_tag: string) => {
+  try {
+    const response = await axiosInstance.get('/virtual_hugs/ai-moment-users', {
+      params: { ai_tag }
+    });
+    console.log('✅ Users by AI tag fetched:', response.data);
+    return response.data;
+  } catch (error: any) {
+      console.error('❌ Error fetching users by AI tag:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
     throw error;
   }
 };
@@ -616,6 +649,23 @@ export const getCelebrationMessage = async () => {
       celebrated: false,
       ai_message: '',
       badges: []
+// Check if user is in crisis
+export const checkCrisisStatus = async () => {
+  try {
+    const response = await axiosInstance.get('/virtual_hugs/ai-moment/is-crisis');
+    console.log('✅ Crisis status fetched:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ Error checking crisis status:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
+    // Default to non-crisis on error for safety
+    return {
+      data: {
+        is_crisis: false
+      }
     };
   }
 };

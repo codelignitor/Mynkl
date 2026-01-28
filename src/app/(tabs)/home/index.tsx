@@ -296,7 +296,7 @@ const MoodMapScreen = () => {
   }, []);
 
   const handleMoodSelection = (mood) => {
-    handleSubmitAddCheckin(mood);
+    // handleSubmitAddCheckin(mood);
   };
 
   const handleCheckIn = () => {
@@ -313,6 +313,12 @@ const MoodMapScreen = () => {
 
   const handleNotificationsPress = () => {
     console.log('Notifications pressed');
+    // router.push('/Notifications');
+  };
+
+  const handleSettingsPress = () => {
+    console.log('Settings pressed');
+    router.push('/virtual-hug/Hug-settings');
   };
 
   const currentEmoji = selectedMood
@@ -362,11 +368,20 @@ const MoodMapScreen = () => {
           <View style={styles.headerTextContainer}>
             <Text style={styles.header}>Hello, {username}</Text>
           </View>
+          {/* Notification CTA */}
           <TouchableOpacity 
             style={styles.bellIconContainer} 
             onPress={handleNotificationsPress}
           >
             <Icon name="bell-outline" size={25} color="#ffffff" style={styles.bellIcon} />
+          </TouchableOpacity>
+          
+          {/* Settings icon-CTA */}
+          <TouchableOpacity 
+            style={styles.bellIconContainer} 
+            onPress={handleSettingsPress}
+          >
+            <Icon name="cog" size={25} color="#ffffff" style={styles.bellIcon} />
           </TouchableOpacity>
         </View>
 
@@ -431,7 +446,7 @@ const MoodMapScreen = () => {
               styles.appIconCard, 
               selectedSections.hugs && { backgroundColor: '#b7c2cc' }
             ]}
-            onPress={() => moveToScreen('/donation_hugs')}
+            onPress={() => moveToScreen('/virtual-hug/Hug-onboarding')}
           >
             <View style={styles.iconContainer}>
               <Icon name="heart" size={24} color="#ff4f8b" />

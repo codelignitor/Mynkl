@@ -12,12 +12,12 @@ export default function MovementMindfulnessScreen() {
   const [videoStatus, setVideoStatus] = useState(null);
   const videoRef = useRef(null);
 
-  // This will be replaced with API data
+  
   const [exercises, setExercises] = useState([
     {
       id: 1,
       title: 'Gentle mindful stretching',
-      videoUri: require('../../../../assets/videos/Copy of Gentle Mindful Stretching.mp4'), // Update with your actual video path
+      videoUri: null //require('../../../../assets/videos/Copy of Gentle Mindful Stretching.mp4'), // Update with your actual video path
     },
     {
       id: 2,

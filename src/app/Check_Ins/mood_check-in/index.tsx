@@ -26,7 +26,7 @@ import Frustrated from "../../../assets/svgs/frustrated.svg";
 import Grateful from "../../../assets/svgs/grateful-icon.svg";
 
 import StaticEmotionalEmoji from "../../../assets/images/Static emotional emoji.png";
-import { normalizeSuggestion } from "@/src/utils/normalizeSuggestions";
+import { getMoodSuggestionRoute, handleMoodSuggestionClick } from "@/src/utils/moodSuggestionRouting";
 
 export default function MoodScreen() {
   const [data, setData] = useState(null);
@@ -97,16 +97,162 @@ export default function MoodScreen() {
     }
   };
 
-  const renderSuggestionDetails = (suggestion, index) => {
-    const isExpanded = expandedSuggestion === index;
+  // const renderSuggestionDetails = (suggestion, index) => {
+  //   const isExpanded = expandedSuggestion === index;
 
-    if (!isExpanded || !suggestion?.details) return null;
+  //   if (!isExpanded || !suggestion?.details) return null;
 
-    const { details } = suggestion;
+  //   const { details } = suggestion;
 
-    // Determine suggestion type based on the presence of specific fields
-    if (details.place_id) {
-      // This is a place suggestion
+  //   // Determine suggestion type based on the presence of specific fields
+  //   if (details.place_id) {
+  //     // This is a place suggestion
+  //     return (
+  //       <View style={styles.detailsContainer}>
+  //         <Text style={styles.detailsTitle}>📍 Place Details:</Text>
+  //         <Text style={styles.detailsName}>{details.name}</Text>
+  //         <Text style={styles.detailsAddress}>{details.address}</Text>
+          
+  //         {details.rating && (
+  //           <View style={styles.ratingContainer}>
+  //             <Text style={styles.ratingText}>⭐ {details.rating} ({details.user_ratings_total} reviews)</Text>
+  //           </View>
+  //         )}
+          
+  //         {details.types && (
+  //           <View style={styles.tagsContainer}>
+  //             {details.types.slice(0, 3).map((type, idx) => (
+  //               <View key={idx} style={styles.tag}>
+  //                 <Text style={styles.tagText}>{type}</Text>
+  //               </View>
+  //             ))}
+  //           </View>
+  //         )}
+          
+  //         <TouchableOpacity
+  //           style={styles.actionButton}
+  //           onPress={() => {
+  //             // Open in Google Maps or Apple Maps
+  //             const url = `https://www.google.com/maps/search/?api=1&query=${details.lat},${details.lng}&query_place_id=${details.place_id}`;
+  //             Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
+  //           }}
+  //         >
+  //           <Text style={styles.actionButtonText}>Open in Maps</Text>
+  //         </TouchableOpacity>
+  //       </View>
+  //     );
+  //   } else if (details.url && details.url.includes('spotify')) {
+  //     // This is a Spotify playlist suggestion
+  //     return (
+  //       <View style={styles.detailsContainer}>
+  //         <Text style={styles.detailsTitle}>🎵 Spotify Playlist:</Text>
+  //         <Text style={styles.detailsName}>{details.name}</Text>
+          
+  //         {details.description && (
+  //           <Text style={styles.detailsDescription}>
+  //             {details.description.replace(/<[^>]*>/g, '')}
+  //           </Text>
+  //         )}
+          
+  //         {details.tracks_total && (
+  //           <Text style={styles.detailsTracks}>{details.tracks_total} tracks</Text>
+  //         )}
+          
+  //         {details.image && (
+  //           <Image 
+  //             source={{ uri: details.image }} 
+  //             style={styles.playlistImage}
+  //             resizeMode="cover"
+  //           />
+  //         )}
+          
+  //         <TouchableOpacity
+  //           style={styles.actionButton}
+  //           onPress={() => {
+  //             Linking.openURL(details.url).catch(err => console.error("Couldn't open Spotify:", err));
+  //           }}
+  //         >
+  //           <Text style={styles.actionButtonText}>Open in Spotify</Text>
+  //         </TouchableOpacity>
+  //       </View>
+  //     );
+  //   } else if (!details.url && !details.place_id) {
+  //     // This is a reflection prompt (details is null or just a message)
+  //     return (
+  //       <View style={styles.detailsContainer}>
+  //         <Text style={styles.detailsTitle}>💭 Reflection Prompt:</Text>
+  //         <Text style={styles.detailsMessage}>
+  //           "{suggestion.suggestion}"
+  //         </Text>
+  //         <TouchableOpacity
+  //           style={styles.actionButton}
+  //           onPress={() => {
+  //             // Navigate to journal or reflection screen
+  //             router.push('/journal');
+  //           }}
+  //         >
+  //           <Text style={styles.actionButtonText}>Write in Journal</Text>
+  //         </TouchableOpacity>
+  //       </View>
+  //     );
+  //   }
+
+  //   return null;
+  // };
+
+  // const getSuggestionIcon = (suggestion) => {
+  //   if (!suggestion?.details) return "💭"; // Reflection prompt icon
+    
+  //   const { details } = suggestion;
+    
+  //   if (details.place_id) {
+  //     return "📍";
+  //   } else if (details.url && details.url.includes('spotify')) {
+  //     return "🎵";
+  //   } else if (details.url && details.url.includes('youtube')) {
+  //     return "🎬";
+  //   } else if (details.activity_type) {
+  //     return "🧘‍♀️";
+  //   }
+    
+  //   return "✨";
+  // };
+
+  // const handleSuggestionPress = (suggestion, index) => {
+  //   // If details is null, don't do anything (non-clickable)
+  //   if (!suggestion?.details) return;
+    
+  //   const { details } = suggestion;
+    
+  //   // Handle direct CTA without expansion
+  //   if (details?.url && details.url.includes('spotify')) {
+  //     Linking.openURL(details.url).catch(err => console.error("Couldn't open Spotify:", err));
+  //     return;
+  //   } else if (details?.place_id) {
+  //     const url = `https://www.google.com/maps/search/?api=1&query=${details.lat},${details.lng}&query_place_id=${details.place_id}`;
+  //     Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
+  //     return;
+  //   }
+    
+  //   // For other suggestions, toggle expansion
+  //   setExpandedSuggestion(expandedSuggestion === index ? null : index);
+  // };
+
+  // Update the handleSuggestionPress function
+
+  // Update the getSuggestionIcon function
+
+// Update the renderSuggestionDetails function
+const renderSuggestionDetails = (suggestion, index) => {
+  const isExpanded = expandedSuggestion === index;
+  const suggestionConfig = getMoodSuggestionRoute(suggestion);
+
+  if (!isExpanded || !suggestion?.details || !suggestionConfig) return null;
+
+  const { details } = suggestion;
+
+  switch (suggestionConfig.type) {
+    case 'place':
       return (
         <View style={styles.detailsContainer}>
           <Text style={styles.detailsTitle}>📍 Place Details:</Text>
@@ -131,18 +277,14 @@ export default function MoodScreen() {
           
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => {
-              // Open in Google Maps or Apple Maps
-              const url = `https://www.google.com/maps/search/?api=1&query=${details.lat},${details.lng}&query_place_id=${details.place_id}`;
-              Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
-            }}
+            onPress={() => handleSuggestionPress(suggestion, index)}
           >
             <Text style={styles.actionButtonText}>Open in Maps</Text>
           </TouchableOpacity>
         </View>
       );
-    } else if (details.url && details.url.includes('spotify')) {
-      // This is a Spotify playlist suggestion
+      
+    case 'spotify_music':
       return (
         <View style={styles.detailsContainer}>
           <Text style={styles.detailsTitle}>🎵 Spotify Playlist:</Text>
@@ -168,154 +310,135 @@ export default function MoodScreen() {
           
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => {
-              Linking.openURL(details.url).catch(err => console.error("Couldn't open Spotify:", err));
-            }}
+            onPress={() => handleSuggestionPress(suggestion, index)}
           >
             <Text style={styles.actionButtonText}>Open in Spotify</Text>
           </TouchableOpacity>
         </View>
       );
-    } else if (!details.url && !details.place_id) {
-      // This is a reflection prompt (details is null or just a message)
+      
+    case 'activity':
       return (
         <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>💭 Reflection Prompt:</Text>
-          <Text style={styles.detailsMessage}>
-            "{suggestion.suggestion}"
+          <Text style={styles.detailsTitle}>🧘‍♀️ Activity:</Text>
+          <Text style={styles.detailsName}>
+            {details.type ? details.type.replace(/_/g, ' ').toUpperCase() : 'Activity'}
           </Text>
+          
+          {details.reason && (
+            <Text style={styles.detailsDescription}>
+              {details.reason}
+            </Text>
+          )}
+          
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => {
-              // Navigate to journal or reflection screen
-              router.push('/journal');
-            }}
+            onPress={() => handleSuggestionPress(suggestion, index)}
           >
-            <Text style={styles.actionButtonText}>Write in Journal</Text>
+            <Text style={styles.actionButtonText}>
+              {suggestionConfig.route ? 'Start Activity' : 'View Details'}
+            </Text>
           </TouchableOpacity>
         </View>
       );
-    }
-
-    return null;
-  };
-
-  const getSuggestionIcon = (suggestion) => {
-    if (!suggestion?.details) return "💭"; // Reflection prompt icon
-    
-    const { details } = suggestion;
-    
-    if (details.place_id) {
-      return "📍";
-    } else if (details.url && details.url.includes('spotify')) {
-      return "🎵";
-    } else if (details.url && details.url.includes('youtube')) {
-      return "🎬";
-    } else if (details.activity_type) {
-      return "🧘‍♀️";
-    }
-    
-    return "✨";
-  };
-const resolveSuggestionAction = (suggestion) => {
-  const details = suggestion?.details;
-  if (!details) return { type: "none" };
-
-  // 1. PLACE → Maps
-  if (details.place_id && details.lat && details.lng) {
-    return {
-      type: "map",
-      payload: details,
-    };
+      
+    case 'prompt':
+      return (
+        <View style={styles.detailsContainer}>
+          <Text style={styles.detailsTitle}>📝 Reflection Prompt:</Text>
+          <Text style={styles.detailsMessage}>
+            "{details.prompt || suggestion.suggestion}"
+          </Text>
+          
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleSuggestionPress(suggestion, index)}
+          >
+            <Text style={styles.actionButtonText}>Write Reflection</Text>
+          </TouchableOpacity>
+        </View>
+      );
+      
+    default:
+      // For other suggestion types (text or unknown)
+      return (
+        <View style={styles.detailsContainer}>
+          <Text style={styles.detailsTitle}>Details:</Text>
+          <Text style={styles.detailsMessage}>
+            {suggestion.suggestion}
+          </Text>
+          
+          {details && Object.keys(details).length > 0 && (
+            <View style={styles.jsonContainer}>
+              <Text style={styles.jsonText}>
+                {JSON.stringify(details, null, 2)}
+              </Text>
+            </View>
+          )}
+        </View>
+      );
   }
-
-  // 2. SPOTIFY → External
-  if (details.url && details.url.includes("spotify")) {
-    return {
-      type: "spotify",
-      payload: details.url,
-    };
-  }
-
-  // 3. ACTIVITIES (emotional care, reflection, etc.)
-  if (details.activities && Array.isArray(details.activities)) {
-    return {
-      type: "activities",
-      payload: {
-        activities: details.activities,
-        prompt: details.prompt,
-        activityType: details.type, // emotional_care
-      },
-    };
-  }
-
-  // 4. FALLBACK (text-only suggestion)
-  return { type: "expand" };
 };
 
-  // const handleSuggestionPress = (suggestion, index) => {
-  //   // If details is null, don't do anything (non-clickable)
-  //   if (!suggestion?.details) return;
-    
-  //   const { details } = suggestion;
-    
-  //   // Handle direct CTA without expansion
-  //   if (details?.url && details.url.includes('spotify')) {
-  //     Linking.openURL(details.url).catch(err => console.error("Couldn't open Spotify:", err));
-  //     return;
-  //   } else if (details?.place_id) {
-  //     const url = `https://www.google.com/maps/search/?api=1&query=${details.lat},${details.lng}&query_place_id=${details.place_id}`;
-  //     Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
-  //     return;
-  //   }
-    
-  //   // For other suggestions, toggle expansion
-  //   setExpandedSuggestion(expandedSuggestion === index ? null : index);
-  // };
+  const getSuggestionIcon = (suggestion) => {
+  const suggestionConfig = getMoodSuggestionRoute(suggestion);
+  
+  if (!suggestionConfig) return "💭";
+  
+  switch (suggestionConfig.type) {
+    case 'spotify_music':
+      return "🎵";
+    case 'place':
+      return "📍";
+    case 'activity':
+      return "✨";
+    case 'prompt':
+      return "📝";
+    default:
+      return "✨";
+  }
+};
 
-
-const handleSuggestionPress = (suggestion) => {
-  const action = normalizeSuggestion(suggestion, data?.last_check_in_mood);
-
-  switch (action.action) {
-    case "MAP":
-      Linking.openURL(
-        `https://www.google.com/maps/search/?api=1&query=${action.lat},${action.lng}&query_place_id=${action.place_id}`
+  const handleSuggestionPress = (suggestion, index) => {
+  const suggestionConfig = getMoodSuggestionRoute(suggestion);
+  
+  if (!suggestionConfig) {
+    // If no config, toggle expansion
+    setExpandedSuggestion(expandedSuggestion === index ? null : index);
+    return;
+  }
+  
+  switch (suggestionConfig.type) {
+    case 'spotify_music':
+      Linking.openURL(suggestion.details.url).catch(err => 
+        console.error("Couldn't open Spotify:", err)
       );
       break;
-
-    case "SPOTIFY":
-        // if (details?.url && details.url.includes('spotify')) {
-      Linking.openURL(action.url).catch(err => console.error("Couldn't open Spotify:", err));
-    break;
-
-    case "ROUTE":
-      router.push({
-        pathname: action.route as any,
-        params: action.params,
-      });
+      
+    case 'place':
+      if (suggestion.details.place_id) {
+        const url = `https://www.google.com/maps/search/?api=1&query=${suggestion.details.lat},${suggestion.details.lng}&query_place_id=${suggestion.details.place_id}`;
+        Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
+      } else if (suggestion.details.address) {
+        // Fallback if no coordinates
+        const encodedAddress = encodeURIComponent(suggestion.details.address);
+        const url = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+        Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
+      }
       break;
-
-    case "SHOW_ACTIVITIES":
-      router.push({
-        pathname: "/activity",
-        params: {
-          activities: JSON.stringify(action.activities),
-          prompt: action.prompt,
-        },
-      });
+      
+    case 'activity':
+      // Use the new routing for activity suggestions
+      handleMoodSuggestionClick(suggestion, router);
       break;
-
-    case "SHOW_MESSAGE":
-      router.push({
-        // pathname: "/message-preview",
-        params: { message: action.message, date: new Date().getTime() },
-      });
+      
+    case 'prompt':
+      handleMoodSuggestionClick(suggestion, router);
       break;
-
-    case "NONE":
+      
     default:
-      // expand card or do nothing
+      // For other types, toggle expansion
+      setExpandedSuggestion(expandedSuggestion === index ? null : index);
       break;
   }
 };
@@ -468,7 +591,7 @@ const handleSuggestionPress = (suggestion) => {
           </View>
 
           {/* NEW SUGGESTIONS FROM API */}
-          {suggestions?.suggestions?.length > 0 && suggestions.suggestions.map((suggestion, idx) => {
+          {/* {suggestions?.suggestions?.length > 0 && suggestions.suggestions.map((suggestion, idx) => {
             if (!suggestion) return null;
             
             // Determine if the suggestion should be clickable
@@ -506,8 +629,75 @@ const handleSuggestionPress = (suggestion) => {
                 {renderSuggestionDetails(suggestion, idx)}
               </TouchableOpacity>
             );
-          })}
+          })} */}
 
+          {/* // Update the suggestion card rendering in your JSX */}
+{suggestions?.suggestions?.length > 0 && suggestions.suggestions.map((suggestion, idx) => {
+  if (!suggestion) return null;
+  
+  const suggestionConfig = getMoodSuggestionRoute(suggestion);
+  const hasDetails = !!suggestion?.details;
+  
+  // Determine if clickable based on type
+  let isClickable = false;
+  let shouldShowExpansion = false;
+  
+  if (suggestionConfig) {
+    switch (suggestionConfig.type) {
+      case 'spotify_music':
+      case 'place':
+        isClickable = true;
+        shouldShowExpansion = true; // Show expansion for these
+        break;
+      case 'activity':
+        isClickable = true;
+        shouldShowExpansion = suggestionConfig.route ? false : true; // Show expansion only if no route
+        break;
+      case 'prompt':
+        isClickable = true;
+        shouldShowExpansion = false; // Direct navigation
+        break;
+      default:
+        isClickable = false;
+        shouldShowExpansion = true; // Show expansion for text/details
+    }
+  }
+  
+  return (
+    <TouchableOpacity
+      key={idx}
+      style={[
+        styles.suggestionCard, 
+        { 
+          backgroundColor: moodGradient[1],
+          opacity: isClickable ? 1 : 0.7,
+        }
+      ]}
+      onPress={() => {
+        if (shouldShowExpansion) {
+          setExpandedSuggestion(expandedSuggestion === idx ? null : idx);
+        } else {
+          handleSuggestionPress(suggestion, idx);
+        }
+      }}
+      activeOpacity={isClickable ? 0.8 : 1}
+      disabled={!isClickable}
+    >
+      <View style={styles.suggestionHeader}>
+        <Text style={styles.suggestionIcon}>
+          {getSuggestionIcon(suggestion)}
+        </Text>
+        <Text style={[
+          styles.suggestionText,
+          !isClickable && styles.nonClickableText
+        ]}>
+          {suggestion?.suggestion || "Suggestion"}
+        </Text>
+      </View>
+      {renderSuggestionDetails(suggestion, idx)}
+    </TouchableOpacity>
+  );
+})}
           {/* OLD SUGGESTED ACTIONS - Keep if needed */}
           {/* {data?.suggested_actions?.map((action, idx) => (
             <TouchableOpacity

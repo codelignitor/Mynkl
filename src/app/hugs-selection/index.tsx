@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
+  ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -74,10 +75,15 @@ const VirtualHugFlow = () => {
     );
 
     return (
+       <ImageBackground
+        source={require('../../assets/images/backgrounds/Sending a hug - Screen 7.png')} // Set your image path
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => console.log('Go back')}>
+          <TouchableOpacity onPress={goToPreviousScreen}> 
             <Ionicons name="arrow-back" size={24} color="#333" />
           </TouchableOpacity>
           <Text style={styles.appName}>Mynkl</Text>
@@ -123,6 +129,7 @@ const VirtualHugFlow = () => {
           </LinearGradient>
         </TouchableOpacity>
       </SafeAreaView>
+      </ImageBackground>
     );
   };
 
@@ -156,6 +163,11 @@ const VirtualHugFlow = () => {
    
 
     return (
+       <ImageBackground
+        source={require('../../assets/images/backgrounds/Sending a hug - Screen 9.png')} // Set your image path
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
       <SafeAreaView style={styles.recipientContainer}>
         {/* Header */}
         <View style={styles.recipientHeader}>
@@ -174,7 +186,7 @@ const VirtualHugFlow = () => {
         >
           <View style={styles.content}>
             <Text style={styles.recipientTitle}>Choose Recipient</Text>
-            <Text style={styles.recipientSubtitle}>Who would you like to send{'\n'}ta hug to?</Text>
+            <Text style={styles.recipientSubtitle}>Who would you like to send{'\n'}the hug to?</Text>
 
             {/* Tab Navigation */}
             <View style={styles.tabContainer}>
@@ -253,12 +265,18 @@ const VirtualHugFlow = () => {
           </TouchableOpacity>
         )}
       </SafeAreaView>
+      </ImageBackground>
     );
   };
 
   // Screen 3: Personal Message
   const renderPersonalMessageScreen = () => {
     return (
+       <ImageBackground
+        source={require('../../assets/images/backgrounds/Sending a hug - Screen 8.png')} // Set your image path
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
       <SafeAreaView style={styles.messageContainer}>
         <View style={styles.messageHeader}>
           <TouchableOpacity onPress={goToPreviousScreen}>
@@ -314,6 +332,7 @@ const VirtualHugFlow = () => {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+      </ImageBackground>
     );
   };
 
@@ -321,9 +340,14 @@ const VirtualHugFlow = () => {
   const renderConfirmationScreen = () => {
     const router = useRouter();
     return (
-      <LinearGradient
-        colors={['#FDF2FF', '#F3F0FF']}
-        style={styles.confirmationContainer}
+      // <LinearGradient
+      //   colors={['#FDF2FF', '#F3F0FF']}
+      //   style={styles.confirmationContainer}
+      // >
+         <ImageBackground
+        source={require('../../assets/images/backgrounds/Sending a hug - Screen 10.png')}
+        style={styles.backgroundImage}
+        resizeMode="cover"
       >
         <SafeAreaView style={styles.confirmationSafeArea}>
           {/* Back Button */}
@@ -336,7 +360,13 @@ const VirtualHugFlow = () => {
 
           {/* Heart Image - Using placeholder since we don't have the image */}
           <View style={styles.heartImagePlaceholder}>
-            <Text style={styles.heartPlaceholderText}>💝</Text>
+            {/* <Text style={styles.heartPlaceholderText}>💝</Text> */}
+            {/* Replace this View with your Image component */}
+              <Image 
+                source={require('../../assets/images/Heart-preview.png')} 
+                style={styles.characterImage}
+                resizeMode="contain"
+              />
           </View>
 
           {/* Subtitle */}
@@ -350,12 +380,13 @@ const VirtualHugFlow = () => {
           {/* Back to Dashboard Button */}
           <TouchableOpacity
             style={styles.dashboardButton}
-            onPress={() => router.push('/(tabs)/home')} // <-- replace '/dashboard' with your actual route
+            onPress={() => router.push('/(tabs)/home')} // <-- '/dashboard'  route
           >
             <Text style={styles.dashboardButtonText}>Back to Dashboard</Text>
           </TouchableOpacity>
         </SafeAreaView>
-      </LinearGradient>
+      {/* </LinearGradient> */}
+      </ImageBackground>
     );
   };
 

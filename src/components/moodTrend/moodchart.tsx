@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Dimensions, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { 
+  View, Text, Dimensions, StyleSheet, TouchableOpacity, 
+  ScrollView, ActivityIndicator 
+} from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Calendar } from 'react-native-calendars';
 import { useMood } from '@/src/contexts/MoodContext';
@@ -44,10 +47,8 @@ export default function MoodTrendsChart() {
   const currentMonthName = monthNames[currentMonthData.month];
   const currentYear = currentMonthData.year;
   
-  // Fetch data whenever month offset changes
   useEffect(() => {
     const monthData = getCurrentMonthYear(currentMonthOffset);
-    // API expects month as 1-12, not 0-11
     refetchCalendar(monthData.year, monthData.month + 1);
   }, [currentMonthOffset]);
 
@@ -59,10 +60,11 @@ export default function MoodTrendsChart() {
       .sort()
       .map(date => {
         const day = parseInt(date.split("-")[2]);
+        const entry = entries[date];
         return {
           day,
-          value: entries[date].value,
-          mood: entries[date].mood,
+          value: entry.value || 5,
+          mood: entry.mood,
           date: date,
         };
       });
@@ -77,9 +79,9 @@ export default function MoodTrendsChart() {
     labels: labels.length > 0 ? labels : [" "],
     datasets: [
       {
-        data: values.length > 0 ? values : [0],
+        data: values.length > 0 ? values : [5],
         color: () => '#2B4A7F',
-        strokeWidth: 3,
+        strokeWidth: 2,
       },
     ],
   };
@@ -101,7 +103,6 @@ export default function MoodTrendsChart() {
     );
   };
 
-  // Convert entries → calendar dots
   const markedDates: Record<string, { dots: { color: string }[] }> = {};
   Object.keys(entries).forEach((date) => {
     const mood = entries[date].mood as keyof typeof moodColors;
@@ -120,13 +121,11 @@ export default function MoodTrendsChart() {
     });
   }
 
-  // Get current date string for calendar display (YYYY-MM format)
   const currentCalendarMonth = `${currentYear}-${(currentMonthData.month + 1).toString().padStart(2, '0')}`;
 
   return (
     <> 
       <View style={styles.header}>
-        {/* <Text style={styles.mainTitle}>Mood Diary</Text> */}
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>View Entries</Text>
         </TouchableOpacity>
@@ -160,60 +159,124 @@ export default function MoodTrendsChart() {
           </TouchableOpacity>
         </View>
 
-        {/* Chart Section */}
-        <View style={styles.chartContainer}>
+        {/* Chart Card */}
+        <View style={styles.chartCard}>
           {loading ? (
             <View style={styles.loadingContainer}>
               <Text style={styles.loadingText}>Loading...</Text>
             </View>
           ) : (
             <>
-              <LineChart
-                data={chartData}
-                width={screenWidth * 0.9}
-                height={170}
-                chartConfig={{
-                  backgroundColor: '#fff',
-                  backgroundGradientFrom: '#fff',
-                  backgroundGradientTo: '#fff',
-                  decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(30, 144, 255, ${opacity})`,
-                  labelColor: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-                  propsForDots: {
-                    r: '5',
-                    strokeWidth: '2',
-                    stroke: '#1E90FF',
-                  },
-                }}
-                bezier
-                withHorizontalLabels={false}
-                style={styles.chart}
-              />
+              {/* Main Content Row */}
+              <View style={styles.chartRow}>
+                {/* Chart Area */}
+                <View style={styles.chartArea}>
+                  <LineChart
+                    data={chartData}
+                    width={screenWidth * 0.76}
+                    height={200}
+                    chartConfig={{
+                      backgroundGradientFrom: '#fff',
+                      backgroundGradientTo: '#fff',
+                      decimalPlaces: 0,
+                      color: (opacity = 1) => `rgba(43, 74, 127, ${opacity})`,
+                      labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                      style: {
+                        borderRadius: 16,
+                      },
+                      propsForDots: {
+                        r: '6',
+                        strokeWidth: '2',
+                        stroke: '#fff',
+                      },
+                      propsForLabels: {
+                        fontSize: 10,
+                      },
+                      propsForVerticalLabels: {
+                        fontSize: 10,
+                        dy: 5,
+                      },
+                      propsForHorizontalLabels: {
+                        fontSize: 10,
+                        dx: -8,
+                      },
+                      propsForBackgroundLines: {
+                        strokeWidth: 1,
+                        stroke: '#e0e0e0',
+                      },
+                    }}
+                    bezier
+                    withVerticalLines={false}
+                    withHorizontalLines={true}
+                    withHorizontalLabels={false}
 
-              <ScrollView 
-                horizontal 
-                showsHorizontalScrollIndicator={false}
-                style={styles.moodIconsScrollView}
-                contentContainerStyle={styles.moodIconsScrollContent}
-              >
-                {parsed.map(item => (
-                  <View key={item.date} style={styles.moodIconContainer}>
-                    <MoodIcon 
-                      mood={item.mood} 
-                      size="small"
-                    />
-                    <Text style={styles.dayText}>{item.day}</Text>
-                  </View>
-                ))}
-              </ScrollView>
-              
-              {parsed.length === 0 && (
-                <View style={styles.noEntriesContainer}>
-                  <Text style={styles.noEntriesText}>
-                    No mood entries for {currentMonthName} {currentYear}
-                  </Text>
+                    withInnerLines={false}
+                    withOuterLines={false}
+                    fromZero={false}
+                    segments={4}
+                    // formatYLabel={(value) => {
+                    //   const num = parseFloat(value);
+                    //   return num % 1 === 0 ? num.toString() : num.toFixed(0);
+                    // }}
+                    style={styles.chart}
+                    decorator={() => {
+                      return parsed.map((item, index) => {
+                        if (labels.length <= 1) return null;
+                        
+                        const xPosition = (index / (labels.length - 1)) * (screenWidth * 0.7 - 60) + 30;
+                        const yPosition = 200 - ((item.value - 0) / (10 - 0)) * 180;
+                        
+                        const mood = item.mood as keyof typeof moodColors;
+                        const dotColor = moodColors[mood] || '#CCCCCC';
+                        
+                        return (
+                          <View
+                            key={index}
+                            // style={[
+                            //   styles.customDot,
+                            //   {
+                            //     left: xPosition - 6,
+                            //     top: yPosition - 6,
+                            //     backgroundColor: dotColor,
+                            //     borderColor: '#fff',
+                            //   }
+                            // ]}
+                          />
+                        );
+                      });
+                    }}
+                  />
                 </View>
-              )}
+                
+                {/* Vertical Emoji List - Only emojis */}
+                <View style={styles.emojiListContainer}>
+                  {/* <ScrollView 
+                    showsVerticalScrollIndicator={false}
+                    style={styles.emojiScrollView}
+                    contentContainerStyle={styles.emojiScrollContent}
+                  >
+                    {parsed.map((item, index) => (
+                      <View key={index} style={styles.emojiItem}>
+                        <MoodIcon 
+                          mood={item.mood} 
+                          size="small"
+                        />
+                      </View>
+                    ))}
+                    
+                    {parsed.length === 0 && (
+                      <View style={styles.noEmojiContainer}>
+                        <Text style={styles.noEmojiText}>No entries</Text>
+                      </View>
+                    )}
+                  </ScrollView> */}
+                  <View style={styles.staticEmojiColumn}>
+    <MoodIcon mood="happy" size="medium" />
+    <MoodIcon mood="calm" size="medium" />
+    <MoodIcon mood="lonely" size="medium" />
+  </View>
+                </View>
+              </View>
             </>
           )}
         </View>
@@ -234,13 +297,13 @@ export default function MoodTrendsChart() {
             </View>
           ) : (
             <Calendar
-              key={currentCalendarMonth} // Force re-render when month changes
+              key={currentCalendarMonth}
               current={currentCalendarMonth}
               markingType="multi-dot"
               markedDates={markedDates}
               onDayPress={onDayPress}
-              enableSwipeMonths={false} // Disable swipe to use arrow navigation only
-              hideArrows={true} // Hide calendar's own arrows since we have custom ones
+              enableSwipeMonths={false}
+              hideArrows={true}
             />
           )}
         </View>
@@ -253,11 +316,6 @@ const styles = StyleSheet.create({
   header: { 
     alignItems: 'center', 
     marginBottom: 20, 
-  },
-  mainTitle: { 
-    fontSize: 28, 
-    fontWeight: 'bold', 
-    marginBottom: 10 
   },
   monthNavigationContainer: {
     flexDirection: 'row',
@@ -281,48 +339,116 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  chartCard: {
+    backgroundColor: "white",
+    padding: 16,
+    borderRadius: 16,
+    marginVertical: 10,
+    width: "96%",
+    minHeight: 260,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    // elevation: 5,
+  },
+  chartRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    height: 200,
+  },
+  chartArea: {
+    flex: 1,
+    marginRight: 8,
+    alignItems: 'flex-start',
+  },
+  chart: {
+    borderRadius: 18,
+    marginLeft: -18,
+  },
+  customDot: {
+    position: 'absolute',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    zIndex: 10,
+  },
+  emojiListContainer: {
+    width: 40,
+    height: 150,
+    borderLeftWidth: 0.5,
+    borderLeftColor: '#efeded',
+    paddingLeft: 8,
+    paddingTop: 12
+  },
+  staticEmojiColumn: {
+  flex: 1,
+  justifyContent: 'space-between',
+  alignItems: 'center',
+},
+  emojiScrollView: {
+    // height: 200,
+  },
+  emojiScrollContent: {
+    // paddingRight: 4,
+    alignItems: 'center',
+  },
+  emojiItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    paddingVertical: 4,
+    width: 40,
+  },
+  noEmojiContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  noEmojiText: {
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  xAxisContainer: {
+    // flexDirection: 'row',
+    // justifyContent: 'space-between',
+    // marginTop: 8,
+    // paddingHorizontal: 10,
+    // paddingLeft: 20,
+  },
+  xAxisLabel: {
+    alignItems: 'center',
+    minWidth: 20,
+  },
+  xAxisText: {
+    fontSize: 10,
+    color: '#666',
+    fontWeight: '500',
+  },
   calendarContainer: {
     backgroundColor: "white",
     padding: 18,
-    borderRadius: 12,
+    borderRadius: 16,
     marginVertical: 10,
-    width: "94%",
-  },
-  chartContainer: {
-    backgroundColor: "white",
-    padding: 16,
-    borderRadius: 12,
-    marginVertical: 10,
-    width: "94%",
-    overflow: "hidden",
-    minHeight: 250,
+    width: "96%",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   wrapper: {
     alignItems: "center",
-  },
-  chart: {
-    borderRadius: 16,
-    marginLeft: -35,
-  },
-  moodIconsScrollView: {
-    marginTop: 20,
-    width: '100%',
-  },
-  moodIconsScrollContent: {
-    paddingHorizontal: 10,
-    alignItems: 'center',
-  },
-  moodIconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 8,
-    minWidth: 40,
-  },
-  dayText: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#666',
-    marginTop: 6,
   },
   button: {
     backgroundColor: 'white',
@@ -334,18 +460,6 @@ const styles = StyleSheet.create({
   buttonText: { 
     fontSize: 16, 
     fontWeight: '500' 
-  },
-  noEntriesContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-    paddingVertical: 20,
-  },
-  noEntriesText: {
-    fontSize: 16,
-    color: '#999',
-    textAlign: 'center',
-    fontStyle: 'italic',
   },
   loadingContainer: {
     alignItems: 'center',

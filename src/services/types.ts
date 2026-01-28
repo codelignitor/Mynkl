@@ -115,4 +115,46 @@ export interface CelebrationResponse {
     title: string;
     emoji: string;
   }>;
+export interface SuggestedActivity {
+  id: string;
+  title: string;
+}
+
+export interface SuggestionData {
+  suggested_activity?: SuggestedActivity;
+  suggestionType?: string;
+}
+
+
+
+export interface DailyHugGoalResponse {
+  data: {
+    daily_goal: number;
+    hugs_sent_today: number;
+    is_completed: boolean;
+  };
+}
+
+export interface BadgeStatus {
+  badge_code: string;
+  name: string;
+  earned: boolean;
+}
+
+
+export interface UserWithAiTag {
+  user_id: string;
+  ai_moment_tag: string;
+}
+
+export interface UsersByAiTagResponse {
+  data: UserWithAiTag[];
+}
+
+// Add to your existing types.ts file
+
+export interface CrisisStatusResponse {
+  data: {
+    is_crisis: boolean;
+  };
 }

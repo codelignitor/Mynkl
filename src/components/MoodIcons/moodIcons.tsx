@@ -35,9 +35,9 @@ const MoodIcon: React.FC<MoodIconProps> = ({ mood, size = 'medium' }) => {
     },
     medium: {
       happy: { width: 40, height: 40 },
-      calm: { width: 48, height: 48 },
+      calm: { width: 42, height: 42 },
       stressed: { width: 42, height: 42 },
-      lonely: { width: 52, height: 52 },
+      lonely: { width: 51, height: 51 },
       grateful: { width: 42, height: 38 },
       sad: { width: 43, height: 42 },
       frustrated: { width: 34, height: 38 },
