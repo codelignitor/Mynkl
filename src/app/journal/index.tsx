@@ -9,7 +9,6 @@ import {
   Dimensions,
   ActivityIndicator,
   Image,
-  Alert,
   RefreshControl,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -17,16 +16,15 @@ import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import { createJournalEntry, getJournalEntries, JournalEntry } from '@/src/services/apis';
+import VoiceInputField from "@/src/components/common/voiceInputfield";
+import Toast from "react-native-toast-message";
 
 const { height } = Dimensions.get("window");
 
 const JournalScreen = () => {
   const [reflection, setReflection] = useState("");
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
-  const [recording, setRecording] = useState(null);
   const [recordingUri, setRecordingUri] = useState(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sound, setSound] = useState(null);
   
@@ -96,7 +94,13 @@ const JournalScreen = () => {
       
     } catch (error) {
       console.error("Error fetching journal entries:", error);
-      Alert.alert("Error", "Failed to load journal entries. Please try again.");
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to load journal entries. Please try again.",
+        position: "top",
+      });
+
     } finally {
       setLoadingEntries(false);
       setRefreshing(false);
@@ -115,53 +119,7 @@ const JournalScreen = () => {
     fetchJournalEntries(1, true);
   };
 
-  // Start recording
-  const startRecording = async () => {
-    try {
-      setIsLoading(true);
-      const permission = await Audio.requestPermissionsAsync();
-      if (permission.status !== "granted") {
-        alert("Permission to access microphone is required!");
-        return;
-      }
-
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-
-      setRecording(recording);
-      setIsRecording(true);
-    } catch (err) {
-      console.error("Failed to start recording:", err);
-      Alert.alert("Error", "Failed to start recording. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Stop recording
-  const stopRecording = async () => {
-    setIsRecording(false);
-    setIsLoading(true);
-    try {
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      setRecordingUri(uri);
-      console.log("Recording saved:", uri);
-    } catch (err) {
-      console.error("Failed to stop recording:", err);
-      Alert.alert("Error", "Failed to stop recording. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Play recorded audio
+  // Play recorded audio (for existing audio recordings from history)
   const playSound = async () => {
     if (!recordingUri) return;
     try {
@@ -169,21 +127,73 @@ const JournalScreen = () => {
       setSound(sound);
       await sound.playAsync();
     } catch (err) {
-      console.error("Failed to play audio:", err);
-      Alert.alert("Error", "Failed to play recording.");
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to play recording.",
+        position: "top",
+      });
+
     }
+  };
+
+  // Handle voice transcription
+  const handleVoiceTranscription = (transcribedText: string) => {
+    setReflection(prev => {
+      if (prev.trim() === '') {
+        return transcribedText;
+      }
+      return prev + ' ' + transcribedText;
+    });
+    
+        Toast.show({
+      type: "success",
+      text1: "Voice Note Transcribed",
+      text2: "Your voice note has been converted to text.",
+      position: "top",
+    });
+
+  };
+
+  // Handle voice input submission
+  const handleVoiceSubmit = (transcribedText: string) => {
+    setReflection(transcribedText);
+    Toast.show({
+        type: "success",
+        text1: "Voice message sent",
+        text2: "Your voice message has been converted and added.",
+        position: "top",
+      });
+
+  };
+
+  // Handle text input changes
+  const handleTextChange = (newText: string) => {
+    setReflection(newText);
   };
 
   // Submit journal entry
   const submitJournalEntry = async () => {
     // Validation
     if (selectedMood === null) {
-      Alert.alert("Missing Mood", "Please select your current mood.");
+      Toast.show({
+        type: "error",
+        text1: "Missing Mood",
+        text2: "Please select your current mood.",
+        position: "top",
+      });
+
       return;
     }
 
     if (!reflection.trim()) {
-      Alert.alert("Missing Reflection", "Please write your reflection.");
+      Toast.show({
+        type: "error",
+        text1: "Missing Reflection",
+        text2: "Please write your reflection.",
+        position: "top",
+      });
+
       return;
     }
 
@@ -198,35 +208,31 @@ const JournalScreen = () => {
         reflections: reflection.trim(),
       };
 
-      // Add audio if available
-      if (recordingUri) {
-        const audioFile = {
-          uri: recordingUri,
-          type: 'audio/m4a',
-          name: `journal-recording-${Date.now()}.m4a`,
-        };
-        payload.audio = audioFile;
-      }
-
-      console.log("Submitting journal entry:", payload);
-
       // Call the API
       const response = await createJournalEntry(payload);
       
-      console.log("Journal entry created successfully:", response);
       
       // Refresh entries and reset form
       await fetchJournalEntries(1, true);
       resetForm();
       
-      Alert.alert("Success!", "Your journal entry has been saved successfully.");
+      Toast.show({
+        type: "success",
+        text1: "Success!",
+        text2: "Your journal entry has been saved successfully.",
+        position: "top",
+      });
+
 
     } catch (error) {
       console.error("Error submitting journal entry:", error);
-      Alert.alert(
-        "Submission Failed", 
-        "Failed to save your journal entry. Please check your connection and try again."
-      );
+      Toast.show({
+        type: "error",
+        text1: "Submission Failed",
+        text2: "Failed to save your journal entry. Please check your connection and try again.",
+        position: "top",
+      });
+
     } finally {
       setIsSubmitting(false);
     }
@@ -237,7 +243,6 @@ const JournalScreen = () => {
     setReflection("");
     setSelectedMood(null);
     setRecordingUri(null);
-    setIsRecording(false);
     
     // Clean up audio
     if (sound) {
@@ -246,7 +251,7 @@ const JournalScreen = () => {
     }
   };
 
-  // Clear recording
+  // Clear recording (for old audio functionality)
   const clearRecording = () => {
     setRecordingUri(null);
     if (sound) {
@@ -255,6 +260,8 @@ const JournalScreen = () => {
     }
   };
 
+
+    
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -329,33 +336,18 @@ const JournalScreen = () => {
             {/* Journal Prompt */}
             <BlurView intensity={40} tint="light" style={styles.promptBox}>
               <Text style={styles.promptTitle}>🌿 What gave you energy today?</Text>
-              <View style={styles.inputBox}>
-                <TextInput
-                  style={styles.input}
+              
+              {/* Voice Input Field - REPLACES OLD AUDIO RECORDER */}
+              <View style={styles.voiceInputContainer}>
+                <VoiceInputField
+                  onTextChange={handleTextChange}
+                  onSubmit={handleVoiceSubmit}
                   placeholder="Write your reflection here..."
-                  placeholderTextColor="#7d8779"
                   value={reflection}
-                  onChangeText={setReflection}
-                  multiline
-                  maxLength={500}
                 />
-
-                <TouchableOpacity
-                  disabled={isLoading || isSubmitting}
-                  onPress={isRecording ? stopRecording : startRecording}
-                >
-                  {isLoading ? (
-                    <ActivityIndicator size="small" color="#7d8779" />
-                  ) : (
-                    <Ionicons
-                      name={isRecording ? "stop-circle" : "mic-outline"}
-                      size={24}
-                      color={isRecording ? "#d9534f" : "#7d8779"}
-                    />
-                  )}
-                </TouchableOpacity>
               </View>
 
+              {/* Optional: Keep old audio playback for existing recordings */}
               {recordingUri && (
                 <View style={styles.audioControls}>
                   <TouchableOpacity 
@@ -529,7 +521,7 @@ const styles = StyleSheet.create({
   activeToggleText: {
     color: '#fff',
   },
-  // New Entry Styles (existing)
+  // New Entry Styles
   promptBox: {
     borderRadius: 16,
     padding: 16,
@@ -542,6 +534,12 @@ const styles = StyleSheet.create({
     color: "#2b3d32",
     marginBottom: 10,
   },
+  voiceInputContainer: {
+    backgroundColor: "rgba(255,255,255,0.5)",
+    borderRadius: 12,
+    overflow: 'hidden', // Important for VoiceInputField border radius
+  },
+  // Old input styles (keep for reference)
   inputBox: {
     flexDirection: "row",
     alignItems: "flex-start",

@@ -715,7 +715,8 @@ const renderSuggestionDetails = (suggestion, index) => {
               <Text style={styles.btnText}>{action.description}</Text>
             </TouchableOpacity>
           ))} */}
-
+          
+          
           <TouchableOpacity
             style={[styles.checkInBtn, { backgroundColor: moodGradient[0] }]}
             onPress={() => router.push("/moodpattern")}

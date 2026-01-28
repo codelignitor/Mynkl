@@ -538,7 +538,6 @@ export const getRecommendedSessions = async () => {
   return response.data;
 };
 
-// Add this function to your existing apis.ts file
 
 // Onboarding API types
 export interface OnboardingRequest {
@@ -589,6 +588,35 @@ export const submitOnboarding = async (data: OnboardingRequest): Promise<Onboard
   }
 };
 
+
+export const transcribeAudio = async (audioFile: any): Promise<{ text: string }> => {
+  try {
+    
+    const formData = new FormData();
+
+    formData.append('file', {
+      uri: audioFile.uri,
+      type: audioFile.type || 'audio/m4a',
+      name: audioFile.name || `recording-${Date.now()}.m4a`,
+    });
+    
+    const response = await axiosInstance.post('/home/transcribe-audio', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      // timeout and better error handling
+      timeout: 30000, // 30 seconds timeout
+    });
+    
+    console.log('✅ Audio transcription successful:');
+    return response.data;
+    
+  } catch (error) {
+    console.error('❌ Error transcribing audio:', {
+      message: error.message,
+      response: error.response?.data,
+    });
+    
 // Get users for a specific ai_tag
 export const getUsersByAiTag = async (ai_tag: string) => {
   try {
@@ -607,6 +635,20 @@ export const getUsersByAiTag = async (ai_tag: string) => {
   }
 };
 
+
+// Celebration API for positive emotional trends
+export const getCelebrationMessage = async () => {
+  try {
+    const response = await axiosInstance.get('/Wellness/celebrate-positive-trends');
+    console.log('🎉 Celebration API response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('❌ Error fetching celebration message:', error);
+    // Return default structure on error
+    return {
+      celebrated: false,
+      ai_message: '',
+      badges: []
 // Check if user is in crisis
 export const checkCrisisStatus = async () => {
   try {

@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Image,
+  Alert,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { styles } from "./index.style";
@@ -17,8 +18,10 @@ import { useAddCheckIn } from "./useAddCheckIn";
 import Header from "@/src/components/common/header";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import AudioRecorderPlayer from "@/src/components/common/audioRecorder";
+// import VoiceInputField from "@/src/components/common/VoiceInputField"; // NEW: Replace AudioRecorderPlayer
 import LocationSearchModal from "./search/LocationSearchModal";
+import VoiceInputField from "@/src/components/common/voiceInputfield";
+import Toast from "react-native-toast-message";
 
 const moods = [
   {
@@ -55,8 +58,6 @@ export const unstable_settings = {
   initialRouteName: 'index',
 };
 
-
-
 export const screenOptions = {
   tabBarButton: () => null,
 };
@@ -70,16 +71,6 @@ export default function AddCheckIn() {
   const latitude = params.latitude as string;
   const longitude = params.longitude as string;
   const mood = params.mood as string;
-
-  // useEffect(() => {
-  //   if (params.selectedLocation) {
-  //     try {
-  //       const location = JSON.parse(params.selectedLocation as string);
-  //       setSelectedLocation(location);
-  //     } catch (error) {
-  //     }
-  //   }
-  // }, [params.selectedLocation]);
 
   const {
     isloading,
@@ -98,6 +89,45 @@ export default function AddCheckIn() {
     setSelectedLocation
   } = useAddCheckIn();
 
+  // Function to handle voice transcription
+  const handleVoiceTranscription = (transcribedText: string) => {
+    // Append the transcribed text to the input field
+    setText(prev => {
+      if (prev.trim() === '') {
+        return transcribedText;
+      }
+      return prev + ' ' + transcribedText;
+    });
+    
+    // Optional: Show success message
+    Toast.show({
+      type: 'success',
+      text1: 'Voice Note Transcribed',
+      text2: 'Your voice note has been converted to text and added to your note.',
+      position: 'top',
+      visibilityTime: 3000,
+    });
+
+  };
+
+  // Function to handle voice input submission
+  const handleVoiceSubmit = (transcribedText: string) => {
+    setText(transcribedText);
+    Toast.show({
+        type: 'success',
+        // text1: 'Voice message sent',
+        text2: 'Your voice message has been converted and added.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+
+  };
+
+  // Function to handle text input changes
+  const handleTextChange = (newText: string) => {
+    setText(newText);
+  };
+
   const handleLocationSelect = (location: any) => {
     setSelectedLocation(location);
     setIsSearchModalVisible(false);
@@ -107,10 +137,9 @@ export default function AddCheckIn() {
     setIsSearchModalVisible(true);
   };
 
-  const location = params?.locationName ?params?.locationName  : null;
+  const location = params?.locationName ? params?.locationName : null;
 
   console.log('Location from params:', location);
-
 
   if (isloading) {
     return <SafeAreaView style={styles.container}>
@@ -135,23 +164,21 @@ export default function AddCheckIn() {
         <View style={styles.contentContainer}>
           <Text style={styles.title}>How are you feeling?</Text>
 
-           {/* Display passed parameters only when location is enabled */}
-        { locationName ? (
-          <View style={styles.paramContainer}>
-            <Text style={styles.paramTitle}>Location Details:</Text>
-            <Text style={styles.paramText}>📍 {locationName}</Text>
-            {/* <Text style={styles.paramText}>Lat: {latitude}</Text>
-            <Text style={styles.paramText}>Lng: {longitude}</Text> */}
-            <Text style={styles.paramText}>Mood: {mood}</Text>
-          </View>
-        ):(
-          <View style={styles.locationInputContainer}>
-            <TouchableOpacity style={styles.locationInputField} onPress={openSearchModal}>
-              <Ionicons name="search" size={20} color="#4A9B9B" style={styles.searchIcon} />
-              <Text style={styles.locationInputPlaceholder}>Search for a place or activity</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          {/* Display passed parameters only when location is enabled */}
+          { locationName ? (
+            <View style={styles.paramContainer}>
+              <Text style={styles.paramTitle}>Location Details:</Text>
+              <Text style={styles.paramText}>📍 {locationName}</Text>
+              <Text style={styles.paramText}>Mood: {mood}</Text>
+            </View>
+          ):(
+            <View style={styles.locationInputContainer}>
+              <TouchableOpacity style={styles.locationInputField} onPress={openSearchModal}>
+                <Ionicons name="search" size={20} color="#4A9B9B" style={styles.searchIcon} />
+                <Text style={styles.locationInputPlaceholder}>Search for a place or activity</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <FlatList
             data={moods}
@@ -231,25 +258,16 @@ export default function AddCheckIn() {
             </View>
           )}
 
+          {/* Note Container with Voice Input Field */}
           <View style={styles.noteContainer}>
-            {isAudioRecording ?
-              <AudioRecorderPlayer recordedUri={recordedUri} setRecordedUri={setRecordedUri} /> :
-              <TextInput
-                style={styles.textInput}
-                multiline
-                numberOfLines={4}
-                placeholder="Write an optional note"
-                placeholderTextColor="#999"
-                value={text}
-                onChangeText={setText}
-              />
-            }
-            <TouchableOpacity onPress={() => setIsAudioRecording(!isAudioRecording)} style={styles.voiceButton}>
-              <Text style={styles.voiceIcon}>🎙️</Text>
-            </TouchableOpacity>
+            <VoiceInputField
+              onTextChange={handleTextChange}
+              onSubmit={handleVoiceSubmit}
+              placeholder="Write an optional description"
+              value={text}
+              containerStyle={{ backgroundColor: 'transparent' }} // Optional: Custom style
+            />
           </View>
-
-          
 
           <View style={styles.locationContainer}>
             <View style={styles.locationContent}>
@@ -280,6 +298,7 @@ export default function AddCheckIn() {
           </LinearGradient>
         </View>
       </ScrollView>
+      {/* <Toast/> */}
 
       {/* Search Modal */}
       <LocationSearchModal

@@ -8,97 +8,95 @@ import {
   SafeAreaView,
   StatusBar,
   ActivityIndicator,
-  ScrollView, // Add this import
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Audio } from 'expo-av';
+import Toast from 'react-native-toast-message';
 import { useReflectiveMood } from '@/src/screenHooks/useReflectiveMood';
-import AudioRecorderPlayer from '@/src/components/common/audioRecorder';
+import VoiceInputField from '@/src/components/common/voiceInputfield';
 
 export default function MoodReflectionScreen() {
- 
   const router = useRouter();
-
-  const  {reflectivePrompt , isLoading , reflection, setReflection , selectedMoods, setSelectedMoods , submitReflectionHandler } = useReflectiveMood();
+  const { reflectivePrompt, isLoading, reflection, setReflection, selectedMoods, setSelectedMoods, submitReflectionHandler } = useReflectiveMood();
   
-  const [recordedUri, setRecordedUri] = useState(null);
-  const [isAudioRecording, setIsAudioRecording] = useState(false);
-  const [sound, setSound] = useState(null);
-
+  const [isConverting, setIsConverting] = useState(false);
   const moods = ['Focus', 'Calm', 'Anxious', 'Inspired'];
 
-  const toggleMood = (mood) => {
-    setSelectedMoods((prev) => {
+  const toggleMood = (mood: string) => {
+    setSelectedMoods((prev: string[]) => {
       if (prev.includes(mood)) {
         return prev.filter((m) => m !== mood);
       } else {
-        return prev.concat(mood);
+        return [...prev, mood];
       }
     });
   };
 
-  // Cleanup audio on unmount
-  useEffect(() => {
-    return sound
-      ? () => {
-          sound.unloadAsync();
-        }
-      : undefined;
-  }, [sound]);
-
   // Handle skip button press
   const handleSkip = () => {
     router.push("/wellnesssuggestions");
+    // router.push("/Emotional-AI-trends/Frequent-sadness");
   };
 
-  // Clear recording
-  const clearRecording = () => {
-    setRecordedUri(null);
-    if (sound) {
-      sound.unloadAsync();
-      setSound(null);
+  // Show toast notification
+  const showToast = (type: 'success' | 'error', text1: string, text2?: string) => {
+    Toast.show({
+      type,
+      text1,
+      text2,
+      position: 'top',
+      visibilityTime: 3000,
+    });
+  };
+
+  // Handle text input change (from typing or voice)
+  const handleTextChange = (text: string) => {
+    setReflection(text);
+  };
+
+  // Handle voice transcription completion
+  const handleVoiceTranscription = (transcribedText: string) => {
+    // Append the transcribed text to the input field
+    setReflection(prev => {
+      if (prev.trim() === '') {
+        return transcribedText;
+      }
+      return prev + ' ' + transcribedText;
+    });
+    
+    // Show success toast
+    showToast('success', 'Voice note transcribed', 'Your voice has been converted to text');
+  };
+
+  // Handle voice input submission
+  const handleVoiceSubmit = (text: string) => {
+    // This is called when user sends voice input
+    setReflection(text);
+    showToast('success', 'Voice message sent');
+  };
+
+  // Handle manual text submission
+  const handleTextSubmit = (text: string) => {
+    setReflection(text);
+  };
+
+  // Submit reflection with current text
+  const handleSubmit = () => {
+    if (!reflection.trim()) {
+      showToast('error', 'Please enter your reflection');
+      return;
     }
-  };
-
-  // Play recorded audio
-  const playSound = async () => {
-    if (!recordedUri) return;
-    try {
-      const { sound: audioSound } = await Audio.Sound.createAsync({ uri: recordedUri });
-      setSound(audioSound);
-      await audioSound.playAsync();
-    } catch (err) {
-      console.error('Failed to play audio:', err);
-    }
-  };
-
-  // Handle recording completion
-  const handleRecordingComplete = (uri) => {
-    setRecordedUri(uri);
-    setIsAudioRecording(false); // Switch back to text input after recording
-  };
-
-  const toggleAudioRecorder = () => {
-    // Don't allow toggling if there's already a recording
-    if (recordedUri) return;
-    setIsAudioRecording(!isAudioRecording);
-  };
-
-  const handleSetRecordedUri = (uri) => {
-    setRecordedUri(uri);
-    if (uri) {
-      handleRecordingComplete(uri);
-    }
+    submitReflectionHandler(null); // Pass null since we're not using audio URI anymore
   };
 
   if (isLoading) {
-      return (
-        <SafeAreaView style={styles.container}>
-          <ActivityIndicator size="large" color="#0000ff" />
-        </SafeAreaView>
-      );
-    }
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -129,7 +127,7 @@ export default function MoodReflectionScreen() {
 
         {/* Main Question */}
         <Text style={styles.mainQuestion}>
-         {reflectivePrompt ?? 'Something went wrong'}
+          {reflectivePrompt ?? 'Something went wrong'}
         </Text>
 
         {/* AI Icebreaker Label */}
@@ -137,68 +135,15 @@ export default function MoodReflectionScreen() {
           <Text style={styles.icebreakerText}>AI ICEBREAKER</Text>
         </View>
 
-        {/* Note Container - Contains both TextInput and AudioRecorder */}
-        <View style={styles.noteContainer}>
-          {isAudioRecording ? (
-            // Show Audio Recorder when recording is active
-            <View style={styles.recorderWrapper}>
-              <AudioRecorderPlayer 
-                recordedUri={recordedUri} 
-                setRecordedUri={handleSetRecordedUri}
-                onClose={() => setIsAudioRecording(false)}
-              />
-            </View>
-          ) : (
-            // Show TextInput when not recording
-            <TextInput
-              style={styles.textInput}
-              placeholder="Share your reflection..."
-              placeholderTextColor="#8B7355"
-              value={reflection}
-              onChangeText={setReflection}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-          )}
-          
-          {/* Mic Button - Only visible when no recording exists */}
-          {!recordedUri && (
-            <TouchableOpacity 
-              onPress={toggleAudioRecorder} 
-              style={styles.voiceButton}
-            >
-              <Ionicons 
-                name={isAudioRecording ? "close" : "mic"} 
-                size={20} 
-                color="#8B7355" 
-              />
-            </TouchableOpacity>
-          )}
+        {/* VOICE INPUT FIELD - REPLACES OLD AUDIO RECORDER */}
+        <View style={styles.voiceInputWrapper}>
+          <VoiceInputField
+            onTextChange={handleTextChange}
+            onSubmit={handleVoiceSubmit}
+            placeholder="Share your reflection..."
+            value={reflection}
+          />
         </View>
-
-        {/* Audio Playback UI - Shows when recording is complete */}
-        {recordedUri && (
-          <View style={styles.audioPlaybackContainer}>
-            <View style={styles.audioControls}>
-              <TouchableOpacity 
-                style={styles.audioPlayButton} 
-                onPress={playSound}
-              >
-                <Ionicons name="play-circle" size={20} color="#345C4D" />
-                <Text style={styles.playText}>Play Recording</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.clearButton} 
-                onPress={clearRecording}
-              >
-                <Ionicons name="close-circle" size={20} color="#d9534f" />
-                <Text style={styles.clearText}>Clear</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
 
         {/* Mood Tagging Section */}
         <Text style={styles.moodTaggingTitle}>Mood Tagging</Text>
@@ -228,19 +173,21 @@ export default function MoodReflectionScreen() {
         {/* Submit Button */}
         <TouchableOpacity
           style={styles.submitButton}
-          onPress={() => submitReflectionHandler(recordedUri)}
+          onPress={handleSubmit}
         >
           <Text style={styles.submitButtonText}>Submit and continue</Text>
         </TouchableOpacity>
         
-        {/*  Skip for now button CTA*/}
-         <TouchableOpacity 
+        <TouchableOpacity 
           style={styles.skipButton}
           onPress={handleSkip}
         >
           <Text style={styles.skipButtonText}>Skip for now</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Toast Component */}
+      <Toast />
     </SafeAreaView>
   );
 }
@@ -255,8 +202,8 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     paddingHorizontal: 24,
-    paddingTop: 60, // Adjusted for back button
-    paddingBottom: 40, // Added padding at bottom
+    paddingTop: 60,
+    paddingBottom: 40,
   },
   backButton: {
     position: 'absolute',
@@ -321,6 +268,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 12,
   },
+  voiceInputWrapper: {
+    backgroundColor: '#E8DCC6',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+  
   noteContainer: {
     backgroundColor: '#E8DCC6',
     borderRadius: 16,
@@ -328,7 +282,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 20,
-    minHeight: 120,
+    position: 'relative',
   },
   textInput: {
     flex: 1,
@@ -336,46 +290,6 @@ const styles = StyleSheet.create({
     color: '#2C2C2C',
     lineHeight: 22,
     minHeight: 60,
-  },
-  voiceButton: {
-    marginLeft: 12,
-    marginTop: 4,
-    padding: 4,
-  },
-  recorderWrapper: {
-    flex: 1,
-    width: '100%',
-  },
-  audioPlaybackContainer: {
-    backgroundColor: 'rgba(232, 220, 198, 0.5)',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 20,
-  },
-  audioControls: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  audioPlayButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  playText: {
-    fontSize: 14,
-    color: '#345C4D',
-    fontWeight: '500',
-  },
-  clearButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  clearText: {
-    fontSize: 14,
-    color: '#d9534f',
-    fontWeight: '500',
   },
   moodTaggingTitle: {
     fontSize: 18,

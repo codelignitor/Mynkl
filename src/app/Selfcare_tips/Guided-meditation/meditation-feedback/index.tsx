@@ -91,6 +91,7 @@ export default function MeditationCompleteScreen() {
             <TouchableOpacity 
               style={styles.primaryButton}
               activeOpacity={0.8}
+              onPress={() => router.push('/addCheckIn')}
             >
               <Text style={styles.primaryButtonText}>Log how you feel</Text>
             </TouchableOpacity>

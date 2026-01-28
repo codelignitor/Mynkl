@@ -71,6 +71,50 @@ export interface WellnessSuggestion {
   thumbnail_url: string | null;
 }
 
+
+export type SuggestionAction =
+  | {
+      action: "ROUTE";
+      route: string;
+      params?: Record<string, any>;
+    }
+  | {
+      action: "MAP";
+      lat: number;
+      lng: number;
+      place_id: string;
+    }
+  | {
+      action: "SPOTIFY";
+      url: string;
+    }
+  | {
+      action: "OPEN_SETTINGS";
+      feature: string;
+    }
+  | {
+      action: "SHOW_ACTIVITIES";
+      activities: string[];
+      prompt?: string;
+    }
+  | {
+      action: "SHOW_MESSAGE";
+      message: string;
+    }
+  | {
+      action: "NONE";
+    };
+
+// Add to your existing types.ts file
+
+export interface CelebrationResponse {
+  celebrated: boolean;
+  ai_message: string;
+  badges: Array<{
+    key: string;
+    title: string;
+    emoji: string;
+  }>;
 export interface SuggestedActivity {
   id: string;
   title: string;

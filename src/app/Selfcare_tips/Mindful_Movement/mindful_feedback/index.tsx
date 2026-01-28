@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, StatusBar, SafeAreaView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 
 export default function FeedbackScreen() {
   const [selectedMood, setSelectedMood] = useState(null);
@@ -109,6 +110,7 @@ export default function FeedbackScreen() {
             <TouchableOpacity 
               style={styles.actionButton}
               activeOpacity={0.7}
+              onPress={() => router.push('/Selfcare_tips/Guided-meditation')}
             >
               <Text style={styles.actionButtonText}>Try Another Activity</Text>
             </TouchableOpacity>
@@ -116,6 +118,7 @@ export default function FeedbackScreen() {
             <TouchableOpacity 
               style={styles.actionButton}
               activeOpacity={0.7}
+              onPress={() => router.push('/Selfcare_tips/Mindful_Movement/mindful_flow')}
             >
               <Text style={styles.actionButtonText}>Explore Mindful Exercises</Text>
             </TouchableOpacity>
