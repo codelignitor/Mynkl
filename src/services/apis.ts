@@ -551,7 +551,7 @@ export interface OnboardingRequest {
   q8_support: string;
   q9_open_to_talk: string;
   note: string;
-}
+};
 
 export interface OnboardingResponse {
   success: boolean;
@@ -561,32 +561,8 @@ export interface OnboardingResponse {
     onboarding_completed: boolean;
     timestamp: string;
   };
-}
-
-// Onboarding API function
-export const submitOnboarding = async (data: OnboardingRequest): Promise<OnboardingResponse> => {
-  try {
-    const response = await axiosInstance.post(`/home/onboarding`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Add any authentication headers if needed
-        // 'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const responseData: OnboardingResponse = await response.json();
-    return responseData;
-  } catch (error) {
-    console.error('Error submitting onboarding data:', error);
-    throw error;
-  }
 };
+
 
 
 export const transcribeAudio = async (audioFile: any): Promise<{ text: string }> => {
@@ -616,6 +592,9 @@ export const transcribeAudio = async (audioFile: any): Promise<{ text: string }>
       message: error.message,
       response: error.response?.data,
     });
+    throw error;
+  }
+}
     
 // Get users for a specific ai_tag
 export const getUsersByAiTag = async (ai_tag: string) => {
@@ -648,7 +627,11 @@ export const getCelebrationMessage = async () => {
     return {
       celebrated: false,
       ai_message: '',
-      badges: []
+      badges: [],
+    }
+  }
+};
+
 // Check if user is in crisis
 export const checkCrisisStatus = async () => {
   try {

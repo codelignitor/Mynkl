@@ -115,6 +115,8 @@ export interface CelebrationResponse {
     title: string;
     emoji: string;
   }>;
+}
+
 export interface SuggestedActivity {
   id: string;
   title: string;

@@ -29,9 +29,18 @@ const moodSuggestionRoutingConfig = {
 
 // Function to determine suggestion type and get appropriate routing
 export const getMoodSuggestionRoute = (suggestionItem: { details: any; suggestion?: any; }) => {
+  
   if (!suggestionItem?.details) {
-    return null;
+    return {
+      type: 'text',
+      route: null,
+      config: {
+        isText: true,
+        expandable: true
+      }
+    };
   }
+
 
   const { details } = suggestionItem;
   

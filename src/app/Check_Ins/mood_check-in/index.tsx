@@ -28,9 +28,21 @@ import Grateful from "../../../assets/svgs/grateful-icon.svg";
 import StaticEmotionalEmoji from "../../../assets/images/Static emotional emoji.png";
 import { getMoodSuggestionRoute, handleMoodSuggestionClick } from "@/src/utils/moodSuggestionRouting";
 
+interface CheckInData {
+  last_check_in_mood?: string;
+  has_checked_in?: boolean;
+  mood_strength_meter?: number;
+  ai_interpretation?: string;
+}
+
+interface SuggestionsData {
+  emotion_message?: string;
+  suggestions?: Array<any>;
+}
+
 export default function MoodScreen() {
-  const [data, setData] = useState(null);
-  const [suggestions, setSuggestions] = useState(null);
+  const [data, setData] = useState<CheckInData | null>(null);
+  const [suggestions, setSuggestions] = useState<SuggestionsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [expandedSuggestion, setExpandedSuggestion] = useState(null);
   const router = useRouter();
@@ -383,7 +395,7 @@ const renderSuggestionDetails = (suggestion, index) => {
   const getSuggestionIcon = (suggestion) => {
   const suggestionConfig = getMoodSuggestionRoute(suggestion);
   
-  if (!suggestionConfig) return "💭";
+  if (!suggestionConfig) return "✨";
   
   switch (suggestionConfig.type) {
     case 'spotify_music':
@@ -434,6 +446,11 @@ const renderSuggestionDetails = (suggestion, index) => {
       
     case 'prompt':
       handleMoodSuggestionClick(suggestion, router);
+      break;
+
+    case 'text':
+      // Just expand/collapse, no navigation
+      setExpandedSuggestion(expandedSuggestion === index ? null : index);
       break;
       
     default:
@@ -651,14 +668,14 @@ const renderSuggestionDetails = (suggestion, index) => {
         break;
       case 'activity':
         isClickable = true;
-        shouldShowExpansion = suggestionConfig.route ? false : true; // Show expansion only if no route
+        shouldShowExpansion = suggestionConfig.route ? true : true; // Show expansion only if no route
         break;
       case 'prompt':
         isClickable = true;
-        shouldShowExpansion = false; // Direct navigation
+        shouldShowExpansion = true; // Direct navigation
         break;
       default:
-        isClickable = false;
+        isClickable = true;
         shouldShowExpansion = true; // Show expansion for text/details
     }
   }
