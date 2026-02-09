@@ -105,7 +105,8 @@ const OnboardingFlow = () => {
     const handleAffirmations = () => {
       // Navigate to affirmations if needed
       // For now, just go to next screen
-      goToNextScreen();
+      router.push('/virtual-hug/AI-Support');
+      // goToNextScreen();
     };
 
     return (
