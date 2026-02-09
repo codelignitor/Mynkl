@@ -46,7 +46,7 @@ export default function DailyHugMissionScreen() {
   }, [checkAndRedirect]);
 
   const handleInsights = useCallback(() => {
-    // router.push('/virtual-hug/hug-Insights');
+    router.push('/virtual-hug/hug-Insights');
     console.log('Insights pressed');
   }, []);
 

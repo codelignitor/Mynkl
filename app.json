@@ -11,7 +11,7 @@
       "ios",
       "android"
     ],
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.mynkl",
@@ -80,7 +80,16 @@
         }
       ],
       "@react-native-firebase/app",
-      "@react-native-firebase/messaging"
+      "@react-native-firebase/messaging",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "modularHeaders": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

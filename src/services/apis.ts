@@ -652,3 +652,9 @@ export const checkCrisisStatus = async () => {
     };
   }
 };
+
+
+export const getVirtualHugInsights = async () => {
+  const response = await axiosInstance.get('/virtual_hugs/insights');
+  return response.data;
+};

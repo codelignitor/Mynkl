@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle, Polyline, Defs, LinearGradient as SvgLinearGradient, Stop, Path } from 'react-native-svg';
 import { router } from 'expo-router';
+import { getVirtualHugInsights } from '@/src/services/apis';
 
 export default function MoodJournalScreen({ }) {
   
@@ -18,12 +19,73 @@ export default function MoodJournalScreen({ }) {
         router.back();
   };
 
+  const [loading, setLoading] = useState(true);
+  const [insights, setInsights] = useState<any>(null);
+
+  useEffect(() => {
+    fetchInsights();
+  }, []);
+
+  const fetchInsights = async () => {
+    try {
+      const data = await getVirtualHugInsights();
+      setInsights(data);
+    } catch (error) {
+      console.log('Error fetching hug insights', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const CHART_WIDTH = 320;
+  const CHART_HEIGHT = 160;
+  const PADDING = 20;
+
+  const chartPoints =
+    insights?.chart?.map((point: any, index: number) => {
+      const x =
+        PADDING +
+        (index / (insights.chart.length - 1 || 1)) *
+          (CHART_WIDTH - PADDING * 2);
+
+      // Normalize Y (0–100 assumed, safe fallback)
+      const y =
+        CHART_HEIGHT -
+        (point.y / 100) * (CHART_HEIGHT - PADDING * 2) -
+        PADDING;
+
+      return `${x},${y}`;
+  }) || [];
+
+  const calculateMoodTrend = (chart: { y: number }[] = []) => {
+  if (chart.length < 2) return 0;
+
+  const recent = chart.slice(-5);
+
+  const first = recent[0].y;
+  const last = recent[recent.length - 1].y;
+
+  const base = Math.max(Math.abs(first), 1);
+
+  return Math.round(((last - first) / base) * 100);
+};
+
+const moodTrendPercent = calculateMoodTrend(insights?.chart);
+
+const getMoodStatus = (value: number) => {
+  if (value > 5) return 'Your mood has improved';
+  if (value < -5) return 'Your mood has declined';
+  return 'Your mood is stable';
+};
+
 
   const handleViewAll = () => {
     console.log('View All Insights pressed');
     // Add navigation logic here
     router.push('/virtual-hug/hug-achievments')
   };
+
+  
 
   return (
     <View style={styles.wrapper}>
@@ -50,10 +112,16 @@ export default function MoodJournalScreen({ }) {
             {/* Mood Card */}
             <View style={styles.moodCard}>
               {/* Header Text */}
-              <Text style={styles.moodHeader}>Your mood has improved</Text>
+              <Text style={styles.moodHeader}>
+                {getMoodStatus(moodTrendPercent)}
+                {/* Your mood has improved */}
+                </Text>
               <View style={styles.percentageRow}>
-                <Text style={styles.percentage}>60%</Text>
-                <Text style={styles.timeframe}> over 2 weeks of hugs.</Text>
+                 <Text style={styles.percentage}>
+                    {moodTrendPercent}%
+                    {/* {insights?.chart?.[insights.chart.length - 1]?.y ?? 0}% */}
+                  </Text>
+                 <Text style={styles.timeframe}> over recent hugs.</Text>
               </View>
 
               {/* Chart */}
@@ -77,12 +145,13 @@ export default function MoodJournalScreen({ }) {
                   <Circle cx="180" cy="110" r="80" fill="#FFE4D6" opacity="0.5" />
                   
                   {/* Line */}
-                  <Polyline
-                    points="30,120 90,100 150,90 210,70 270,40 320,20"
+                 <Polyline
+                    points={chartPoints.join(' ')}
                     fill="none"
                     stroke="#9370DB"
                     strokeWidth="4"
                   />
+
                   
                   {/* Dots */}
                   <Circle cx="30" cy="120" r="8" fill="#9370DB" stroke="#FFFFFF" strokeWidth="3" />
@@ -104,15 +173,15 @@ export default function MoodJournalScreen({ }) {
             {/* Statistics */}
             <View style={styles.statsContainer}>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>42</Text>
+                <Text style={styles.statNumber}>{insights?.sentCount ?? 0}</Text>
                 <Text style={styles.statLabel}>Hugs Sent</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>36</Text>
+                <Text style={styles.statNumber}>{insights?.receivedCount ?? 0}</Text>
                 <Text style={styles.statLabel}>Hugs Received</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statNumber}>6</Text>
+                <Text style={styles.statNumber}>{insights?.matchesCount ?? 0}</Text>
                 <Text style={styles.statLabel}>New Matches{'\n'}Made</Text>
               </View>
             </View>
@@ -124,7 +193,8 @@ export default function MoodJournalScreen({ }) {
                 <Text style={styles.insightTitle}>AI Insight</Text>
               </View>
               <Text style={styles.insightText}>
-                You're most responsive to Calm Hugs in the evening.
+               {insights?.hugInsights}
+                {/* You're most responsive to Calm Hugs in the evening. */}
               </Text>
             </View>
 
@@ -164,16 +234,16 @@ const styles = StyleSheet.create({
   },
   container: {
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 50,
   },
   backButton: {
     width: 40,
     height: 40,
     justifyContent: 'center',
-    // marginBottom: 15,
+    marginBottom: 15,
   },
   title: {
-    fontSize: 38,
+    fontSize: 32,
     fontWeight: '600',
     color: '#5B3A8F',
     marginBottom: 25,
@@ -204,7 +274,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   percentage: {
-    fontSize: 42,
+    fontSize: 32,
     fontWeight: '700',
     color: '#5B3A8F',
   },
