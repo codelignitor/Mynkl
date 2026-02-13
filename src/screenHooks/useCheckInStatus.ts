@@ -36,7 +36,7 @@ export const useCheckInStatus = () => {
     if (checkInLoading) {
       return 'Checking...';
     }
-    return needsCheckIn ? 'All Set! Take me in' : 'All Set! Check-in';
+    return needsCheckIn ? 'All Set! Check-in' : 'All Set!  Take me in';
   };
 
   // Get navigation route based on check-in status

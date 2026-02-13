@@ -9,6 +9,7 @@ import {
   Linking,
   Image,
   ScrollView,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Slider from "@react-native-community/slider";
@@ -27,6 +28,10 @@ import Grateful from "../../../assets/svgs/grateful-icon.svg";
 
 import StaticEmotionalEmoji from "../../../assets/images/Static emotional emoji.png";
 import { getMoodSuggestionRoute, handleMoodSuggestionClick } from "@/src/utils/moodSuggestionRouting";
+import { useCameraPermissions } from "expo-image-picker";
+import * as ImagePicker from 'expo-image-picker';
+import { getMoodSuggestionsFromCache, saveMoodSuggestionsToCache, } from "@/src/utils/moodCache";
+import { getMoodCacheKey } from "@/src/utils/moodCacheKeys";
 
 interface CheckInData {
   last_check_in_mood?: string;
@@ -47,28 +52,52 @@ export default function MoodScreen() {
   const [expandedSuggestion, setExpandedSuggestion] = useState(null);
   const router = useRouter();
   const params = useLocalSearchParams();
+  const [permission, requestPermission] = useCameraPermissions();
 
   const [mood, setMood] = useState(null);
 
+
+  // const mood = 'lonely'; // ← dynamic in real app
+  // c.onst cacheKey = MOOD_CACHE_KEY(mood);
+
+
   const handleAiAnalysis = async () => {
     try {
+
+      
       setLoading(true);
       const response = await getCheckInAiAnalysis();
       if (response) {
         setData(response);
       }
       
-      // Fetch mood suggestions
+      const cacheKey = getMoodCacheKey(mood);
+
+    // 3️⃣ Load cached suggestions FIRST (instant UI)
+    const cachedSuggestions =
+      await getMoodSuggestionsFromCache(cacheKey);
+
+    if (cachedSuggestions) {
+      setSuggestions(cachedSuggestions);
+    }
+
+    // 4️⃣ Fetch fresh suggestions from API
       const suggestionsResponse = await getMoodSuggestions();
       if (suggestionsResponse) {
         setSuggestions(suggestionsResponse);
+        // 5️⃣ Save fresh data to cache
+      await saveMoodSuggestionsToCache(
+        cacheKey,
+        suggestionsResponse
+      );
       }
+    
     } catch (error) {
       // If backend returns 400 = No check-in
       if (error?.response?.status === 400) {
         setData(null);
       } else {
-        console.error("Unexpected AI Analysis Error:", error);
+        console.log("Unexpected AI Analysis Error:", error);
       }
     } finally {
       setLoading(false);
@@ -109,157 +138,96 @@ export default function MoodScreen() {
     }
   };
 
-  // const renderSuggestionDetails = (suggestion, index) => {
-  //   const isExpanded = expandedSuggestion === index;
-
-  //   if (!isExpanded || !suggestion?.details) return null;
-
-  //   const { details } = suggestion;
-
-  //   // Determine suggestion type based on the presence of specific fields
-  //   if (details.place_id) {
-  //     // This is a place suggestion
-  //     return (
-  //       <View style={styles.detailsContainer}>
-  //         <Text style={styles.detailsTitle}>📍 Place Details:</Text>
-  //         <Text style={styles.detailsName}>{details.name}</Text>
-  //         <Text style={styles.detailsAddress}>{details.address}</Text>
-          
-  //         {details.rating && (
-  //           <View style={styles.ratingContainer}>
-  //             <Text style={styles.ratingText}>⭐ {details.rating} ({details.user_ratings_total} reviews)</Text>
-  //           </View>
-  //         )}
-          
-  //         {details.types && (
-  //           <View style={styles.tagsContainer}>
-  //             {details.types.slice(0, 3).map((type, idx) => (
-  //               <View key={idx} style={styles.tag}>
-  //                 <Text style={styles.tagText}>{type}</Text>
-  //               </View>
-  //             ))}
-  //           </View>
-  //         )}
-          
-  //         <TouchableOpacity
-  //           style={styles.actionButton}
-  //           onPress={() => {
-  //             // Open in Google Maps or Apple Maps
-  //             const url = `https://www.google.com/maps/search/?api=1&query=${details.lat},${details.lng}&query_place_id=${details.place_id}`;
-  //             Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
-  //           }}
-  //         >
-  //           <Text style={styles.actionButtonText}>Open in Maps</Text>
-  //         </TouchableOpacity>
-  //       </View>
-  //     );
-  //   } else if (details.url && details.url.includes('spotify')) {
-  //     // This is a Spotify playlist suggestion
-  //     return (
-  //       <View style={styles.detailsContainer}>
-  //         <Text style={styles.detailsTitle}>🎵 Spotify Playlist:</Text>
-  //         <Text style={styles.detailsName}>{details.name}</Text>
-          
-  //         {details.description && (
-  //           <Text style={styles.detailsDescription}>
-  //             {details.description.replace(/<[^>]*>/g, '')}
-  //           </Text>
-  //         )}
-          
-  //         {details.tracks_total && (
-  //           <Text style={styles.detailsTracks}>{details.tracks_total} tracks</Text>
-  //         )}
-          
-  //         {details.image && (
-  //           <Image 
-  //             source={{ uri: details.image }} 
-  //             style={styles.playlistImage}
-  //             resizeMode="cover"
-  //           />
-  //         )}
-          
-  //         <TouchableOpacity
-  //           style={styles.actionButton}
-  //           onPress={() => {
-  //             Linking.openURL(details.url).catch(err => console.error("Couldn't open Spotify:", err));
-  //           }}
-  //         >
-  //           <Text style={styles.actionButtonText}>Open in Spotify</Text>
-  //         </TouchableOpacity>
-  //       </View>
-  //     );
-  //   } else if (!details.url && !details.place_id) {
-  //     // This is a reflection prompt (details is null or just a message)
-  //     return (
-  //       <View style={styles.detailsContainer}>
-  //         <Text style={styles.detailsTitle}>💭 Reflection Prompt:</Text>
-  //         <Text style={styles.detailsMessage}>
-  //           "{suggestion.suggestion}"
-  //         </Text>
-  //         <TouchableOpacity
-  //           style={styles.actionButton}
-  //           onPress={() => {
-  //             // Navigate to journal or reflection screen
-  //             router.push('/journal');
-  //           }}
-  //         >
-  //           <Text style={styles.actionButtonText}>Write in Journal</Text>
-  //         </TouchableOpacity>
-  //       </View>
-  //     );
-  //   }
-
-  //   return null;
-  // };
-
-  // const getSuggestionIcon = (suggestion) => {
-  //   if (!suggestion?.details) return "💭"; // Reflection prompt icon
-    
-  //   const { details } = suggestion;
-    
-  //   if (details.place_id) {
-  //     return "📍";
-  //   } else if (details.url && details.url.includes('spotify')) {
-  //     return "🎵";
-  //   } else if (details.url && details.url.includes('youtube')) {
-  //     return "🎬";
-  //   } else if (details.activity_type) {
-  //     return "🧘‍♀️";
-  //   }
-    
-  //   return "✨";
-  // };
-
-  // const handleSuggestionPress = (suggestion, index) => {
-  //   // If details is null, don't do anything (non-clickable)
-  //   if (!suggestion?.details) return;
-    
-  //   const { details } = suggestion;
-    
-  //   // Handle direct CTA without expansion
-  //   if (details?.url && details.url.includes('spotify')) {
-  //     Linking.openURL(details.url).catch(err => console.error("Couldn't open Spotify:", err));
-  //     return;
-  //   } else if (details?.place_id) {
-  //     const url = `https://www.google.com/maps/search/?api=1&query=${details.lat},${details.lng}&query_place_id=${details.place_id}`;
-  //     Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
-  //     return;
-  //   }
-    
-  //   // For other suggestions, toggle expansion
-  //   setExpandedSuggestion(expandedSuggestion === index ? null : index);
-  // };
-
-  // Update the handleSuggestionPress function
-
-  // Update the getSuggestionIcon function
-
 // Update the renderSuggestionDetails function
 const renderSuggestionDetails = (suggestion, index) => {
   const isExpanded = expandedSuggestion === index;
   const suggestionConfig = getMoodSuggestionRoute(suggestion);
 
-  if (!isExpanded || !suggestion?.details || !suggestionConfig) return null;
+  // if (!isExpanded || !suggestion?.details || !suggestionConfig) return null;
+
+    // MODIFIED: Don't require suggestion?.details to be truthy
+  if (!isExpanded || !suggestionConfig) return null;
+  
+  // Check if this is a null details case but we have a config from routing
+  const hasDetails = suggestion?.details && Object.keys(suggestion.details).length > 0;
+  
+  // Handle null details cases first (camera, social, journal)
+  if (!hasDetails) {
+    const lowerSuggestion = suggestion?.suggestion?.toLowerCase() || '';
+    
+    // Camera suggestion
+    if (lowerSuggestion.includes('photo') || lowerSuggestion.includes('capture')) {
+      return (
+        <View style={styles.detailsContainer}>
+          <Text style={styles.detailsTitle}>📸 Capture Moment</Text>
+          <Text style={styles.detailsDescription}>
+            Take a photo to capture how you're feeling right now.
+          </Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleSuggestionPress(suggestion, index)}
+          >
+            <Text style={styles.actionButtonText}>Open Camera</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    
+    // Social/Talk to friend
+    if (lowerSuggestion.includes('talk') || lowerSuggestion.includes('friend')) {
+      return (
+        <View style={styles.detailsContainer}>
+          <Text style={styles.detailsTitle}>💬 Connect with Someone</Text>
+          <Text style={styles.detailsDescription}>
+            Talking to someone can help. Start a conversation now.
+          </Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleSuggestionPress(suggestion, index)}
+          >
+            <Text style={styles.actionButtonText}>Navigate</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    
+    // Journal/Reflection
+    if (lowerSuggestion.includes('journal') || lowerSuggestion.includes('write') || 
+        lowerSuggestion.includes('reflect') || lowerSuggestion.includes('helped you')) {
+      return (
+        <View style={styles.detailsContainer}>
+          <Text style={styles.detailsTitle}>📝 Write Your Thoughts</Text>
+          <Text style={styles.detailsDescription}>
+            {suggestion.suggestion || "Take a moment to reflect and write down your thoughts."}
+          </Text>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleSuggestionPress(suggestion, index)}
+          >
+            <Text style={styles.actionButtonText}>Navigate</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    
+    // Generic null details fallback
+    return (
+      <View style={styles.detailsContainer}>
+        <Text style={styles.detailsTitle}>✨ Suggestion</Text>
+        <Text style={styles.detailsDescription}>
+          {suggestion.suggestion || "Take a moment for yourself."}
+        </Text>
+        {suggestionConfig.route && (
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleSuggestionPress(suggestion, index)}
+          >
+            <Text style={styles.actionButtonText}>Get Started</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
 
   const { details } = suggestion;
 
@@ -271,13 +239,13 @@ const renderSuggestionDetails = (suggestion, index) => {
           <Text style={styles.detailsName}>{details.name}</Text>
           <Text style={styles.detailsAddress}>{details.address}</Text>
           
-          {details.rating && (
+          {/* {details.rating && (
             <View style={styles.ratingContainer}>
               <Text style={styles.ratingText}>⭐ {details.rating} ({details.user_ratings_total} reviews)</Text>
             </View>
-          )}
+          )} */}
           
-          {details.types && (
+          {/* {details.types && (
             <View style={styles.tagsContainer}>
               {details.types.slice(0, 3).map((type, idx) => (
                 <View key={idx} style={styles.tag}>
@@ -285,13 +253,13 @@ const renderSuggestionDetails = (suggestion, index) => {
                 </View>
               ))}
             </View>
-          )}
+          )} */}
           
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => handleSuggestionPress(suggestion, index)}
           >
-            <Text style={styles.actionButtonText}>Open in Maps</Text>
+            <Text style={styles.actionButtonText}>Navigate</Text>
           </TouchableOpacity>
         </View>
       );
@@ -324,7 +292,7 @@ const renderSuggestionDetails = (suggestion, index) => {
             style={styles.actionButton}
             onPress={() => handleSuggestionPress(suggestion, index)}
           >
-            <Text style={styles.actionButtonText}>Open in Spotify</Text>
+            <Text style={styles.actionButtonText}>Navigate</Text>
           </TouchableOpacity>
         </View>
       );
@@ -348,7 +316,7 @@ const renderSuggestionDetails = (suggestion, index) => {
             onPress={() => handleSuggestionPress(suggestion, index)}
           >
             <Text style={styles.actionButtonText}>
-              {suggestionConfig.route ? 'Start Activity' : 'View Details'}
+              {suggestionConfig.route ? 'Navigate' : 'navigate'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -411,62 +379,131 @@ const renderSuggestionDetails = (suggestion, index) => {
   }
 };
 
-  const handleSuggestionPress = (suggestion, index) => {
-  const suggestionConfig = getMoodSuggestionRoute(suggestion);
+const handleImagePicker = async () => {
+        try {
+            // Request permission
+            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+            if (permissionResult.granted === false) {
+                Alert.alert("Permission required", "Permission to access camera roll is required!");
+                return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 0.8,
+            });
+
+            // if (!result.canceled) {
+            //     setEditedProfileImage(result.assets[0].uri);
+            // }
+        } catch (error) {
+            Alert.alert("Error", "Failed to pick image");
+        }
+    };
+
+    
+//   const handleSuggestionPress = (suggestion, index) => {
+//   const suggestionConfig = getMoodSuggestionRoute(suggestion);
   
-  if (!suggestionConfig) {
-    // If no config, toggle expansion
-    setExpandedSuggestion(expandedSuggestion === index ? null : index);
+//   if (!suggestionConfig) {
+//     // If no config, toggle expansion
+//     setExpandedSuggestion(expandedSuggestion === index ? null : index);
+//     return;
+//   }
+  
+//   switch (suggestionConfig.type) {
+//     case 'spotify_music':
+//       Linking.openURL(suggestion.details.url).catch(err => 
+//         console.error("Couldn't open Spotify:", err)
+//       );
+//       break;
+      
+//     case 'place':
+//       if (suggestion.details.place_id) {
+//         const url = `https://www.google.com/maps/search/?api=1&query=${suggestion.details.lat},${suggestion.details.lng}&query_place_id=${suggestion.details.place_id}`;
+//         Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
+//       } else if (suggestion.details.address) {
+//         // Fallback if no coordinates
+//         const encodedAddress = encodeURIComponent(suggestion.details.address);
+//         const url = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+//         Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
+//       }
+//       break;
+      
+//     case 'activity':
+//       // Use the new routing for activity suggestions
+//       handleMoodSuggestionClick(suggestion, router);
+//       break;
+      
+//     case 'prompt':
+//       handleMoodSuggestionClick(suggestion, router);
+//       break;
+
+//     case 'text':
+//       // Just expand/collapse, no navigation
+//       setExpandedSuggestion(expandedSuggestion === index ? null : index);
+//       break;
+      
+//     default:
+//       // For other types, toggle expansion
+//       setExpandedSuggestion(expandedSuggestion === index ? null : index);
+//       break;
+//   }
+// };
+
+// Replace your existing handleSuggestionPress with this
+
+const handleSuggestionPress = (suggestion, index) => {
+  const config = getMoodSuggestionRoute(suggestion);
+  
+  console.log('Pressed suggestion:', suggestion);
+
+  // const config = getMoodSuggestionRoute(suggestion);
+  console.log('Generated config:', config);
+
+  // Handle null details cases first
+  if (config.type === 'camera') {
+    // Open camera directly
+    // alert('Camera would open here'); // Replace with actual camera function
+    handleImagePicker();
     return;
   }
   
-  switch (suggestionConfig.type) {
-    case 'spotify_music':
-      Linking.openURL(suggestion.details.url).catch(err => 
-        console.error("Couldn't open Spotify:", err)
-      );
-      break;
-      
-    case 'place':
-      if (suggestion.details.place_id) {
-        const url = `https://www.google.com/maps/search/?api=1&query=${suggestion.details.lat},${suggestion.details.lng}&query_place_id=${suggestion.details.place_id}`;
-        Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
-      } else if (suggestion.details.address) {
-        // Fallback if no coordinates
-        const encodedAddress = encodeURIComponent(suggestion.details.address);
-        const url = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
-        Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
-      }
-      break;
-      
-    case 'activity':
-      // Use the new routing for activity suggestions
-      handleMoodSuggestionClick(suggestion, router);
-      break;
-      
-    case 'prompt':
-      handleMoodSuggestionClick(suggestion, router);
-      break;
-
-    case 'text':
-      // Just expand/collapse, no navigation
-      setExpandedSuggestion(expandedSuggestion === index ? null : index);
-      break;
-      
-    default:
-      // For other types, toggle expansion
-      setExpandedSuggestion(expandedSuggestion === index ? null : index);
-      break;
+  if (config.type === 'activity' && config.route) {
+    router.push(config.route);
+    return;
   }
-};
 
+  // Your existing navigation logic for place/spotify...
+  if (config.type === 'spotify_music' && suggestion.details?.url) {
+    Linking.openURL(suggestion.details.url);
+    return;
+  }
+  
+  if (config.type === 'place' && suggestion.details) {
+    const { lat, lng, place_id, address } = suggestion.details;
+    if (place_id && lat && lng) {
+      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${place_id}`);
+    } else if (address) {
+      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`);
+    }
+    return;
+  }
+
+  // Default: toggle expansion
+  setExpandedSuggestion(expandedSuggestion === index ? null : index);
+};
 
   const moodGradient = getMoodGradient(data?.last_check_in_mood);
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#000" />
+        <Text style={styles.loadingText}>Loading AI-Analysis...</Text>
       </SafeAreaView>
     );
   }
@@ -607,15 +644,37 @@ const renderSuggestionDetails = (suggestion, index) => {
             <Text style={styles.sliderLabel}>STRONG</Text>
           </View>
 
-          {/* NEW SUGGESTIONS FROM API */}
-          {/* {suggestions?.suggestions?.length > 0 && suggestions.suggestions.map((suggestion, idx) => {
+          {/* // Update the suggestion card rendering in your JSX */}
+          {suggestions?.suggestions?.length > 0 && suggestions.suggestions.map((suggestion, idx) => {
             if (!suggestion) return null;
             
-            // Determine if the suggestion should be clickable
+            const suggestionConfig = getMoodSuggestionRoute(suggestion);
             const hasDetails = !!suggestion?.details;
-            const shouldShow = hasDetails || suggestion?.suggestion; // Show if there's at least a suggestion text
             
-            if (!shouldShow) return null;
+            // Determine if clickable based on type
+            let isClickable = false;
+            let shouldShowExpansion = false;
+            
+            if (suggestionConfig) {
+              switch (suggestionConfig.type) {
+                case 'spotify_music':
+                case 'place':
+                  isClickable = true;
+                  shouldShowExpansion = true; // Show expansion for these
+                  break;
+                case 'activity':
+                  isClickable = true;
+                  shouldShowExpansion = suggestionConfig.route ? true : true; // Show expansion only if no route
+                  break;
+                case 'prompt':
+                  isClickable = true;
+                  shouldShowExpansion = true; // Direct navigation
+                  break;
+                default:
+                  isClickable = true;
+                  shouldShowExpansion = true; // Show expansion for text/details
+              }
+            }
             
             return (
               <TouchableOpacity
@@ -624,13 +683,18 @@ const renderSuggestionDetails = (suggestion, index) => {
                   styles.suggestionCard, 
                   { 
                     backgroundColor: moodGradient[1],
-                    // If no details, make it appear non-clickable
-                    opacity: hasDetails ? 1 : 0.7,
+                    opacity: isClickable ? 1 : 0.7,
                   }
                 ]}
-                onPress={() => hasDetails && handleSuggestionPress(suggestion, idx)}
-                activeOpacity={hasDetails ? 0.8 : 1} // No opacity change if not clickable
-                disabled={!hasDetails} // Disable touch if no details
+                onPress={() => {
+                  if (shouldShowExpansion) {
+                    setExpandedSuggestion(expandedSuggestion === idx ? null : idx);
+                  } else {
+                    handleSuggestionPress(suggestion, idx);
+                  }
+                }}
+                activeOpacity={isClickable ? 0.8 : 1}
+                disabled={!isClickable}
               >
                 <View style={styles.suggestionHeader}>
                   <Text style={styles.suggestionIcon}>
@@ -638,7 +702,7 @@ const renderSuggestionDetails = (suggestion, index) => {
                   </Text>
                   <Text style={[
                     styles.suggestionText,
-                    !hasDetails && styles.nonClickableText // Different style for non-clickable items
+                    !isClickable && styles.nonClickableText
                   ]}>
                     {suggestion?.suggestion || "Suggestion"}
                   </Text>
@@ -646,75 +710,9 @@ const renderSuggestionDetails = (suggestion, index) => {
                 {renderSuggestionDetails(suggestion, idx)}
               </TouchableOpacity>
             );
-          })} */}
+          })}
 
-          {/* // Update the suggestion card rendering in your JSX */}
-{suggestions?.suggestions?.length > 0 && suggestions.suggestions.map((suggestion, idx) => {
-  if (!suggestion) return null;
-  
-  const suggestionConfig = getMoodSuggestionRoute(suggestion);
-  const hasDetails = !!suggestion?.details;
-  
-  // Determine if clickable based on type
-  let isClickable = false;
-  let shouldShowExpansion = false;
-  
-  if (suggestionConfig) {
-    switch (suggestionConfig.type) {
-      case 'spotify_music':
-      case 'place':
-        isClickable = true;
-        shouldShowExpansion = true; // Show expansion for these
-        break;
-      case 'activity':
-        isClickable = true;
-        shouldShowExpansion = suggestionConfig.route ? true : true; // Show expansion only if no route
-        break;
-      case 'prompt':
-        isClickable = true;
-        shouldShowExpansion = true; // Direct navigation
-        break;
-      default:
-        isClickable = true;
-        shouldShowExpansion = true; // Show expansion for text/details
-    }
-  }
-  
-  return (
-    <TouchableOpacity
-      key={idx}
-      style={[
-        styles.suggestionCard, 
-        { 
-          backgroundColor: moodGradient[1],
-          opacity: isClickable ? 1 : 0.7,
-        }
-      ]}
-      onPress={() => {
-        if (shouldShowExpansion) {
-          setExpandedSuggestion(expandedSuggestion === idx ? null : idx);
-        } else {
-          handleSuggestionPress(suggestion, idx);
-        }
-      }}
-      activeOpacity={isClickable ? 0.8 : 1}
-      disabled={!isClickable}
-    >
-      <View style={styles.suggestionHeader}>
-        <Text style={styles.suggestionIcon}>
-          {getSuggestionIcon(suggestion)}
-        </Text>
-        <Text style={[
-          styles.suggestionText,
-          !isClickable && styles.nonClickableText
-        ]}>
-          {suggestion?.suggestion || "Suggestion"}
-        </Text>
-      </View>
-      {renderSuggestionDetails(suggestion, idx)}
-    </TouchableOpacity>
-  );
-})}
+
           {/* OLD SUGGESTED ACTIONS - Keep if needed */}
           {/* {data?.suggested_actions?.map((action, idx) => (
             <TouchableOpacity
@@ -802,6 +800,7 @@ const styles = StyleSheet.create({
   },
   slider: {
     flex: 1,
+    color:"#333"
   },
 
   // NEW SUGGESTION CARD STYLES
@@ -953,6 +952,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#000",
     fontWeight: "bold",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#5f9194',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#FFF',
   },
 
   // NO CHECK-IN STYLES

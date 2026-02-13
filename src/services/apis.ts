@@ -605,7 +605,7 @@ export const getUsersByAiTag = async (ai_tag: string) => {
     console.log('✅ Users by AI tag fetched:', response.data);
     return response.data;
   } catch (error: any) {
-      console.error('❌ Error fetching users by AI tag:', {
+      console.log('❌ Error fetching users by AI tag:', {
       status: error.response?.status,
       data: error.response?.data,
       message: error.message,

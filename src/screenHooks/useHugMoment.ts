@@ -45,9 +45,9 @@ export const useHugMoment = () => {
       if (!response.data || response.data.length === 0) {
         // setError('No users found for this moment');
         Toast.show({
-                type: 'success',
+                type: 'error',
                 text1: 'No user found',
-                text2: 'No one is available for this moment right now. Try another moment.',
+                text2: 'sorry! No one is available for this moment right now. Try another moment.',
          });
         return;
       }
@@ -79,8 +79,19 @@ export const useHugMoment = () => {
       });
 
     } catch (error: any) {
-      console.error('Error in handleContinue:', error);
-    //   setError('Failed to find users. Please try again.');
+      if (error.response?.status === 404) {
+    Toast.show({
+      type: 'error',
+      text1: 'No user found',
+      text2: 'No one is available for this moment right now. Try another moment.',
+    });
+  } else {
+    Toast.show({
+      type: 'error',
+      text1: 'Something went wrong',
+      text2: 'Please try again later.',
+    });
+  }
     } finally {
       setLoading(false);
     }

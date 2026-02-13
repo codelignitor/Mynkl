@@ -169,14 +169,14 @@ const SocialEventsScreen = () => {
 
       <TouchableOpacity
         style={[styles.floatingButton, { left: 20 }]}
-        onPress={() => alert('Left Button Pressed')}
+        // onPress={() => alert('Left Button Pressed')}
       >
         <Text style={styles.bottomButtonText}>Left</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={[styles.floatingButton, { right: 20 }]}
-        onPress={handleNext}
+        // onPress={handleNext}
       >
         <Text style={styles.bottomButtonText}>Next</Text>
       </TouchableOpacity>

@@ -86,6 +86,14 @@ const PendingHugsDetailScreen = ({ onBack }) => {
     }
   };
 
+  const handleHugReceive = () => {
+    console.log('Start a Chat pressed');
+    // Add navigation logic here
+    router.push('/virtual-hug/receive-hug');
+    // router.push('/hug_recevied');
+    
+  };
+
   // const renderHugItem = ({ item }) => (
   //   <TouchableOpacity style={styles.hugItemCard} activeOpacity={0.7}>
   //     <View style={styles.hugCardContent}>
@@ -111,7 +119,13 @@ const PendingHugsDetailScreen = ({ onBack }) => {
   // );
 
   const renderHugItem = ({ item }) => (
-    <TouchableOpacity style={styles.hugCard} activeOpacity={0.8}>
+    
+    <TouchableOpacity 
+      style={styles.hugCard} activeOpacity={0.8}
+      onPress={handleHugReceive}
+    >
+      
+      
       <LinearGradient
         colors={getHugGradient(item?.hug_type)}
         style={styles.hugGradient}

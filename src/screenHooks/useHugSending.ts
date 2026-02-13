@@ -43,17 +43,29 @@ export const useHugSending = () => {
         'Let Mynkl choose': '⭐',
       };
 
-      const payload = {
-        receiver_id: receiverId,
-        hug_type: hugType,
-        ai_choice: isAiChoice,
-        message,
-        emoji: emojiMap[hugType] || '🤗',
-        receiver_type: 'Community', // adjust if backend changes
-      };
+      // Valid hug types for backend
+const validHugTypes = ['Warm Hug', 'Calm Hug', 'Encouraging Hug'];
+
+// If AI choice → randomly select valid hug
+let finalHugType = hugType;
+
+if (isAiChoice) {
+  const randomIndex = Math.floor(Math.random() * validHugTypes.length);
+  finalHugType = validHugTypes[randomIndex];
+}
+
+const payload = {
+  receiver_id: receiverId,
+  hug_type: finalHugType, // ✅ Always valid now
+  ai_choice: isAiChoice,
+  message,
+  emoji: emojiMap[finalHugType] || '🤗',
+  receiver_type: 'Community',
+};
+
 
       try {
-        setLoading(true);
+        // setLoading(true);
         setError(null);
 
         console.log('📤 Sending hug payload:', payload);

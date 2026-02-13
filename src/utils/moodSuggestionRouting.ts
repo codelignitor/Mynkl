@@ -18,10 +18,10 @@ const moodSuggestionRoutingConfig = {
   'virtual_connection': '/hugs-selection',
   
   // Journaling/Reflection ✅
-  'message_suggestion': '/hugs-selection',
+  'message_suggestion': '/Opentotalk/StartChat',
   'mindful_activity': '/Selfcare_tips/Gratitute',
   'reflection_prompt': '/journal',
-  
+  'gratitude_journaling': '/journal',
   
   // Default fallback
   'default': null
@@ -30,20 +30,65 @@ const moodSuggestionRoutingConfig = {
 // Function to determine suggestion type and get appropriate routing
 export const getMoodSuggestionRoute = (suggestionItem: { details: any; suggestion?: any; }) => {
   
-  if (!suggestionItem?.details) {
-    return {
-      type: 'text',
-      route: null,
-      config: {
-        isText: true,
-        expandable: true
-      }
-    };
+  // if (!suggestionItem?.details) {
+  //   return {
+  //     type: 'text',
+  //     route: null,
+  //     config: {
+  //       isText: true,
+  //       expandable: true
+  //     }
+  //   };
+  // }
+
+
+  const { details, suggestion  } = suggestionItem;
+  
+  // Handle null/empty details - check for specific suggestion texts
+  if (!details || Object.keys(details).length === 0) {
+    const lowerSuggestion = suggestion?.toLowerCase() || '';
+
+    // Case 1: Talking to friend
+    if (lowerSuggestion.includes('talk') || lowerSuggestion.includes('friend')) {
+      return {
+        type: 'activity',
+        route: '/Opentotalk/StartChat',
+        config: {
+          isActivity: true,
+          activityType: 'social',
+          originalSuggestion: suggestion
+        }
+      };
+    }
+
+    // Case 2: Photo/Camera
+    if (lowerSuggestion.includes('photo') || lowerSuggestion.includes('capture')) {
+      return {
+        type: 'camera',
+        route: null, // Will be handled by Linking or camera function
+        config: {
+          shouldOpenCamera: true,
+          originalSuggestion: suggestion
+        }
+      };
+    }
+
+    // Case 3: Journaling/Reflection
+    if (lowerSuggestion.includes('journal') || lowerSuggestion.includes('write') || 
+        lowerSuggestion.includes('helped you') || lowerSuggestion.includes('reflect')) {
+      return {
+        type: 'activity',
+        route: '/journal',
+        config: {
+          isActivity: true,
+          activityType: 'journal',
+          originalSuggestion: suggestion
+        }
+      };
+    }
   }
 
 
-  const { details } = suggestionItem;
-  
   // 1. Check for Spotify music (has url with spotify)
   if (details.url && details.url.includes('spotify.com')) {
     return {
@@ -116,13 +161,25 @@ export const getMoodSuggestionRoute = (suggestionItem: { details: any; suggestio
       }
     };
   }
+
+  // 🔴 Fallback social events case
+if (details?.fallback === true) {
+  return {
+    type: 'activity',
+    route: '/events_social/social_events', // or future /events
+    config: {
+      isFallback: true,
+      ctaLabel: 'Explore Events'
+    }
+  };
+}
   
   // 5. Default - regular suggestion
   return {
     type: 'text',
     route: null,
     config: {
-      isText: true
+      isText: false
     }
   };
 };
