@@ -38,7 +38,8 @@ const FeedbackScreen = () => {
       Alert.alert('Success', (res as any).message || 'Feedback submitted successfully.');
       // Optionally navigate or reset state here
     } catch (err) {
-      Alert.alert('Error', err?.message || 'Failed to submit feedback.');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit feedback.';
+      Alert.alert('Error', errorMessage);
     }
   };
 

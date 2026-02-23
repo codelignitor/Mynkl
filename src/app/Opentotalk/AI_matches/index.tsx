@@ -16,7 +16,7 @@ const AIMatchingScreen = () => {
   const router = useRouter();
   return (
     <LinearGradient
-      colors={['#0a2323', '#175c47', '#0a2323']}
+      colors={['#0a2323', '#133f32', '#0a2323']}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={styles.gradient}

@@ -49,15 +49,6 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
-  name="mood_diary/index"
-  options={{
-    title: 'Mood Diary',
-    tabBarIcon: ({ color }) => (
-      <Ionicons name="bar-chart-outline" size={24} color={color} />
-    ),
-  }}
-/>
 
       <Tabs.Screen
         name="recevie_hugs/index"
@@ -66,14 +57,14 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="chatbox" size={24} color={color} />,
         }}
       />
-       <Tabs.Screen
+       {/* <Tabs.Screen
         name="hugs/index"
         options={{
           title: 'Hugs',
           tabBarIcon: ({ color }) => <Ionicons name="chatbox" size={24} color={color} />,
         }}
       />
-      
+       */}
      
        <Tabs.Screen
         name="activity/index"

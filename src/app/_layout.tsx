@@ -17,7 +17,7 @@ import { MoodProvider } from "@/src/contexts/MoodContext";
 import { Appearance } from "react-native";
 
 
-SplashScreen.preventAutoHideAsync();
+
 
 
 
@@ -61,6 +61,10 @@ function MainLayout() {
   }, []);
 
   useEffect(() => {
+    SplashScreen.preventAutoHideAsync();
+  }, []);
+
+  useEffect(() => {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
@@ -70,7 +74,7 @@ function MainLayout() {
         <Stack.Screen name="index" />
       </Stack>
 
-      <Toast config={toastConfig} />
+      {/* <Toast config={toastConfig} /> */}
       <StatusBar style="dark" />
     </ThemeProvider>
   );

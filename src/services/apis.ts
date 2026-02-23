@@ -122,14 +122,14 @@ export const checkIn = async (payload: CheckInPayload | FormData) => {
 
 
 
-export const updateFcm = async (payload) => {
+export const updateFcm = async (payload : any) => {
   const response = await axiosInstance.post(`notifications/fcm-token`, payload,{
       });
   return response.data;
 };
 
 // profile api
-export const updateUserProfile = async (payload) => {
+export const updateUserProfile = async (payload: any) => {
   try {
     const response = await axiosInstance.post(`/profile/update-profile`, payload,{
        headers: {
@@ -138,7 +138,7 @@ export const updateUserProfile = async (payload) => {
     );
 
     return response.data;
-  } catch (error) {
+  } catch (error:any) {
     if (error.response) {
       console.log('❌ API Error:', error.response.data);
     }
@@ -152,7 +152,7 @@ export const updatedUserProfile = async (userId: string) => {
   return response.data;
 };
 
-export const createEvent = async (payload) => {
+export const createEvent = async (payload: any) => {
   const response = await axiosInstance.post(`/events/create_event`, payload);
   return response.data;
 };
@@ -202,7 +202,7 @@ export const getActivityFeedbackGraph = async () => {
   return response.data;
 };
 
-export const uploadImage = async (payload) => {
+export const uploadImage = async (payload: any) => {
   const response = await axiosInstance.post(`/events/upload_image`, payload);
   return response.data;
 };
@@ -228,7 +228,7 @@ export const getMapSearchResults = async (params: MapSearchParams) => {
   return response.data;
 };
 
-export const preferences = async (payload) => {
+export const preferences = async (payload: any) => {
   const response = await axiosInstance.post(`/home/preferences`, payload);
   return response.data;
 };
@@ -279,13 +279,13 @@ export const getComments = async (params: { type: 'event' | 'place'; ref_id: str
   return response.data;
 };
 
-export const submitComments = async (payload) => {
+export const submitComments = async (payload: any) => {
   const response = await axiosInstance.post(`/home/add-comments`, payload);
   return response.data;
 };
 
 //happiness challenge api
-export const HappinessChallenges = async (payload) => {
+export const HappinessChallenges = async (payload: any) => {
   const response = await axiosInstance.post(`/happiness/send-challenge`, payload);
   return response.data;
 };
@@ -383,14 +383,14 @@ export const receiveHugsList = async () => {
 
 
 
-export const sendHug = async (payload) => {
+export const sendHug = async (payload: any) => {
   const response = await axiosInstance.post(`/virtual_hugs/send` , payload);
   
  
   return response.data;
 };
 
-export const submitFeedback = async (payload) => {
+export const submitFeedback = async (payload : any) => {
   const response = await axiosInstance.post(`/activity/activity-feedback`, payload);
   return response.data;
 };
@@ -411,7 +411,7 @@ export const getVirtualHugsAISuggestions = async () => {
 
 
 //calm_spots
-export const saveReflection = async (payload) => {
+export const saveReflection = async (payload: any) => {
   const response = await axiosInstance.post(`/meditation/reflections`,payload);
   return response.data;
 };
@@ -422,12 +422,12 @@ export const MeditationsoptsNearby = async (lat: number, lon: number) => {
 };
 
 //open_to_talk
-export const openToTalk = async (payload) => {
+export const openToTalk = async (payload: any) => {
   const response = await axiosInstance.post(`/open_to_talk`,payload);
   return response.data;
 };
 
-export const opentotalkFeedback = async (payload) => {
+export const opentotalkFeedback = async (payload :any) => {
   const response = await axiosInstance.post(`/open_to_talk/feedback`,payload);
   return response.data;
 };
@@ -509,7 +509,7 @@ export const getWellnessSuggestionDetail = async (contentId: string): Promise<We
     const response = await axiosInstance.get(`/Wellness/wellness-suggestion/${contentId}`);
     return response.data;
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Error fetching wellness suggestion:', error);
     
     // For debugging - check the exact error
@@ -587,7 +587,7 @@ export const transcribeAudio = async (audioFile: any): Promise<{ text: string }>
     console.log('✅ Audio transcription successful:');
     return response.data;
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Error transcribing audio:', {
       message: error.message,
       response: error.response?.data,

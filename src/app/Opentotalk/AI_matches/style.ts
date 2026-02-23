@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '100%',
-    backgroundColor: 'rgba(23, 92, 71, 0.85)',
+    backgroundColor: 'rgba(20, 63, 50, 0.85)',
     borderRadius: 14,
     paddingVertical: 18,
     alignItems: 'center',

@@ -76,12 +76,12 @@ const payload = {
 
         return true;
       } catch (err: any) {
-        console.error('❌ Failed to send hug:', err);
-        setError(
-          err?.response?.data?.detail ||
-            err?.response?.data?.message ||
-            'Failed to send hug. Please try again.'
-        );
+        console.log('❌ Failed to send hug:', err);
+        // setError(
+        //   err?.response?.data?.detail ||
+        //     err?.response?.data?.message ||
+        //     'Failed to send hug. Please try again.'
+        // );
         return false;
       } finally {
         setLoading(false);

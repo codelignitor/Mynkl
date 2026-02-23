@@ -21,7 +21,8 @@ const moodSuggestionRoutingConfig = {
   'message_suggestion': '/Opentotalk/StartChat',
   'mindful_activity': '/Selfcare_tips/Gratitute',
   'reflection_prompt': '/journal',
-  'gratitude_journaling': '/journal',
+  'gratitude_journaling': '/Selfcare_tips/Gratitute',
+  'journaling': '/journal',
   
   // Default fallback
   'default': null
