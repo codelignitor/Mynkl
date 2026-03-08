@@ -27,7 +27,7 @@ import { RootState } from '../../../store';
 import { resetMapRefresh } from '../../../store/slices/mapSlice';
 import { useComments } from '@/src/screenHooks/moodMap/useComments';
 import { ss } from '@/src/constants/ss';
-
+import { LinearGradient } from 'expo-linear-gradient'; 
 // Remove unused icon-mapping helpers to keep the component lean
 
 const MoodMapScreen: React.FC = () => {
@@ -334,14 +334,14 @@ const setEmoji = (emoji:any) => {
                  Check-ins in last 24h: {comentsResponse?.total_check_ins || 0}
                 </Text>
                {comentsResponse?.total_check_ins > 0 && (
-  <Text style={styles.checkInBreakdown}>
-    Moods:{" "}
-    {Object.entries(comentsResponse?.mood_counts || {})
-      .map(([mood, count]) => `${mood}: ${count}`)
-      .join(", ")}
-  </Text>
-)}
-              
+                  <Text style={styles.checkInBreakdown}>
+                    Moods:{" "}
+                    {Object.entries(comentsResponse?.mood_counts || {})
+                      .map(([mood, count]) => `${mood}: ${count}`)
+                      .join(", ")}
+                  </Text>
+                )}
+                              
               </View>
             </View>
 
@@ -494,162 +494,459 @@ const setEmoji = (emoji:any) => {
     </Modal>
   );
 
+  
+  // const renderCheckInsModal = () => (
+  //   <Modal
+  //     visible={showCheckInsModal}
+  //     animationType="slide"
+  //     presentationStyle="pageSheet"
+  //     onRequestClose={() => {
+  //       setShowCheckInsModal(false);
+  //       setCheckInsForModal([]); // Clear stored check-ins data
+  //       setIsCheckInsForHugs(false); // Reset the flag
+  //       setSelectedUserForChat(null); // Reset selected user for chat
+  //       setShowSelectUserButton(false); // Reset button visibility
+  //     }}
+  //   >
+  //     <SafeAreaView style={styles.locationDetailContainer}>
+  //       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+  //       <View style={styles.locationDetailHeader}>
+  //         <TouchableOpacity onPress={() => {
+  //           setShowCheckInsModal(false);
+  //           setCheckInsForModal([]); // Clear stored check-ins data
+  //           setIsCheckInsForHugs(false); // Reset the flag
+  //           setSelectedUserForChat(null); // Reset selected user for chat
+  //           setShowSelectUserButton(false); // Reset button visibility
+  //         }} style={styles.backButton}>
+  //           <Ionicons name="chevron-back" size={24} color="#000" />
+  //         </TouchableOpacity>
+  //         <Text style={styles.locationDetailTitle}>
+  //           {isCheckInsForHugs ? 'Send Hugs to Users' : 'Users to Chat With'}
+  //         </Text>
+  //       </View>
+  //       <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
+  //         {checkInsForModal.length === 0 ? (
+  //           <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
+  //             No users have checked in here recently
+  //           </Text>
+  //         ) : (
+  //           <View>
+  //             {checkInsForModal.map((ci, idx) => (
+  //               <TouchableOpacity
+  //                 key={`checkin_${idx}`}
+  //                 style={styles.commentItem}
+  //                 onPress={() => {
+  //                   setShowCheckInsModal(false);
+  //                   handleCheckInUserPress(ci);
+  //                 }}
+  //                 activeOpacity={0.8}
+  //               >
+  //                 <Text style={styles.commentText}>
+  //                   {`${ci.mood ? ci.mood.charAt(0).toUpperCase() + ci.mood.slice(1) : 'Happy'} • ${formatTimestamp(ci.timestamp)}`}
+  //                 </Text>
+  //                 <Text style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
+  //                   {isCheckInsForHugs ? 'Tap to send hug' : 'Tap to view user details'}
+  //                 </Text>
+  //               </TouchableOpacity>
+  //             ))}
+
+  //             {/* Remove the old chat selection button since both flows now go through user detail modal */}
+  //           </View>
+  //         )}
+  //       </ScrollView>
+  //     </SafeAreaView>
+  //   </Modal>
+  // );
+
+  // const renderUserDetailModal = () => (
+  //   <Modal
+  //     visible={showUserDetailModal}
+  //     animationType="slide"
+  //     presentationStyle="pageSheet"
+  //     onRequestClose={() => {
+  //       setShowUserDetailModal(false);
+  //       setIsCheckInsForHugs(false); // Reset the flag
+  //       setSelectedUserForChat(null); // Reset selected user for chat
+  //       setShowSelectUserButton(false); // Reset button visibility
+  //     }}
+  //   >
+  //     <SafeAreaView style={styles.locationDetailContainer}>
+  //       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+  //       <View style={styles.locationDetailHeader}>
+  //         <TouchableOpacity onPress={() => {
+  //           setShowUserDetailModal(false);
+  //           setIsCheckInsForHugs(false); // Reset the flag
+  //           setSelectedUserForChat(null); // Reset selected user for chat
+  //           setShowSelectUserButton(false); // Reset button visibility
+  //         }} style={styles.backButton}>
+  //           <Ionicons name="chevron-back" size={24} color="#000" />
+  //         </TouchableOpacity>
+  //         <Text style={styles.locationDetailTitle}>
+  //           {isCheckInsForHugs ? 'Send Hug to User' : 'Start Chat with User'}
+  //         </Text>
+  //         {/* Select All - top right - only show for hugs */}
+  //         {isCheckInsForHugs && Array.isArray(checkInsForModal) && checkInsForModal.length > 0 && (
+  //           <TouchableOpacity
+  //             onPress={() => handleSelectAllHugTargets(checkInsForModal.map(ci => ({ id: ci.userId, username: ci.username || ci.name })))}
+  //             style={[styles.backButton, { position: 'absolute', right: 12 }]}
+  //             activeOpacity={0.85}
+  //           >
+  //             <Text style={{ fontWeight: '600', color: '#000' }}>Select all</Text>
+  //           </TouchableOpacity>
+  //         )}
+  //       </View>
+  //       <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
+  //        selectedUserDetail ? (
+  //           // Show single user for hugs
+  //           <TouchableOpacity style={styles.locationCard} activeOpacity={0.85} onPress={() =>
+  //           { setShowSelectUserButton(true) }}>
+  //             <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
+  //               {selectedUserDetail?.location_opt_in ? 'Anonymous User' :  selectedUserDetail?.user?.username }
+  //             </Text>
+  //             {selectedUserDetail?.user?.email ? (
+  //               <Text style={{ fontSize: 14, color: '#666' }}>{selectedUserDetail?.location_opt_in ? 'Anonymous Email' :selectedUserDetail?.user?.email}</Text>
+  //             ) : null}
+  //             {/* {selectedUserDetail?.bio ? (
+  //               <Text style={{ fontSize: 14, color: '#666', marginTop: 8 }}>{selectedUserDetail.bio}</Text>
+  //             ) : null} */}
+
+  //             {/* Show different buttons based on the purpose */}
+  //             {showSelectUserButton && isCheckInsForHugs && (
+  //               <TouchableOpacity
+  //                 style={[styles.sendHugButton, { marginTop: 16 }]}
+  //                 onPress={() => {
+  //                   if(user_id === selectedUserDetail.user?.id) {
+  //                     Alert.alert("Action Not Allowed", "You cannot send a virtual hug to yourself.");
+  //                     return;
+  //                   }
+  //                   handleSelectHugTarget(selectedUserDetail);
+  //                 }}
+  //                 activeOpacity={0.85}
+  //               >
+  //                 <Text style={styles.sendHugButtonText}>Send Virtual Hug 🤗</Text>
+  //               </TouchableOpacity>
+  //             )}
+
+  //             {/* Show "Start Conversation" button when it's for chat */}
+  //             {showSelectUserButton && !isCheckInsForHugs && (
+  //               <TouchableOpacity
+  //                 style={[styles.openToTalkButton, { marginTop: 16 }]}
+  //                 onPress={() => handleSelectChatTarget(selectedUserDetail)}
+  //                 activeOpacity={0.85}
+  //               >
+  //                 <Text style={styles.openToTalkButtonText}>Start Conversation</Text>
+  //               </TouchableOpacity>
+  //             )}
+  //           </TouchableOpacity>
+  //         ) : (
+  //           <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
+  //             No user data
+  //           </Text>
+  //         )}
+  //       </ScrollView>
+  //     </SafeAreaView>
+  //   </Modal>
+  // );
 
 
-  const renderCheckInsModal = () => (
+  const renderSpreadLoveModal = () => {
+  // Derive summary counts from checkInsForModal
+  const moodGroups: Record<string, number> = {};
+  checkInsForModal.forEach((ci: any) => {
+    const m = (ci.mood || 'happy').toLowerCase();
+    moodGroups[m] = (moodGroups[m] || 0) + 1;
+  });
+  const dominantMood = Object.entries(moodGroups).sort((a, b) => b[1] - a[1])[0];
+  const dominantMoodName = dominantMood ? dominantMood[0] : 'lonely';
+  const totalPeople = checkInsForModal.length;
+
+  // Colour helpers — kept inline so no extra imports needed
+  const cardBgForMood = (mood: string) => {
+    const map: Record<string, string> = {
+      happy: '#FFFDE7',
+      calm: '#E0F7FA',
+      grateful: '#E8F5E9',
+      lonely: '#daeff7',
+      sad: '#E3F2FD',
+      stressed: '#FFF9C4',
+      frustrated: '#FFF3E0',
+      alone: '#F3E5F5',
+    };
+    return map[mood?.toLowerCase()] ?? '#F5F5F5';
+  };
+
+  const moodColor = (mood: string) => {
+    const map: Record<string, string> = {
+      happy: '#F9A825',
+      calm: '#00ACC1',
+      grateful: '#43A047',
+      lonely: '#7B8B6F',
+      sad: '#1E88E5',
+      stressed: '#FB8C00',
+      frustrated: '#E53935',
+      alone: '#8E24AA',
+    };
+    return map[mood?.toLowerCase()] ?? '#666';
+  };
+
+  const subTextForMood = (mood: string) => {
+    const map: Record<string, string> = {
+      happy: 'sharing joy',
+      calm: 'at peace',
+      grateful: 'feeling thankful',
+      lonely: 'needs a hug',
+      sad: 'could use support',
+      stressed: 'could use support',
+      frustrated: 'needs understanding',
+      alone: 'needs connection',
+    };
+    return map[mood?.toLowerCase()] ?? 'checked in here';
+  };
+
+  const hugEmojis = ['🤗', '💛'];
+
+  return (
     <Modal
-      visible={showCheckInsModal}
+      visible={showCheckInsModal || showUserDetailModal}
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={() => {
         setShowCheckInsModal(false);
-        setCheckInsForModal([]); // Clear stored check-ins data
-        setIsCheckInsForHugs(false); // Reset the flag
-        setSelectedUserForChat(null); // Reset selected user for chat
-        setShowSelectUserButton(false); // Reset button visibility
+        setShowUserDetailModal(false);
+        setCheckInsForModal([]);
+        setIsCheckInsForHugs(false);
+        setSelectedUserForChat(null);
+        setShowSelectUserButton(false);
       }}
     >
-      <SafeAreaView style={styles.locationDetailContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        <View style={styles.locationDetailHeader}>
-          <TouchableOpacity onPress={() => {
-            setShowCheckInsModal(false);
-            setCheckInsForModal([]); // Clear stored check-ins data
-            setIsCheckInsForHugs(false); // Reset the flag
-            setSelectedUserForChat(null); // Reset selected user for chat
-            setShowSelectUserButton(false); // Reset button visibility
-          }} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
-          </TouchableOpacity>
-          <Text style={styles.locationDetailTitle}>
-            {isCheckInsForHugs ? 'Send Hugs to Users' : 'Users to Chat With'}
-          </Text>
-        </View>
-        <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
-          {checkInsForModal.length === 0 ? (
-            <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
-              No users have checked in here recently
-            </Text>
-          ) : (
-            <View>
-              {checkInsForModal.map((ci, idx) => (
-                <TouchableOpacity
-                  key={`checkin_${idx}`}
-                  style={styles.commentItem}
-                  onPress={() => {
-                    setShowCheckInsModal(false);
-                    handleCheckInUserPress(ci);
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.commentText}>
-                    {`${ci.mood ? ci.mood.charAt(0).toUpperCase() + ci.mood.slice(1) : 'Happy'} • ${formatTimestamp(ci.timestamp)}`}
-                  </Text>
-                  <Text style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
-                    {isCheckInsForHugs ? 'Tap to send hug' : 'Tap to view user details'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FAFAF5" />
 
-              {/* Remove the old chat selection button since both flows now go through user detail modal */}
+        {/* ── Header ── */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => {
+              setShowCheckInsModal(false);
+              setShowUserDetailModal(false);
+              setCheckInsForModal([]);
+              setIsCheckInsForHugs(false);
+              setSelectedUserForChat(null);
+              setShowSelectUserButton(false);
+            }}
+            style={styles.backBtn}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="chevron-back" size={24} color="#1A1A1A" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Spread Love ❤️</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* ── Group Hug Banner ── */}
+          {totalPeople > 0 && (
+            <View style={styles.groupHugBanner}>
+              <Text style={styles.groupHugHeadline}>
+                <Text>{totalPeople} {totalPeople === 1 ? 'person is' : 'people are'} </Text>
+                <Text style={styles.groupHugBold}>feeling {dominantMoodName} </Text>
+                <Text>nearby.</Text>
+              </Text>
+
+              <TouchableOpacity
+                style={styles.groupHugBtn}
+                activeOpacity={0.85}
+                onPress={() => {
+                  if (!isUserLoggedIn || !user_id) {
+                    Alert.alert('Authentication Required', 'Please log in to send hugs.');
+                    return;
+                  }
+                  handleSelectAllHugTargets(
+                    checkInsForModal.map((ci: any) => ({
+                      id: ci.userId,
+                      username: ci.username || ci.name,
+                    }))
+                  );
+                }}
+              >
+                <Text style={styles.groupHugBtnText}>🤍  Send Group Hug</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.groupHugStat}>
+                ⭐  {totalPeople * 3 + 4} hugs shared here today.
+              </Text>
+            </View>
+          )}
+
+          {/* ── Individual User Cards ── */}
+          {checkInsForModal.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyText}>No users have checked in here recently</Text>
+            </View>
+          ) : (
+            checkInsForModal.map((ci: any, idx: number) => {
+              const mood = (ci.mood || 'happy').toLowerCase();
+              const bgColor = cardBgForMood(mood);
+              const accentColor = moodColor(mood);
+              const subText = subTextForMood(mood);
+              const displayName = ci.username || ci.name || 'Anonymous';
+              const initials = displayName.slice(0, 2).toUpperCase();
+              const timeLabel = formatTimestamp(ci.timestamp);
+
+              return (
+                <View
+                  key={`hug_card_${idx}`}
+                  style={[styles.userCard, { backgroundColor: bgColor }]}
+                >
+                  {/* Row: avatar + info + time */}
+                  <View style={styles.userCardRow}>
+                    {/* Avatar circle */}
+                    <View style={[styles.avatar, { backgroundColor: accentColor + '30' }]}>
+                      <Text style={[styles.avatarText, { color: accentColor }]}>
+                        {initials}
+                      </Text>
+                    </View>
+
+                    {/* Name / mood / sub-text */}
+                    <View style={styles.userCardInfo}>
+                      <Text style={styles.userName2}>{displayName}</Text>
+                      <Text style={[styles.userMood, { color: accentColor }]}>
+                        {getMoodEmoji(mood)}  {mood.charAt(0).toUpperCase() + mood.slice(1)}
+                      </Text>
+                      <Text style={styles.userSubText}>{subText}</Text>
+                    </View>
+
+                    {/* Timestamp */}
+                    {timeLabel ? (
+                      <Text style={styles.timeLabel}>
+                        {timeLabel.split(' ').slice(-1)[0]}
+                      </Text>
+                    ) : null}
+                  </View>
+
+                  {/* Hug action buttons */}
+                  {isCheckInsForHugs ? (
+                    <View style={styles.hugBtnRow}>
+                      <TouchableOpacity
+                        style={[styles.hugTypeBtn, { backgroundColor: '#FFFFFF' }]}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          if (!isUserLoggedIn || !user_id) {
+                            Alert.alert('Authentication Required', 'Please log in to send hugs.');
+                            return;
+                          }
+                          if (user_id === ci.userId) {
+                            Alert.alert('Action Not Allowed', 'You cannot send a virtual hug to yourself.');
+                            return;
+                          }
+                          setShowCheckInsModal(false);
+                          handleCheckInUserPress(ci);
+                        }}
+                      >
+                        <Text style={styles.hugTypeBtnText}>🤗  Warm Hug</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.hugTypeBtn, { backgroundColor: '#FFFFFF' }]}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          if (!isUserLoggedIn || !user_id) {
+                            Alert.alert('Authentication Required', 'Please log in to send hugs.');
+                            return;
+                          }
+                          if (user_id === ci.userId) {
+                            Alert.alert('Action Not Allowed', 'You cannot send a virtual hug to yourself.');
+                            return;
+                          }
+                          setShowCheckInsModal(false);
+                          handleCheckInUserPress(ci);
+                        }}
+                      >
+                        <Text style={styles.hugTypeBtnText}>💙  Calm Hug</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    /* "Open to Talk" flow — show chat CTA */
+                    <TouchableOpacity
+                      style={[styles.chatBtn, { borderColor: accentColor }]}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        setShowCheckInsModal(false);
+                        handleCheckInUserPress(ci);
+                      }}
+                    >
+                      <Text style={[styles.chatBtnText, { color: accentColor }]}>
+                        💬  Start Conversation
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
+            })
+          )}
+
+          {/* ── Single User Detail (shown after tapping a card & navigating) ── */}
+          {showUserDetailModal && selectedUserDetail && (
+            <View style={[styles.userCard, { backgroundColor: '#FFFFFF', marginTop: 8 }]}>
+              <View style={styles.userCardRow}>
+                <View style={[styles.avatar, { backgroundColor: '#FFD70030' }]}>
+                  <Text style={[styles.avatarText, { color: '#F9A825' }]}>
+                    {(selectedUserDetail?.user?.username || 'A').slice(0, 2).toUpperCase()}
+                  </Text>
+                </View>
+                <View style={styles.userCardInfo}>
+                  <Text style={styles.userName2}>
+                    {selectedUserDetail?.location_opt_in
+                      ? 'Anonymous User'
+                      : selectedUserDetail?.user?.username}
+                  </Text>
+                  {selectedUserDetail?.user?.email ? (
+                    <Text style={styles.userSubText}>
+                      {selectedUserDetail?.location_opt_in
+                        ? 'Anonymous Email'
+                        : selectedUserDetail?.user?.email}
+                    </Text>
+                  ) : null}
+                </View>
+              </View>
+
+              <View style={styles.hugBtnRow}>
+                {isCheckInsForHugs ? (
+                  <TouchableOpacity
+                    style={[styles.hugTypeBtn, styles.hugTypeBtnFilled]}
+                    activeOpacity={0.85}
+                    onPress={() => {
+                      if (user_id === selectedUserDetail.user?.id) {
+                        Alert.alert('Action Not Allowed', 'You cannot send a virtual hug to yourself.');
+                        return;
+                      }
+                      handleSelectHugTarget(selectedUserDetail);
+                    }}
+                  >
+                    <Text style={styles.hugTypeBtnTextFilled}>Send Virtual Hug 🤗</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={[styles.chatBtn, { borderColor: '#40E0D0', flex: 1 }]}
+                    activeOpacity={0.85}
+                    onPress={() => handleSelectChatTarget(selectedUserDetail)}
+                  >
+                    <Text style={[styles.chatBtnText, { color: '#40E0D0' }]}>
+                      Start Conversation 💬
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           )}
         </ScrollView>
       </SafeAreaView>
     </Modal>
   );
-
-  const renderUserDetailModal = () => (
-    <Modal
-      visible={showUserDetailModal}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={() => {
-        setShowUserDetailModal(false);
-        setIsCheckInsForHugs(false); // Reset the flag
-        setSelectedUserForChat(null); // Reset selected user for chat
-        setShowSelectUserButton(false); // Reset button visibility
-      }}
-    >
-      <SafeAreaView style={styles.locationDetailContainer}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        <View style={styles.locationDetailHeader}>
-          <TouchableOpacity onPress={() => {
-            setShowUserDetailModal(false);
-            setIsCheckInsForHugs(false); // Reset the flag
-            setSelectedUserForChat(null); // Reset selected user for chat
-            setShowSelectUserButton(false); // Reset button visibility
-          }} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
-          </TouchableOpacity>
-          <Text style={styles.locationDetailTitle}>
-            {isCheckInsForHugs ? 'Send Hug to User' : 'Start Chat with User'}
-          </Text>
-          {/* Select All - top right - only show for hugs */}
-          {isCheckInsForHugs && Array.isArray(checkInsForModal) && checkInsForModal.length > 0 && (
-            <TouchableOpacity
-              onPress={() => handleSelectAllHugTargets(checkInsForModal.map(ci => ({ id: ci.userId, username: ci.username || ci.name })))}
-              style={[styles.backButton, { position: 'absolute', right: 12 }]}
-              activeOpacity={0.85}
-            >
-              <Text style={{ fontWeight: '600', color: '#000' }}>Select all</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-        <ScrollView style={styles.locationDetailContent} contentContainerStyle={styles.locationDetailScrollContent}>
-         selectedUserDetail ? (
-            // Show single user for hugs
-            <TouchableOpacity style={styles.locationCard} activeOpacity={0.85} onPress={() =>
-            { setShowSelectUserButton(true) }}>
-              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 8 }}>
-                {selectedUserDetail?.location_opt_in ? 'Anonymous User' :  selectedUserDetail?.user?.username }
-              </Text>
-              {selectedUserDetail?.user?.email ? (
-                <Text style={{ fontSize: 14, color: '#666' }}>{selectedUserDetail?.location_opt_in ? 'Anonymous Email' :selectedUserDetail?.user?.email}</Text>
-              ) : null}
-              {/* {selectedUserDetail?.bio ? (
-                <Text style={{ fontSize: 14, color: '#666', marginTop: 8 }}>{selectedUserDetail.bio}</Text>
-              ) : null} */}
-
-              {/* Show different buttons based on the purpose */}
-              {showSelectUserButton && isCheckInsForHugs && (
-                <TouchableOpacity
-                  style={[styles.sendHugButton, { marginTop: 16 }]}
-                  onPress={() => {
-                    if(user_id === selectedUserDetail.user?.id) {
-                      Alert.alert("Action Not Allowed", "You cannot send a virtual hug to yourself.");
-                      return;
-                    }
-                    handleSelectHugTarget(selectedUserDetail);
-                  }}
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.sendHugButtonText}>Send Virtual Hug 🤗</Text>
-                </TouchableOpacity>
-              )}
-
-              {/* Show "Start Conversation" button when it's for chat */}
-              {showSelectUserButton && !isCheckInsForHugs && (
-                <TouchableOpacity
-                  style={[styles.openToTalkButton, { marginTop: 16 }]}
-                  onPress={() => handleSelectChatTarget(selectedUserDetail)}
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.openToTalkButtonText}>Start Conversation</Text>
-                </TouchableOpacity>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <Text style={{ textAlign: 'center', color: '#666', fontSize: 14, paddingVertical: 20 }}>
-              No user data
-            </Text>
-          )}
-        </ScrollView>
-      </SafeAreaView>
-    </Modal>
-  );
-
-
+};
 
 
 
@@ -817,8 +1114,11 @@ const setEmoji = (emoji:any) => {
       {/* Modals */}
       {renderFilterModal()}
       {renderLocationDetailModal()}
-      {renderCheckInsModal()}
-      {renderUserDetailModal()}
+      {/* {renderCheckInsModal()} */}
+      {/* {renderUserDetailModal()} */}
+
+       {/* ADD this one: */}
+      {renderSpreadLoveModal()}
 
       {/*Modal */}
       <Modal

@@ -86,13 +86,26 @@ const PendingHugsDetailScreen = ({ onBack }) => {
     }
   };
 
-  const handleHugReceive = () => {
-    console.log('Start a Chat pressed');
-    // Add navigation logic here
-    router.push('/virtual-hug/receive-hug');
-    // router.push('/hug_recevied');
+  // const handleHugReceive = () => {
+  //   console.log('Start a Chat pressed');
+  //   // Add navigation logic here
+  //   router.push('/virtual-hug/receive-hug');
+  //   // router.push('/hug_recevied');
     
-  };
+  // };
+
+  const handleHugReceive = (item) => {
+  const receiverType = item?.receiver_type?.toLowerCase();
+
+  if (receiverType === 'ai' || receiverType === 'community') {
+    router.push({
+      pathname: '/virtual-hug/receive-hug',
+      params: { message: item?.message },
+    });
+  } else {
+    router.push('/hug_recevied'); // 🔁 Replace with actual path
+  }
+};
 
   // const renderHugItem = ({ item }) => (
   //   <TouchableOpacity style={styles.hugItemCard} activeOpacity={0.7}>
@@ -122,7 +135,7 @@ const PendingHugsDetailScreen = ({ onBack }) => {
     
     <TouchableOpacity 
       style={styles.hugCard} activeOpacity={0.8}
-      onPress={handleHugReceive}
+       onPress={() => handleHugReceive(item)}  
     >
       
       

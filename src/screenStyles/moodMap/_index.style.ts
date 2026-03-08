@@ -982,4 +982,181 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+
+    safeArea: {
+    flex: 1,
+    backgroundColor: '#FAFAF5',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: '#FAFAF5',
+    borderBottomWidth: 0,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    letterSpacing: -0.3,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 32,
+    gap: 12,
+  },
+
+  // ── Group hug banner ──
+  groupHugBanner: {
+    backgroundColor: '#FFFDE7',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 4,
+  },
+  groupHugHeadline: {
+    fontSize: 18,
+    color: '#1A1A1A',
+    lineHeight: 26,
+    marginBottom: 16,
+  },
+  groupHugBold: {
+    fontWeight: '800',
+    color: '#1A1A1A',
+  },
+  groupHugBtn: {
+    backgroundColor: '#FFD700',
+    paddingVertical: 14,
+    borderRadius: 50,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  groupHugBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    letterSpacing: 0.2,
+  },
+  groupHugStat: {
+    fontSize: 13,
+    color: '#7A6F00',
+    fontWeight: '500',
+  },
+
+  // ── User cards ──
+  userCard: {
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 4,
+  },
+  userCardRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 14,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  avatarText: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  userCardInfo: {
+    flex: 1,
+  },
+  userName2: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 2,
+  },
+//   userMood: {
+//     fontSize: 14,
+//     fontWeight: '600',
+//     marginBottom: 2,
+//   },
+  userSubText: {
+    fontSize: 13,
+    color: '#666',
+  },
+//   timeLabel: {
+//     fontSize: 13,
+//     color: '#999',
+//     fontWeight: '500',
+//     marginTop: 2,
+//   },
+
+  // ── Hug buttons ──
+  hugBtnRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  hugTypeBtn: {
+    flex: 1,
+    paddingVertical: 11,
+    borderRadius: 50,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  hugTypeBtnFilled: {
+    flex: 1,
+    backgroundColor: '#FFD700',
+  },
+  hugTypeBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  hugTypeBtnTextFilled: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  chatBtn: {
+    paddingVertical: 11,
+    borderRadius: 50,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    marginTop: 2,
+  },
+  chatBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // ── Empty state ──
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 48,
+  },
+  emptyText: {
+    fontSize: 15,
+    color: '#999',
+    textAlign: 'center',
+  },
+    
 });

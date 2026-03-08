@@ -74,7 +74,7 @@ function MainLayout() {
         <Stack.Screen name="index" />
       </Stack>
 
-      {/* <Toast config={toastConfig} /> */}
+       <Toast config={toastConfig} />
       <StatusBar style="dark" />
     </ThemeProvider>
   );
