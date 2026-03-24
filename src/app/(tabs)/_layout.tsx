@@ -80,8 +80,45 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
       />
-     
+
+      {/* Hidden screens */}
+      <Tabs.Screen
+        name="Check_Ins/mood_check-in/index"
+        options={{
+          href: null, // 🔥 IMPORTANT
+          title: 'check-in',
+          tabBarIcon: ({ color }) => <Ionicons name="grid-outline" size={24} color={color} />,
+        }}
+      />
       
+      <Tabs.Screen
+        name="moodpattern/index"
+        options={{
+          href: null, // 🔥 IMPORTANT
+          title: 'moodpattern',
+          tabBarIcon: ({ color }) => <Ionicons name="grid-outline" size={24} color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="mood-screen/index"
+        options={{
+          href: null, // 🔥 IMPORTANT
+          title: 'mood-screen',
+          tabBarIcon: ({ color }) => <Ionicons name="grid-outline" size={24} color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="wellnesssuggestions/index"
+        options={{
+          href: null, // 🔥 IMPORTANT
+          title: 'wellnesssuggestions',
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+        }}
+      />
+      
+     
     </Tabs>
     
   );

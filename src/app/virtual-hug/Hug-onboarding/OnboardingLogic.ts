@@ -21,9 +21,9 @@ export const useOnboardingLogic = () => {
   } = useCheckInStatus();
 
   // Screen 2: Who Can Hug Screen State
-  const [friendsEnabled, setFriendsEnabled] = useState(true);
-  const [communityEnabled, setCommunityEnabled] = useState(true);
-  const [anonymousEnabled, setAnonymousEnabled] = useState(true);
+  const [friendsEnabled, setFriendsEnabled] = useState(false);
+  const [communityEnabled, setCommunityEnabled] = useState(false);
+  const [anonymousEnabled, setAnonymousEnabled] = useState(false);
   
   // Screen 3: Haptic Feedback Screen State
   const [hapticEnabled, setHapticEnabled] = useState(true);

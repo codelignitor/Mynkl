@@ -112,7 +112,7 @@ export default function WellnessSuggestionsScreen() {
     
       } else if(suggestionType === 'Wellness Boost') {
         // router.push('/wellnesssuggestions/mindfulness-videos/BreathingSuggestion');
-        router.push('/wellnesssuggestions/mindfulness-videos/Guidedmeditation');
+        router.push('/mindfulness-videos/Guidedmeditation');
         //router.push('/wellnesssuggestions/mindfulness-videos/MindfulMovement');
         // router.push('/wellnesssuggestions/mindfulness-videos/MindfulRelationships');
         // router.push('/wellnesssuggestions/mindfulness-videos/SleepStories');
@@ -163,7 +163,7 @@ export default function WellnessSuggestionsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F4A574" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" />
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         {/* Header with back button and centered title */}

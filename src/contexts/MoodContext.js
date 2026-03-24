@@ -119,8 +119,8 @@ export function MoodProvider({ children }) {
       setEntries(transformedEntries);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch mood calendar';
-      setError(errorMessage);
-      console.error('Error fetching mood calendar:', err);
+      // setError(errorMessage);
+      console.log('Error fetching mood calendar:', err);
       setEntries({});
     } finally {
       setLoading(false);

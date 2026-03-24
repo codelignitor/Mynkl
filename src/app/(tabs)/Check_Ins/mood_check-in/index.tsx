@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,27 +10,28 @@ import {
   Image,
   ScrollView,
   Alert,
+  RefreshControl,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, useFocusEffect  } from "expo-router";
 import Slider from "@react-native-community/slider";
 import { LinearGradient } from "expo-linear-gradient";
+
 import { getCheckInAiAnalysis, getMoodSuggestions } from "@/src/services/apis";
 import Header from "@/src/components/common/header";
 
 // SVG Mood Icons
-import Happy from "../../../assets/svgs/happy-icon.svg";
-import Calm from "../../../assets/svgs/calm-icon.svg";
-import Stressed from "../../../assets/svgs/stressed-icon.svg";
-import Lonely from "../../../assets/svgs/lonely-icon.svg";
-import Sad from "../../../assets/svgs/sad-icon.svg";
-import Frustrated from "../../../assets/svgs/frustrated.svg";
-import Grateful from "../../../assets/svgs/grateful-icon.svg";
+import Happy from "../../../../assets/svgs/happy-icon.svg";
+import Calm from "../../../../assets/svgs/calm-icon.svg";
+import Stressed from "../../../../assets/svgs/stressed-icon.svg";
+import Lonely from "../../../../assets/svgs/lonely-icon.svg";
+import Sad from "../../../../assets/svgs/sad-icon.svg";
+import Frustrated from "../../../../assets/svgs/frustrated.svg";
+import Grateful from "../../../../assets/svgs/grateful-icon.svg";
 
-import StaticEmotionalEmoji from "../../../assets/images/Static emotional emoji.png";
+import StaticEmotionalEmoji from "../../../../assets/images/Static emotional emoji.png";
 import { getMoodSuggestionRoute, handleMoodSuggestionClick } from "@/src/utils/moodSuggestionRouting";
 import { useCameraPermissions } from "expo-image-picker";
 import * as ImagePicker from 'expo-image-picker';
-import { getMoodSuggestionsFromCache, saveMoodSuggestionsToCache, } from "@/src/utils/moodCache";
 import { getMoodCacheKey } from "@/src/utils/moodCacheKeys";
 
 interface CheckInData {
@@ -53,43 +54,73 @@ export default function MoodScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [permission, requestPermission] = useCameraPermissions();
+  const [refreshing, setRefreshing] = useState(false); // Add refreshing state
 
   const [mood, setMood] = useState(null);
 
 
   // const mood = 'lonely'; // ← dynamic in real app
-  // c.onst cacheKey = MOOD_CACHE_KEY(mood);
+  // const cacheKey = MOOD_CACHE_KEY(mood);
+
+  // Add this function to format the summary text with proper styling
+  const formatMoodPatternSummary = (summary: string) => {
+    if (!summary) return null;
+    
+    // Split by bullet points or line breaks
+    const lines = summary.split('\n').filter(line => line.trim());
+    
+    return lines.map((line, index) => {
+      // Check if line starts with bullet point
+      if (line.trim().startsWith('-')) {
+        return (
+          <View key={index} style={styles.bulletPoint}>
+            <Text style={styles.bulletIcon}>•</Text>
+            <Text style={styles.bulletText}>{line.trim().substring(1).trim()}</Text>
+          </View>
+        );
+      }
+      return (
+        <Text key={index} style={styles.summaryText}>
+          {line.trim()}
+        </Text>
+      );
+    });
+  };
 
 
-  const handleAiAnalysis = async () => {
+  const handleAiAnalysis = async (isRefresh = false ) => {
     try {
+       if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
 
-      
-      setLoading(true);
+  
       const response = await getCheckInAiAnalysis();
       if (response) {
         setData(response);
       }
       
-      const cacheKey = getMoodCacheKey(mood);
+      // const cacheKey = getMoodCacheKey(mood);
 
     // 3️⃣ Load cached suggestions FIRST (instant UI)
-    const cachedSuggestions =
-      await getMoodSuggestionsFromCache(cacheKey);
+    // const cachedSuggestions =
+    //   await getMoodSuggestionsFromCache(cacheKey);
 
-    if (cachedSuggestions) {
-      setSuggestions(cachedSuggestions);
-    }
+    // if (cachedSuggestions) {
+    //   setSuggestions(cachedSuggestions);
+    // }
 
     // 4️⃣ Fetch fresh suggestions from API
       const suggestionsResponse = await getMoodSuggestions();
       if (suggestionsResponse) {
         setSuggestions(suggestionsResponse);
         // 5️⃣ Save fresh data to cache
-      await saveMoodSuggestionsToCache(
-        cacheKey,
-        suggestionsResponse
-      );
+      // await saveMoodSuggestionsToCache(
+      //   cacheKey,
+      //   suggestionsResponse
+      // );
       }
     
     } catch (error) {
@@ -100,13 +131,26 @@ export default function MoodScreen() {
         console.log("Unexpected AI Analysis Error:", error);
       }
     } finally {
-      setLoading(false);
+     if (isRefresh) {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     handleAiAnalysis();
   }, []);
+
+    // Refresh when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      // Refresh data when returning to this screen
+      handleAiAnalysis(true);
+    }, [])
+  );
+
 
   useEffect(() => {
     try {
@@ -116,6 +160,11 @@ export default function MoodScreen() {
       setMood(null);
     }
   }, [params.data]);
+
+  // Pull-to-refresh handler
+  const onRefresh = useCallback(() => {
+    handleAiAnalysis(true);
+  }, [])
 
   const getMoodGradient = (mood) => {
     switch (mood) {
@@ -151,6 +200,24 @@ const renderSuggestionDetails = (suggestion, index) => {
   // Check if this is a null details case but we have a config from routing
   const hasDetails = suggestion?.details && Object.keys(suggestion.details).length > 0;
   
+  // Handle message_choice type
+  if (suggestionConfig.type === 'message_suggestion') {
+    return (
+      <View style={styles.detailsContainer}>
+        <Text style={styles.detailsTitle}>💬 Connect with Someone</Text>
+        <Text style={styles.detailsDescription}>
+          {suggestion.suggestion || "Reach out to someone who cares about you."}
+        </Text>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => handleSuggestionPress(suggestion, index)}
+        >
+          <Text style={styles.actionButtonText}>Send appretiation</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   // Handle null details cases first (camera, social, journal)
   if (!hasDetails) {
     const lowerSuggestion = suggestion?.suggestion?.toLowerCase() || '';
@@ -167,7 +234,7 @@ const renderSuggestionDetails = (suggestion, index) => {
             style={styles.actionButton}
             onPress={() => handleSuggestionPress(suggestion, index)}
           >
-            <Text style={styles.actionButtonText}>Open Camera</Text>
+            <Text style={styles.actionButtonText}>navigate</Text>
           </TouchableOpacity>
         </View>
       );
@@ -298,11 +365,17 @@ const renderSuggestionDetails = (suggestion, index) => {
       );
       
     case 'activity':
+            // Check if this is a social_feature activity
+      const isSocialFeature = details?.type === 'social_feature' || 
+                              suggestionConfig?.subType === 'social_feature' ||
+                              suggestion?.suggestion?.toLowerCase().includes('toggle open to talk') ||
+                              suggestion?.suggestion?.toLowerCase().includes('connect with others');
+    
       return (
         <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>🧘‍♀️ Activity:</Text>
+          {/* <Text style={styles.detailsTitle}>🧘‍♀️ Activity:</Text> */}
           <Text style={styles.detailsName}>
-            {details.type ? details.type.replace(/_/g, ' ').toUpperCase() : 'Activity'}
+            {/* {details.type ? details.type.replace(/_/g, ' ').toUpperCase() : 'Activity'} */}
           </Text>
           
           {details.reason && (
@@ -316,7 +389,7 @@ const renderSuggestionDetails = (suggestion, index) => {
             onPress={() => handleSuggestionPress(suggestion, index)}
           >
             <Text style={styles.actionButtonText}>
-              {suggestionConfig.route ? 'Navigate' : 'navigate'}
+              {isSocialFeature ? 'Find Someone to Talk To' : (suggestionConfig.route ? 'Navigate' : 'Get Started')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -374,6 +447,8 @@ const renderSuggestionDetails = (suggestion, index) => {
       return "✨";
     case 'prompt':
       return "📝";
+    case 'message_suggestion':  // ← Add this case
+      return "💬";
     default:
       return "✨";
   }
@@ -454,8 +529,31 @@ const handleImagePicker = async () => {
 //   }
 // };
 
-// Replace your existing handleSuggestionPress with this
+// Add this function near your other helper functions (around line 206)
+const showMessageOptions = () => {
+  Alert.alert(
+    "Choose an option",
+    "How would you like to connect?",
+    [
+      {
+        text: "Message",
+        onPress: () => router.push('/Opentotalk/StartChat')
+      },
+      {
+        text: "Virtual Hug",
+        onPress: () => router.push('/hugs-selection')
+      },
+      {
+        text: "Cancel",
+        style: "cancel"
+      }
+    ],
+    { cancelable: true }
+  );
+};
 
+
+// Replace your existing handleSuggestionPress with this
 const handleSuggestionPress = (suggestion, index) => {
   const config = getMoodSuggestionRoute(suggestion);
   
@@ -463,6 +561,44 @@ const handleSuggestionPress = (suggestion, index) => {
 
   // const config = getMoodSuggestionRoute(suggestion);
   console.log('Generated config:', config);
+
+    // Check if this suggestion should navigate to journal
+  const targetRoute = config?.route;
+  const isJournalRoute = targetRoute === '/journal';
+  
+  if (isJournalRoute) {
+    // Extract the prompt text from suggestion
+    let promptText = '';
+    
+    // Try to get prompt from different possible locations
+    if (config.type === 'prompt' && suggestion.details?.prompt) {
+      // For prompt type suggestions
+      promptText = suggestion.details.prompt;
+    } else if (suggestion.suggestion) {
+      // For other suggestions, use the main suggestion text
+      promptText = suggestion.suggestion;
+    } else if (suggestion.details?.prompt) {
+      // Fallback to details.prompt
+      promptText = suggestion.details.prompt;
+    }
+    
+    // Navigate to journal with prompt parameter
+    router.push({
+      pathname: targetRoute,
+      params: { 
+        prompt: promptText,
+        // fromMoodSuggestion: true //optional flag
+      }
+    });
+    return;
+  }
+  
+   // Handle message suggestion type - show alert with options
+  if (config?.type === 'activity' && config.route === null) {
+    showMessageOptions(); // Call the dedicated function
+    return;
+  }
+
 
   // Handle null details cases first
   if (config.type === 'camera') {
@@ -594,8 +730,16 @@ const handleSuggestionPress = (suggestion, index) => {
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           style={{ flex: 1, width: "100%" }}
-          contentContainerStyle={{ alignItems: "center", paddingBottom: 30 }}
+          contentContainerStyle={{ alignItems: "center", paddingBottom: 90 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            tintColor="#FFF"
+                            colors={['#FFF']}
+                          />
+            }
         >
           <Header title="Mood" showBack />
 
@@ -643,6 +787,20 @@ const handleSuggestionPress = (suggestion, index) => {
             />
             <Text style={styles.sliderLabel}>STRONG</Text>
           </View>
+
+
+          {/* NEW: Mood Pattern Summary Card */}
+          {suggestions?.ai_mood_pattern_summary && (
+            <View style={[styles.patternCard, { backgroundColor: moodGradient[1] }]}>
+              <View style={styles.patternHeader}>
+                <Text style={styles.patternIcon}>📊</Text>
+                <Text style={styles.patternTitle}>Mood Pattern</Text>
+              </View>
+              <View style={styles.patternContent}>
+                {formatMoodPatternSummary(suggestions.ai_mood_pattern_summary)}
+              </View>
+            </View>
+          )}
 
           {/* // Update the suggestion card rendering in your JSX */}
           {suggestions?.suggestions?.length > 0 && suggestions.suggestions.map((suggestion, idx) => {
@@ -698,7 +856,9 @@ const handleSuggestionPress = (suggestion, index) => {
               >
                 <View style={styles.suggestionHeader}>
                   <Text style={styles.suggestionIcon}>
-                    {getSuggestionIcon(suggestion)}
+                    {suggestionConfig?.type === 'message_suggestion' 
+                      ? '💬' 
+                      : getSuggestionIcon(suggestion)}
                   </Text>
                   <Text style={[
                     styles.suggestionText,
@@ -1020,5 +1180,65 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: "#033",
+  },
+
+  // New styles for Mood Pattern Card
+  patternCard: {
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 12,
+    width: "90%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  patternHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.3)",
+    paddingBottom: 8,
+  },
+  patternIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  patternTitle: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  patternContent: {
+    marginTop: 4,
+  },
+  summaryText: {
+    color: "white",
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 8,
+    opacity: 0.95,
+  },
+  bulletPoint: {
+    flexDirection: "row",
+    marginBottom: 8,
+    paddingLeft: 4,
+  },
+  bulletIcon: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "bold",
+    marginRight: 8,
+    opacity: 0.9,
+  },
+  bulletText: {
+    color: "white",
+    fontSize: 14,
+    lineHeight: 20,
+    flex: 1,
+    opacity: 0.95,
   },
 });

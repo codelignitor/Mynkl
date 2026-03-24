@@ -101,11 +101,11 @@ export const useHugSettings = () => {
       const data = await getHugSettings();
       
       const apiSettings = {
-        haptic_feedback: data.haptic_feedback ?? true,
+        haptic_feedback: data.haptic_feedback ?? false,
         intensity: data.intensity ?? 7,
-        send_hugs_to_friends: data.send_hugs_to_friends ?? true,
-        send_hugs_to_community: data.send_hugs_to_community ?? true,
-        anonymous_support: data.anonymous_support ?? true,
+        send_hugs_to_friends: data.send_hugs_to_friends ?? false,
+        send_hugs_to_community: data.send_hugs_to_community ?? false,
+        anonymous_support: data.anonymous_support ?? false,
         reveal_name_in_hugs: data.reveal_name_in_hugs ?? false,
       };
       

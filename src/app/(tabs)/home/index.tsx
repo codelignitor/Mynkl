@@ -313,7 +313,7 @@ const MoodMapScreen = () => {
 
   const handleNotificationsPress = () => {
     console.log('Notifications pressed');
-    // router.push('/Notifications');
+    router.push('/Notifications');
   };
 
   const handleSettingsPress = () => {

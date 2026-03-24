@@ -76,7 +76,20 @@ const OpenToTalkScreen = () => {
       style={styles.gradient}
     >
       <View style={styles.container}>
-        <Text style={styles.header}>mynkl</Text>
+        <View style={styles.headerRow}>
+  {/* Left */}
+  <TouchableOpacity onPress={() => router.back()} style={styles.side}>
+    <MaterialIcons name="arrow-back" size={24} color="#fff" />
+  </TouchableOpacity>
+
+  {/* Center */}
+  <View style={styles.center}>
+    <Text style={styles.header}>mynkl</Text>
+  </View>
+
+  {/* Right spacer */}
+  <View style={styles.side} />
+</View>
         <Text style={styles.title}>Hello!</Text>
         <Text style={styles.subtitle}>Ready for a chat?</Text>
         <View style={styles.toggleRow}>

@@ -53,8 +53,6 @@ export default function MoodPatternScreen() {
 
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.chartContainer}>
-        
-
           {/* Toggle */}
           <View style={styles.toggleContainer}>
             <TouchableOpacity
@@ -124,9 +122,19 @@ export default function MoodPatternScreen() {
                   strokeWidth: '2',
                   stroke: '#000',
                 },
+                // This makes the Y-axis show static values 0-10
+                formatYLabel: (yValue) => {
+                  // Force static Y-axis labels
+                  const staticLabels = ['0', '2', '4', '6', '8', '10'];
+                  const index = Math.floor(parseFloat(yValue) / 2);
+                  return staticLabels[index] || yValue;
+                },
               }}
               bezier
               style={{ borderRadius: 12 }}
+              // Force Y-axis to show range 0-10
+              fromZero={true}
+              segments={5}
             />
           ) : (
             <Text style={styles.noDataText}>No mood data available for this range.</Text>
@@ -180,8 +188,6 @@ export default function MoodPatternScreen() {
           <Text style={styles.tipText}>Creativity improves your mood.</Text>
         </TouchableOpacity>
 
-        
-
         {/* Correlation Tags */}
         <Text style={styles.correlationTitle}>Mood Correlation Tags</Text>
         <ScrollView
@@ -189,9 +195,6 @@ export default function MoodPatternScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.correlationScrollContainer}
         >
-         
-
-          {/* Static entries (not from API) */}
           <TouchableOpacity
             key="static-activities"
             style={styles.correlationTag}
@@ -233,7 +236,7 @@ const styles = StyleSheet.create({
   headerTextContainer: { flex: 1, marginTop: 40 },
   title: { fontSize: 24, fontWeight: 'bold', color: '#111', marginBottom: 4 },
   subtitle: { fontSize: 14, color: '#444' },
-  container: { padding: 20, paddingTop: 0, backgroundColor: '#fefce8' },
+  container: { padding: 20, paddingTop: 0, paddingBottom: 80, backgroundColor: '#fefce8' },
   chartContainer: { marginBottom: 20, borderRadius: 12, overflow: 'hidden' },
   chartLabel: {
     fontSize: 16,
@@ -386,8 +389,7 @@ const styles = StyleSheet.create({
   borderRadius: 12,
   alignItems: 'center',
   justifyContent: 'center',
-  marginTop: 20,
-  marginBottom: 30,
+  marginBottom: 60,
 },
 reflectButtonText: {
   color: '#fff',

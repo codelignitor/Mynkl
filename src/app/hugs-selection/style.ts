@@ -18,13 +18,18 @@ export const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
     flexDirection: 'row',
-    alignItems: 'center',
+    
     justifyContent: 'space-between',
     marginBottom: 10,
+  },
+   backButton: {
+    width: 30,
+    alignItems: 'flex-start',
   },
   appName: {
     fontSize: 26,
     fontWeight: '600',
+    alignItems: 'center',
     color: '#555',
   },
   title: {

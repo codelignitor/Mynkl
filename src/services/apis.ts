@@ -243,6 +243,12 @@ export const getMoodSuggestions = async () => {
   return response.data; 
 };
 
+// In your apis.ts file
+export const checkSadnessPattern = async () => {
+  const response = await axiosInstance.get('/Wellness/check-sadness-pattern');
+  return response.data;
+};
+
 export const getAiActivitySuggestions = async (token: string) => {
   try {
     const response = await axiosInstance.get('/activity/AI-Suggestions', {
@@ -314,6 +320,7 @@ export const createJournalEntry = async (payload: {
   mood: string;
   reflections?: string;
   audio?: any; // For file uploads
+  image?: any;
 }) => {
   const formData = new FormData();
   
@@ -327,6 +334,11 @@ export const createJournalEntry = async (payload: {
   
   if (payload.audio) {
     formData.append('audio', payload.audio);
+  }
+
+  // Add image if present
+  if (payload.image) {
+    formData.append('image', payload.image);
   }
 
   const response = await axiosInstance.post('/home/journal', formData, {
@@ -343,6 +355,7 @@ export interface JournalEntry {
   mood: string;
   reflection_text: string;
   created_at: string;
+  image?: string;
 }
 
 export interface JournalResponse {
@@ -381,6 +394,10 @@ export const receiveHugsList = async () => {
 };
 
 
+export const shufflePrompt = async () => {
+  const response = await axiosInstance.get('/activity/journal/shuffle-prompt');
+  return response.data;
+};
 
 
 export const sendHug = async (payload: any) => {
@@ -479,7 +496,7 @@ export const getMoodCalendar = async (year: number, month: number) => {
     const response = await axiosInstance.get('/home/mood-calendar', { params: { year, month } });
     return response.data;
   } catch (error) {
-    console.error('❌ Error fetching mood calendar:', error);
+    console.log('❌ Error fetching mood calendar:', error);
     throw error;
   }
 };
@@ -622,7 +639,7 @@ export const getCelebrationMessage = async () => {
     console.log('🎉 Celebration API response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('❌ Error fetching celebration message:', error);
+    console.log('❌ Error fetching celebration message:', error);
     // Return default structure on error
     return {
       celebrated: false,

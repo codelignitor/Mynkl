@@ -100,10 +100,15 @@ export function useAudioRecorder() {
       
       setRecording(null);
       setIsRecording(false);
-      setAudioUri(uri || null);
       setAmplitude(0);
-
-      return uri;
+      
+      // Set audioUri state for future use, but also return it directly
+      if (uri) {
+        setAudioUri(uri);
+        return uri;
+      }
+      
+      return null;
     } catch (error) {
       console.error('Failed to stop recording:', error);
       return null;
@@ -131,14 +136,21 @@ export function useAudioRecorder() {
     }
   };
 
-  const transcribeCurrentAudio = async (): Promise<string | null> => {
-    if (!audioUri) return null;
+  // Modified to accept an optional URI parameter
+  const transcribeCurrentAudio = async (uri?: string): Promise<string | null> => {
+    // Use provided URI or fall back to state
+    const audioFileUri = uri || audioUri;
+    
+    if (!audioFileUri) {
+      console.log('No audio URI available for transcription');
+      return null;
+    }
     
     try {
       setIsConverting(true);
       
       const audioFile = {
-        uri: audioUri,
+        uri: audioFileUri,
         type: 'audio/m4a',
         name: `recording-${Date.now()}.m4a`,
       };

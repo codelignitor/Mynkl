@@ -1,4 +1,4 @@
-import { checkIn, getAiActivitySuggestions, getAiMoodPattern, getHomeDetails, getOpenToTalkStatus, getReflectivePrompt, submitJournal, updateOpenToTalk } from '@/src/services/apis';
+import { checkIn, checkSadnessPattern, getAiActivitySuggestions, getAiMoodPattern, getHomeDetails, getOpenToTalkStatus, getReflectivePrompt, submitJournal, updateOpenToTalk } from '@/src/services/apis';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import Toast from 'react-native-toast-message';
@@ -22,6 +22,7 @@ export function useReflectiveMood() {
 
    
     const [isLoading , setIsLoading] = useState<boolean>(false);
+    const [isCheckingPattern, setIsCheckingPattern] = useState<boolean>(false);
        
     const getMoodPattern = async () => {
         try { 
@@ -47,6 +48,35 @@ export function useReflectiveMood() {
 
   console.log('selected Moods' , selectedMoods)
 
+  // Check sadness pattern and redirect accordingly
+  const checkAndRedirect = async (redirectPath: string) => {
+    try {
+      setIsCheckingPattern(true);
+      const response = await checkSadnessPattern();
+      
+      if (response?.triggered === true) {
+        // Redirect to sadness analysis screen
+        router.push("/Emotional-AI-trends/Frequent-sadness");
+      } else {
+        // Proceed with normal redirect
+        router.push('/wellnesssuggestions');
+      }
+    } catch (error) {
+      console.error('Error checking sadness pattern:', error);
+      // On error, proceed with normal redirect as fallback
+      router.push(redirectPath);
+      
+      Toast.show({
+        type: "error",
+        text1: "Unable to check pattern",
+        text2: "Proceeding with normal flow",
+        position: "top",
+        visibilityTime: 2000,
+      });
+    } finally {
+      setIsCheckingPattern(false);
+    }
+  };
 
   const submitReflectionHandler = async (audioFile) => {
   try {
@@ -80,8 +110,11 @@ export function useReflectiveMood() {
         visibilityTime: 2000,
       });
 
-      router.push("/wellnesssuggestions");
-    }
+      // Check sadness pattern before redirecting
+        await checkAndRedirect("/wellnesssuggestions")
+         } else {
+        throw new Error(response?.message || "Failed to save reflection");
+      }
 
   } catch (error) {
     console.log("Upload error: ", error);
@@ -95,6 +128,11 @@ export function useReflectiveMood() {
     });
   }
 };
+
+  // Skip handler function to be used in the component
+  const handleSkip = async () => {
+    await checkAndRedirect("/wellnesssuggestions");
+  };
    
     useEffect(() => {
     getMoodPattern();
@@ -102,5 +140,5 @@ export function useReflectiveMood() {
     }
     , []);
 
-    return {isLoading , reflectivePrompt , selectedMoods, setSelectedMoods ,reflection, setReflection ,submitReflectionHandler };
+    return {isLoading , reflectivePrompt , selectedMoods, setSelectedMoods ,reflection, setReflection ,submitReflectionHandler, handleSkip, };
 }

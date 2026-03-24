@@ -122,7 +122,7 @@ export default function GuidedMeditationsScreen() {
             {/* Meditation Silhouette Image */}
             <View style={styles.imageContainer}>
               <Image
-                source={require('../../../../assets/images/Copy_of_Guided_Meditations-removebg-preview.png')}
+                source={require('../../../assets/images/Copy_of_Guided_Meditations-removebg-preview.png')}
                 style={styles.meditationImage}
                 resizeMode="contain"
               />

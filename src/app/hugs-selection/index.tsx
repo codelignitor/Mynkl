@@ -13,7 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from './style';
 import { useVirtualHugLogic } from './VirtualHugLogic';
-import { useRouter } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { getUsers } from '@/src/services/apis';
 
 const VirtualHugFlow = () => {
@@ -83,7 +83,7 @@ const VirtualHugFlow = () => {
       <SafeAreaView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={goToPreviousScreen}> 
+          <TouchableOpacity onPress={() => router.back()} style = {styles.backButton}> 
             <Ionicons name="arrow-back" size={24} color="#333" />
           </TouchableOpacity>
           <Text style={styles.appName}>Mynkl</Text>

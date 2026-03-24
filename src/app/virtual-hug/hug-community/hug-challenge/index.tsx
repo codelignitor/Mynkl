@@ -15,6 +15,7 @@ import { router } from 'expo-router';
 import { useHugMission } from '@/src/screenHooks/useHugMission';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSimpleCrisisCheck } from '@/src/screenHooks/useCrisisCheck';
+import { Ionicons } from '@expo/vector-icons';
 // import { useSimpleCrisisCheck } from '@/src/hooks/useSimpleCrisisCheck';
 
 export default function DailyHugMissionScreen() {
@@ -96,8 +97,19 @@ export default function DailyHugMissionScreen() {
                       
               {/* Header Badge */}
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>COMMUNITY HUG</Text>
-              </View>
+  {/* Left */}
+  <TouchableOpacity onPress={() => router.back()} style={styles.side}>
+    <Ionicons name="arrow-back" size={24} color="#333" />
+  </TouchableOpacity>
+
+  {/* Center */}
+  <View style={styles.center}>
+    <Text style={styles.badgeText}>COMMUNITY HUG</Text>
+  </View>
+
+  {/* Right spacer */}
+  <View style={styles.side} />
+</View>
 
               {/* Title */}
               <Text style={styles.title}>
@@ -232,17 +244,32 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  badge: {
-    borderRadius: 20,
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  badgeText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: 1,
-  },
+ badge: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  width: '100%',
+  marginTop: 20,
+  marginBottom: 30,
+},
+
+side: {
+  width: 40,
+  alignItems: 'flex-start',
+},
+
+center: {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+badgeText: {
+  fontSize: 14,
+  fontWeight: '700',
+  color: '#FFFFFF',
+  letterSpacing: 1,
+},
   title: {
     fontSize: 32,
     fontWeight: '700',

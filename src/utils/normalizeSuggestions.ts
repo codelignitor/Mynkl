@@ -54,8 +54,8 @@ export const normalizeSuggestion = (suggestion, mood): SuggestionAction => {
   // 5. GRATEFUL → message suggestion
   if (details.type === "message_suggestion") {
     return {
-    //   action: "SHOW_MESSAGE",
-    //   message: details.ai_generated_message,
+      // action: "SHOW_MESSAGE",
+    // message: details.ai_generated_message,
      action: "ROUTE",
       route: "/Opentotalk/StartChat",
     };

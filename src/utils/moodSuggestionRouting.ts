@@ -13,12 +13,15 @@ const moodSuggestionRoutingConfig = {
   'guided_meditation': '/wellnesssuggestions/mindfulness-videos/Guidedmeditation',
   'deep_breathing': '/Selfcare_tips/breathingSuggestion',
   
+  //Mindful Breathing / Grateful
+  'mindful_breathing': '/Selfcare_tips/breathingSuggestion' ,//'/wellnesssuggestions/mindfulness-videos/BreathingSuggestion',
+  
   // social_feature/ Lonely  ✅
   'social_feature': '/Opentotalk/StartChat',
   'virtual_connection': '/hugs-selection',
   
   // Journaling/Reflection ✅
-  'message_suggestion': '/Opentotalk/StartChat',
+  // 'message_suggestion': '/Opentotalk/StartChat',
   'mindful_activity': '/Selfcare_tips/Gratitute',
   'reflection_prompt': '/journal',
   'gratitude_journaling': '/Selfcare_tips/Gratitute',
@@ -30,17 +33,6 @@ const moodSuggestionRoutingConfig = {
 
 // Function to determine suggestion type and get appropriate routing
 export const getMoodSuggestionRoute = (suggestionItem: { details: any; suggestion?: any; }) => {
-  
-  // if (!suggestionItem?.details) {
-  //   return {
-  //     type: 'text',
-  //     route: null,
-  //     config: {
-  //       isText: true,
-  //       expandable: true
-  //     }
-  //   };
-  // }
 
 
   const { details, suggestion  } = suggestionItem;
@@ -49,26 +41,42 @@ export const getMoodSuggestionRoute = (suggestionItem: { details: any; suggestio
   if (!details || Object.keys(details).length === 0) {
     const lowerSuggestion = suggestion?.toLowerCase() || '';
 
-    // Case 1: Talking to friend
-    if (lowerSuggestion.includes('talk') || lowerSuggestion.includes('friend')) {
+    
+    // Case 1: Message suggestion with alert options
+    if (lowerSuggestion.includes('message') || lowerSuggestion.includes('thank-you') || lowerSuggestion.includes('kind message')) {
       return {
-        type: 'activity',
-        route: '/Opentotalk/StartChat',
+        type: 'message', // New type for message choices
+        route: null, // No direct route, will show alert
         config: {
-          isActivity: true,
-          activityType: 'social',
-          originalSuggestion: suggestion
+          originalSuggestion: suggestion,
+          options: [
+            { label: 'Message', route: '/chat' },
+            { label: 'Virtual Hug', route: '/hugs-selection' }
+          ]
         }
       };
     }
 
+    // Case 1: Talking to friend
+    // if (lowerSuggestion.includes('talk') || lowerSuggestion.includes('friend')) {
+    //   return {
+    //     type: 'activity',
+    //     route: '/Opentotalk/StartChat',
+    //     config: {
+    //       isActivity: true,
+    //       activityType: 'social',
+    //       originalSuggestion: suggestion
+    //     }
+    //   };
+    // }
+
     // Case 2: Photo/Camera
     if (lowerSuggestion.includes('photo') || lowerSuggestion.includes('capture')) {
       return {
-        type: 'camera',
-        route: null, // Will be handled by Linking or camera function
+        type: 'activity',
+        route: '/Selfcare_tips/Gratitute', // Will be handled by Linking or camera function
         config: {
-          shouldOpenCamera: true,
+          // shouldOpenCamera: true,
           originalSuggestion: suggestion
         }
       };

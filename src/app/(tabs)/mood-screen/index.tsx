@@ -18,12 +18,13 @@ import VoiceInputField from '@/src/components/common/voiceInputfield';
 
 export default function MoodReflectionScreen() {
   const router = useRouter();
-  const { reflectivePrompt, isLoading, reflection, setReflection, selectedMoods, setSelectedMoods, submitReflectionHandler } = useReflectiveMood();
+  const { reflectivePrompt, isLoading, reflection, setReflection, selectedMoods, setSelectedMoods, submitReflectionHandler, handleSkip } = useReflectiveMood();
   
   const [isConverting, setIsConverting] = useState(false);
   const moods = ['Focus', 'Calm', 'Anxious', 'Inspired'];
 
   const toggleMood = (mood: string) => {
+    
     setSelectedMoods((prev: string[]) => {
       if (prev.includes(mood)) {
         return prev.filter((m) => m !== mood);
@@ -33,11 +34,11 @@ export default function MoodReflectionScreen() {
     });
   };
 
-  // Handle skip button press
-  const handleSkip = () => {
-    router.push("/wellnesssuggestions");
-    // router.push("/Emotional-AI-trends/Frequent-sadness");
-  };
+  // // Handle skip button press
+  // const handleSkip = () => {
+  //   router.push("/wellnesssuggestions");
+  //   // router.push("/Emotional-AI-trends/Frequent-sadness");
+  // };
 
   // Show toast notification
   const showToast = (type: 'success' | 'error', text1: string, text2?: string) => {
@@ -100,7 +101,7 @@ export default function MoodReflectionScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F1E8" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" />
 
       {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -174,12 +175,17 @@ export default function MoodReflectionScreen() {
         <TouchableOpacity
           style={styles.submitButton}
           onPress={handleSubmit}
+          disabled ={isLoading}
         >
-          <Text style={styles.submitButtonText}>Submit and continue</Text>
+          {/* <Text style={styles.submitButtonText}>Submit and continue</Text> */}
+          <Text style={styles.submitButtonText}>
+            {isLoading ? 'Submitting...' : 'Submit and continue'}
+          </Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={styles.skipButton}
+          disabled = {isLoading}
           onPress={handleSkip}
         >
           <Text style={styles.skipButtonText}>Skip for now</Text>

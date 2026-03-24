@@ -53,35 +53,37 @@ export default function VoiceInputField({
     }).start();
   }, [amplitude]);
 
-  const handleMicPress = async () => {
-    if (isConverting) return;
-    
-    if (isRecording) {
-      // Already recording, should stop and send
-      const uri = await stopRecording();
-      if (uri) {
-        try {
-          const text = await transcribeCurrentAudio();
-          if (text) {
-            setInputText(text);
-            onTextChange?.(text);
-            onSubmit?.(text);
-            showToast('Voice message converted to text');
-          } else {
-            showToast('No speech detected');
-          }
-        } catch (error) {
-          showToast('Failed to convert audio');
+ const handleMicPress = async () => {
+  if (isConverting) return;
+  
+  if (isRecording) {
+    // Already recording, should stop and send
+    const uri = await stopRecording(); // This now returns the URI directly
+    if (uri) {
+      try {
+        // Use the URI directly instead of relying on state
+        const text = await transcribeCurrentAudio(uri); // Pass URI as parameter
+        if (text) {
+          setInputText(text);
+          onTextChange?.(text);
+          onSubmit?.(text);
+          showToast('Voice message converted to text');
+        } else {
+          showToast('No speech detected');
         }
-      }
-    } else {
-      // Start recording
-      const started = await startRecording();
-      if (!started) {
-        Alert.alert('Permission Required', 'Microphone permission is required');
+      } catch (error) {
+        console.error('Transcription error:', error);
+        showToast('Failed to convert audio');
       }
     }
-  };
+  } else {
+    // Start recording
+    const started = await startRecording();
+    if (!started) {
+      Alert.alert('Permission Required', 'Microphone permission is required');
+    }
+  }
+};
 
   const handleCancelRecording = () => {
     cancelRecording();

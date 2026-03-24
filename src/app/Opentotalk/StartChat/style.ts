@@ -10,11 +10,31 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
   },
+
   header: {
     color: '#b3b3b3',
     fontSize: 26,
     fontWeight: '600',
   },
+  headerRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  width: '100%',
+  marginBottom: 10,
+},
+
+side: {
+  width: 40,
+  alignItems: 'flex-start',
+  justifyContent: 'center',
+},
+
+center: {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
   title: {
     marginTop: 15,
     color: '#fff',
