@@ -389,7 +389,7 @@ const renderSuggestionDetails = (suggestion, index) => {
             onPress={() => handleSuggestionPress(suggestion, index)}
           >
             <Text style={styles.actionButtonText}>
-              {isSocialFeature ? 'Find Someone to Talk To' : (suggestionConfig.route ? 'Navigate' : 'Get Started')}
+              {isSocialFeature ? 'Find Someone to Talk To' : (suggestionConfig.route ? 'Navigate' : 'Send appreciation')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -537,7 +537,7 @@ const showMessageOptions = () => {
     [
       {
         text: "Message",
-        onPress: () => router.push('/Opentotalk/StartChat')
+        onPress: () => router.push('/chat_comments')
       },
       {
         text: "Virtual Hug",
