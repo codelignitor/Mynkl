@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext, useMemo } from "react";
-import { SafeAreaView, StyleSheet, ActivityIndicator, Alert, Button } from "react-native";
+import { SafeAreaView, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { ChannelList } from "stream-chat-expo";
 import { StreamChat } from "stream-chat";
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
@@ -58,7 +58,6 @@ export default function ChannelListScreen() {
         const targetUserId = params?.targetUserId;
         if (!targetUserId || typeof targetUserId !== 'string') return;
         if (targetUserId === user_id) return;
-        console.log("Opening direct chat with:", targetUserId);
 
         // Create or get a distinct messaging channel between the two users
         const channel = client.channel('messaging', {

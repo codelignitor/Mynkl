@@ -206,7 +206,7 @@ const handleIntensityChange = useCallback(async (value: number) => {
                   trackColor={{ false: '#D1D5DB', true: '#10B981' }}
                   thumbColor="#FFFFFF"
                   ios_backgroundColor="#D1D5DB"
-                  // disabled={saving}
+                  disabled={saving}
                 />
               </View>
             </View>

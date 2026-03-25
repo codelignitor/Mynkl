@@ -41,23 +41,6 @@
         }
       }
     },
-    "build": {
-      "development": {
-        "developmentClient": true,
-        "distribution": "internal"
-      },
-      "preview": {
-        "distribution": "internal",
-        "android": {
-          "buildType": "apk"
-        }
-      },
-      "production": {
-        "android": {
-          "buildType": "apk"
-        }
-      }
-    },
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -90,7 +73,9 @@
             "modularHeaders": true
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

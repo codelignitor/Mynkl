@@ -334,14 +334,14 @@ const setEmoji = (emoji:any) => {
                  Check-ins in last 24h: {comentsResponse?.total_check_ins || 0}
                 </Text>
                {comentsResponse?.total_check_ins > 0 && (
-                  <Text style={styles.checkInBreakdown}>
-                    Moods:{" "}
-                    {Object.entries(comentsResponse?.mood_counts || {})
-                      .map(([mood, count]) => `${mood}: ${count}`)
-                      .join(", ")}
-                  </Text>
-                )}
-                              
+  <Text style={styles.checkInBreakdown}>
+    Moods:{" "}
+    {Object.entries(comentsResponse?.mood_counts || {})
+      .map(([mood, count]) => `${mood}: ${count}`)
+      .join(", ")}
+  </Text>
+)}
+              
               </View>
             </View>
 

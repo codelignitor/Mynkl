@@ -243,7 +243,7 @@ export const getMoodSuggestions = async () => {
   return response.data; 
 };
 
-// In your apis.ts file
+
 export const checkSadnessPattern = async () => {
   const response = await axiosInstance.get('/Wellness/check-sadness-pattern');
   return response.data;

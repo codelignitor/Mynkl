@@ -10,7 +10,6 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
   },
-
   header: {
     color: '#b3b3b3',
     fontSize: 26,
