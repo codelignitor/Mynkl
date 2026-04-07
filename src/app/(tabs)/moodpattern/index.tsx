@@ -90,7 +90,7 @@ export default function MoodPatternScreen() {
           </View>
 
           {/* Legend */}
-          <View style={styles.legendContainer}>
+          {/* <View style={styles.legendContainer}>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: '#4CAF50' }]} />
               <Text style={styles.legendText}>Good</Text>
@@ -99,7 +99,7 @@ export default function MoodPatternScreen() {
               <View style={[styles.legendDot, { backgroundColor: '#F44336' }]} />
               <Text style={styles.legendText}>Sad</Text>
             </View>
-          </View>
+          </View> */}
 
           {/* Line Chart or Fallback */}
           {moodData.length > 0 ? (

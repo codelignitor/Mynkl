@@ -17,6 +17,27 @@ export const getBadgeStatus = async () => {
   }
 };
 
+
+export const saveAISupportPreferences = async (payload: any) => {
+  const response = await axiosInstance.post(
+    `/virtual_hugs/ai-support-preferences`,
+    payload
+  );
+  return response.data;
+};
+
+export const getBestUser = async () => {
+  const response = await axiosInstance.get('/virtual_hugs/bestuser');
+  return response.data;
+};
+
+export const getAISupportPreferences = async () => {
+  const response = await axiosInstance.get(
+    `/virtual_hugs/ai-support-preferences`
+  );
+  return response.data;
+};
+
 // Hug Settings - GET
 export const getHugSettings = async () => {
   try {
@@ -387,9 +408,8 @@ export const getActivityGraph = async () => {
   return  response.data;
 };
 
-export const receiveHugsList = async () => {
-  const response = await axiosInstance.get(`/virtual_hugs/received` );
- 
+export const receiveHugsList = async (page: number = 1, limit: number = 50) => {
+  const response = await axiosInstance.get(`/virtual_hugs/received?page=${page}&limit=${limit}`);
   return response.data;
 };
 
@@ -414,10 +434,13 @@ export const submitFeedback = async (payload : any) => {
 
 
 
-export const getUsers = async () => {
-  const response = await axiosInstance.get(`/virtual_hugs/user-list?type=community&page=1&limit=150` );
+export const getUsers = async (type = 'community') => {
+  const response = await axiosInstance.get(
+    `/virtual_hugs/user-list?type=${type}&page=1&limit=150`
+  );
   return response.data;
 };
+
 
 
 
@@ -431,6 +454,45 @@ export const getVirtualHugsAISuggestions = async () => {
 export const saveReflection = async (payload: any) => {
   const response = await axiosInstance.post(`/meditation/reflections`,payload);
   return response.data;
+};
+
+export interface PlaceData {
+  name: string;
+  lat: number;
+  lng: number;
+  address: string;
+  place_id: string;
+  rating: number;
+  user_ratings_total: number;
+  types: string[];
+}
+
+export interface SavePlaceResponse {
+  status: string;
+  place: string;
+  mood: string;
+  user_id: string;
+  id: number;
+  details: {
+    address: string;
+    place_id: string;
+    rating: number;
+    user_ratings_total: number;
+    types: string[];
+  };
+}
+
+export const saveUserPlace = async (place: PlaceData, mood: string): Promise<SavePlaceResponse> => {
+  try {
+    const response = await axiosInstance.post('/activity/save-user-place', {
+      place,
+      mood
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error saving place:', error);
+    throw error;
+  }
 };
 
 export const MeditationsoptsNearby = async (lat: number, lon: number) => {
@@ -670,6 +732,17 @@ export const checkCrisisStatus = async () => {
   }
 };
 
+export const updateHugStatus = async (hugId: string, status: string) => {
+  const response = await axiosInstance.patch(`/virtual_hugs/${hugId}/status`, {
+    status,
+  });
+  return response.data;
+};
+
+export const getPendingHugsDashboard = async () => {
+  const response = await axiosInstance.get('/virtual_hugs/pending_hugs');
+  return response.data;
+};
 
 export const getVirtualHugInsights = async () => {
   const response = await axiosInstance.get('/virtual_hugs/insights');

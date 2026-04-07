@@ -97,19 +97,19 @@ export default function DailyHugMissionScreen() {
                       
               {/* Header Badge */}
               <View style={styles.badge}>
-  {/* Left */}
-  <TouchableOpacity onPress={() => router.back()} style={styles.side}>
-    <Ionicons name="arrow-back" size={24} color="#333" />
-  </TouchableOpacity>
+                {/* Left */}
+                <TouchableOpacity onPress={() => router.back()} style={styles.side}>
+                  <Ionicons name="arrow-back" size={24} color="#333" />
+                </TouchableOpacity>
 
-  {/* Center */}
-  <View style={styles.center}>
-    <Text style={styles.badgeText}>COMMUNITY HUG</Text>
-  </View>
+                {/* Center */}
+                <View style={styles.center}>
+                  <Text style={styles.badgeText}>COMMUNITY HUG</Text>
+                </View>
 
-  {/* Right spacer */}
-  <View style={styles.side} />
-</View>
+                {/* Right spacer */}
+                <View style={styles.side} />
+              </View>
 
               {/* Title */}
               <Text style={styles.title}>

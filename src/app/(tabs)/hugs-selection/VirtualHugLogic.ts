@@ -1,14 +1,18 @@
-import { getUsers, getVirtualHugsAISuggestions, sendHug } from '@/src/services/apis';
+import { getBestUser, getCheckInAiAnalysis, getUsers, getVirtualHugsAISuggestions, sendHug } from '@/src/services/apis';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 
 export const useVirtualHugLogic = () => {
   // Navigation state
   const [currentScreen, setCurrentScreen] = useState('selectHug'); // 'selectHug', 'chooseRecipient', 'personalMessage', 'confirmation'
   
+  
   // Select Hug Screen State
   const [selectedHug, setSelectedHug] = useState(null);
   const [aiSelected, setAISelected] = useState(false);
   
+  const isSelectHugDisabled = selectedHug === null && !aiSelected;
+
   // Choose Recipient Screen State
   const [activeTab, setActiveTab] = useState('Friend List');
   const [searchText, setSearchText] = useState('');
@@ -16,14 +20,18 @@ export const useVirtualHugLogic = () => {
    const [isLoading , setLoading ] = useState(false);
   // Personal Message Screen State
   const [message, setMessage] = useState('');
-  const [friends , setFriends] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [communityUsers, setCommunityUsers] = useState([]);
   const [virtualHugsSuggestions, setVirtualHugsSuggestions] = useState([]);
+
+   const [bestUser, setBestUser] = useState(null);          // ← NEW
+   const [lastCheckInMood, setLastCheckInMood] = useState<string | null>(null);
 
   // Static data
   
   const hugs = [
     { emoji: '😊', label: 'Warm\nHug' , value:'Warm Hug' },
-    { emoji: '🥳', label: 'Encourgeing\nHug' , value: 'Excited Hug' },
+    { emoji: '🥳', label: 'Encouraging\nHug' , value: 'Encouraging Hug' },
     { emoji: '🧕', label: 'Excited\nHug', value: 'Excited Hug' },
     { emoji: '💙', label: 'Calm\nHug' , value: 'Calm Hug' },
   ];
@@ -87,6 +95,11 @@ export const useVirtualHugLogic = () => {
     setSearchText('');
   };
 
+  const getRandomHugType = () => {
+  const randomIndex = Math.floor(Math.random() * hugs.length);
+  return hugs[randomIndex];
+};
+
   const getVirtualHugsSuggestions = async ()=>{
     try {
       const response = await getVirtualHugsAISuggestions();
@@ -100,6 +113,55 @@ export const useVirtualHugLogic = () => {
     }
   }
 
+  const getLastCheckInMood = async () => {
+  try {
+    // 1. First check AsyncStorage
+    const storedMood = await AsyncStorage.getItem('last_check_in_mood');
+
+    // console.log('📦 Stored mood:', storedMood);
+
+    if (storedMood) {
+      setLastCheckInMood(storedMood);
+
+      // Only fetch best user if lonely
+      if (storedMood?.toLowerCase() === 'lonely') {
+        getBestUserHandler();
+      }
+
+      return;
+    }
+
+    // 2. If not found → call API
+    const response = await getCheckInAiAnalysis();
+    console.log('Full Check-in API response:', response);
+    const lastMood = response.last_check_in_mood;
+
+    // console.log('🌐 API mood:', lastMood);
+
+    if (lastMood) {
+      await AsyncStorage.setItem('last_check_in_mood', lastMood);
+      setLastCheckInMood(lastMood);
+
+      // Only fetch best user if lonely
+      if (lastMood?.toLowerCase() === 'lonely') {
+        getBestUserHandler();
+      }
+    }
+
+  } catch (error) {
+    console.log('❌ Error getting last mood:', error);
+  }
+};
+
+  const getBestUserHandler = async () => {        // ← NEW
+    try {
+      const response = await getBestUser();
+      setBestUser(response);
+    } catch (error) {
+      console.log('Error fetching best user:', error);
+    }
+  };
+
   // Action functions
   const toggleFriendSelection = (friendId) => {
     setSelectedFriends(prev => {
@@ -111,25 +173,30 @@ export const useVirtualHugLogic = () => {
     });
   };
 
+  
+
   const handleSendHug =  async() => {
+    const selectedHugData =
+      selectedHug !== null ? hugs[selectedHug] : getRandomHugType();
     console.log('Sending hug with:', {
-      hugType: selectedHug !== null ? hugs[selectedHug] : 'AI Selected',
+      // hugType: selectedHug !== null ? hugs[selectedHug] : 'AI Selected',
+      hugType: selectedHugData?.value,
       recipients: selectedFriends,
       message: message
     });
 
     try {
       const payload = {
-        
-  "hug_type": selectedHug !== null ? hugs[selectedHug]?.value : 'AI Selected',
-  "ai_choice":selectedHug === null ?true :false,
-  "message": message,
-  "emoji": 'emoji',
-   "receiver_id": selectedFriends[0],
-  // "receiver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "receiver_type": "Friend List"
-}
+        "hug_type": selectedHugData?.value,
+        "ai_choice":selectedHug === null ?true :false,
+        "message": message,
+        "emoji": 'emoji',
+        "receiver_id": selectedFriends[0],
+        // "receiver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "receiver_type": "Friend List"
+      }
 
+      console.log('sending payload', payload);
      const response = await sendHug(payload);
         goToNextScreen();
     } catch (error) {
@@ -143,27 +210,36 @@ export const useVirtualHugLogic = () => {
    
   };
 
-   const  getUserList = async () =>{
-      try {
-      setLoading(true);
-      const response = await getUsers();
-     
-       setFriends( response?.list);
-        
-      } catch (error) {
-        
-      }
-      finally{
-        setLoading(false);
-      }
-    }
+const getUserList = async () => {
+  try {
+    setLoading(true);
 
+    const [friendsRes, communityRes] = await Promise.all([
+      getUsers('friends'),
+      getUsers('community'),
+    ]);
+
+    setFriends(friendsRes?.list || []);
+    setCommunityUsers(communityRes?.list || []);
+
+  } catch (error) {
+    console.log('Error fetching users', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const filteredUsers = (activeTab === 'Friend List' ? friends : communityUsers)
+  ?.filter(user =>
+    user?.name?.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   useEffect(() => {
     getUserList();
     
     getVirtualHugsSuggestions();
-
+    // getBestUserHandler();    
+    getLastCheckInMood();  
   }, []);
   // Return all state and functions that the UI component needs
   return {
@@ -176,11 +252,16 @@ export const useVirtualHugLogic = () => {
     selectedFriends,
     message,
     
+    isSelectHugDisabled,
     // Data
     hugs,
     friends,
     presets,
-    
+
+    filteredUsers,
+    communityUsers,
+     bestUser, 
+     lastCheckInMood,
     // Navigation functions
     goToNextScreen,
     goToPreviousScreen,
@@ -197,5 +278,7 @@ export const useVirtualHugLogic = () => {
     setSearchText,
     setMessage,
     virtualHugsSuggestions
+
+    
   };
 };

@@ -117,7 +117,44 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
       />
-      
+
+       <Tabs.Screen
+        name="hugs-selection/index"
+        options={{
+          href: null, // 🔥 IMPORTANT
+          title: 'hugs-selection',
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+        }}
+      />
+
+       
+
+       <Tabs.Screen
+        name="journal/index"
+        options={{
+          href: null, // 🔥 IMPORTANT
+          title: 'journal',
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="mood_diary/index"
+        options={{
+          href: null, // 🔥 IMPORTANT
+          title: 'mood_diary',
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="mood_diary/[date]"
+        options={{
+          href: null, // 🔥 IMPORTANT
+          title: 'mood_diary',
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+        }}
+      />      
      
     </Tabs>
     

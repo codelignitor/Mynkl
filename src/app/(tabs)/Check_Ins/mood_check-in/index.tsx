@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,20 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Linking,
-  Image,
   ScrollView,
   Alert,
   RefreshControl,
+  Animated,
+  Platform,
+  UIManager,
 } from "react-native";
-import { useLocalSearchParams, useRouter, useFocusEffect  } from "expo-router";
-import Slider from "@react-native-community/slider";
+
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur";
 
 import { getCheckInAiAnalysis, getMoodSuggestions } from "@/src/services/apis";
 import Header from "@/src/components/common/header";
@@ -28,770 +34,439 @@ import Sad from "../../../../assets/svgs/sad-icon.svg";
 import Frustrated from "../../../../assets/svgs/frustrated.svg";
 import Grateful from "../../../../assets/svgs/grateful-icon.svg";
 
-import StaticEmotionalEmoji from "../../../../assets/images/Static emotional emoji.png";
-import { getMoodSuggestionRoute, handleMoodSuggestionClick } from "@/src/utils/moodSuggestionRouting";
-import { useCameraPermissions } from "expo-image-picker";
-import * as ImagePicker from 'expo-image-picker';
-import { getMoodCacheKey } from "@/src/utils/moodCacheKeys";
+import NoCheckInScreen from "@/src/components/NoCheckInScreen/NoCheckInScreen";
+import { getMoodSuggestionActions, shouldHaveDropdown } from "@/src/utils/moodSuggestionRouting";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CheckInData {
   last_check_in_mood?: string;
   has_checked_in?: boolean;
-  mood_strength_meter?: number;
   ai_interpretation?: string;
+}
+
+interface PlaceDetails {
+  name: string;
+  address: string;
+  place_id?: string;
+  lat?: number;
+  lng?: number;
+  rating?: number;
+  user_ratings_total?: number;
+  types?: string[];
+  open_now?: boolean;
+}
+
+interface Suggestion {
+  suggestion: string;
+  details?: string | PlaceDetails;
+  cta?: string;
+  prompts?: string[];
+  actions?: string[];
 }
 
 interface SuggestionsData {
   emotion_message?: string;
-  suggestions?: Array<any>;
+  ai_mood_pattern_summary?: string;
+  suggestions?: Suggestion[];
 }
 
-export default function MoodScreen() {
-  const [data, setData] = useState<CheckInData | null>(null);
-  const [suggestions, setSuggestions] = useState<SuggestionsData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [expandedSuggestion, setExpandedSuggestion] = useState(null);
-  const router = useRouter();
-  const params = useLocalSearchParams();
-  const [permission, requestPermission] = useCameraPermissions();
-  const [refreshing, setRefreshing] = useState(false); // Add refreshing state
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-  const [mood, setMood] = useState(null);
+const getMoodGradient = (mood?: string): [string, string] => {
+  switch (mood) {
+    case "happy":     return ["#FFE59A", "#FFB347"];
+    case "calm":      return ["#A2E8E0", "#5CC4B8"];
+    case "grateful":  return ["#8bffaa", "#6aff85"];
+    case "stressed":  return ["#D1C4E9", "#B39DDB"];
+    case "lonely":    return ["#6A5ACD", "#483D8B"];
+    case "sad":       return ["#90A4AE", "#607D8B"];
+    case "frustrated":return ["#FF6F61", "#E53935"];
+    default:          return ["#a5f3fc", "#0ea5e9"];
+  }
+};
 
+const isPlaceDetails = (details: any): details is PlaceDetails =>
+  details && typeof details === "object" && "name" in details && "address" in details;
 
-  // const mood = 'lonely'; // ← dynamic in real app
-  // const cacheKey = MOOD_CACHE_KEY(mood);
+const getSuggestionIcon = (suggestion: Suggestion): string => {
+  if (isPlaceDetails(suggestion.details)) return "✨";
+  if (suggestion.prompts?.length) return "📝";
+  if (suggestion.actions?.length) return "🎧";
+  return "💛";
+};
 
-  // Add this function to format the summary text with proper styling
-  const formatMoodPatternSummary = (summary: string) => {
-    if (!summary) return null;
-    
-    // Split by bullet points or line breaks
-    const lines = summary.split('\n').filter(line => line.trim());
-    
-    return lines.map((line, index) => {
-      // Check if line starts with bullet point
-      if (line.trim().startsWith('-')) {
+const formatMoodPatternSummary = (summary: string) => {
+  if (!summary) return null;
+  return summary
+    .split("\n")
+    .filter((l) => l.trim())
+    .map((line, i) => {
+      if (line.trim().startsWith("-")) {
         return (
-          <View key={index} style={styles.bulletPoint}>
+          <View key={i} style={styles.bulletPoint}>
             <Text style={styles.bulletIcon}>•</Text>
             <Text style={styles.bulletText}>{line.trim().substring(1).trim()}</Text>
           </View>
         );
       }
-      return (
-        <Text key={index} style={styles.summaryText}>
-          {line.trim()}
-        </Text>
-      );
+      return <Text key={i} style={styles.summaryText}>{line.trim()}</Text>;
     });
-  };
+};
 
+const renderStars = (rating: number) => {
+  const full = Math.floor(rating);
+  const half = rating % 1 >= 0.5;
+  return "★".repeat(full) + (half ? "½" : "");
+};
 
-  const handleAiAnalysis = async (isRefresh = false ) => {
-    try {
-       if (isRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
+// ─── Inline Dropdown ──────────────────────────────────────────────────────────
 
+interface DropdownOption {
+  icon: string;
+  label: string;
+  onPress: () => void;
+}
+
+interface InlineDropdownProps {
+  visible: boolean;
+  title: string;
+  options: DropdownOption[];
+}
+
+const InlineDropdown: React.FC<InlineDropdownProps> = ({ visible, title, options }) => {
+  const heightAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(heightAnim, {
+        toValue: visible ? 1 : 0,
+        duration: 240,
+        useNativeDriver: false,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: visible ? 1 : 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  }, [visible]);
+
+  // Estimate height: title (~44) + each option (~56) + padding (~16)
+  const estimatedHeight = 44 + options.length * 56 + 16;
+
+  return (
+    <Animated.View
+      style={[
+        styles.inlineDropdown,
+        {
+          maxHeight: heightAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, estimatedHeight],
+          }),
+          opacity: opacityAnim,
+          overflow: "hidden",
+        },
+      ]}
+    >
+      <Text style={styles.dropdownTitle}>{title}</Text>
+      {options.map((opt, i) => (
+        <TouchableOpacity
+          key={i}
+          style={[
+            styles.dropdownOption,
+            i < options.length - 1 && styles.dropdownOptionBorder,
+          ]}
+          onPress={opt.onPress}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.dropdownOptionIcon}>{opt.icon}</Text>
+          <Text style={styles.dropdownOptionLabel}>{opt.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </Animated.View>
+  );
+};
+
+// ─── Glass Card ───────────────────────────────────────────────────────────────
+
+interface GlassCardProps {
+  children: React.ReactNode;
+  style?: object;
+}
+
+const GlassCard: React.FC<GlassCardProps> = ({ children, style }) => (
+  <View style={[styles.glassCard, style]}>
+    <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill} />
+    <View style={styles.glassCardInner}>{children}</View>
+  </View>
+);
+
+// ─── Suggestion Card ──────────────────────────────────────────────────────────
+
+interface SuggestionCardProps {
+  suggestion: Suggestion;
+  moodGradient: [string, string];
+  router: any;
+  currentMood?: string; // Add this prop to pass the current mood
+}
+
+const SuggestionCard: React.FC<SuggestionCardProps> = ({ 
+  suggestion, 
+  moodGradient, 
+  router,
+  currentMood 
+}) => {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const isPlace = isPlaceDetails(suggestion.details);
+  const icon = getSuggestionIcon(suggestion);
+  const detailText = typeof suggestion.details === "string" ? suggestion.details : null;
+  const placeDetails = isPlace ? (suggestion.details as PlaceDetails) : null;
   
-      const response = await getCheckInAiAnalysis();
-      if (response) {
-        setData(response);
-      }
-      
-      // const cacheKey = getMoodCacheKey(mood);
-
-    // 3️⃣ Load cached suggestions FIRST (instant UI)
-    // const cachedSuggestions =
-    //   await getMoodSuggestionsFromCache(cacheKey);
-
-    // if (cachedSuggestions) {
-    //   setSuggestions(cachedSuggestions);
-    // }
-
-    // 4️⃣ Fetch fresh suggestions from API
-      const suggestionsResponse = await getMoodSuggestions();
-      if (suggestionsResponse) {
-        setSuggestions(suggestionsResponse);
-        // 5️⃣ Save fresh data to cache
-      // await saveMoodSuggestionsToCache(
-      //   cacheKey,
-      //   suggestionsResponse
-      // );
-      }
+  // Get the CTA from suggestion or use default
+  const ctaLabel = suggestion.cta || (isPlace ? "Save for later" : null);
+  
+  // Get routing actions based on mood and CTA
+  const dropdownOptions = useMemo(() => {
+    if (!ctaLabel) return [];
     
-    } catch (error) {
-      // If backend returns 400 = No check-in
+    // Check if this suggestion should have a dropdown based on mood routing
+    const hasCustomRouting = shouldHaveDropdown(currentMood, ctaLabel);
+    
+    if (hasCustomRouting) {
+      // Use the new routing system
+      return getMoodSuggestionActions(currentMood, ctaLabel, suggestion, router);
+    }
+    
+    // Fallback to existing logic for places, prompts, actions
+    if (isPlace && placeDetails) {
+      return [
+        {
+          icon: "📍",
+          label: "Open in Maps",
+          onPress: () => {
+            const { lat, lng, place_id, address } = placeDetails;
+            if (place_id && lat && lng) {
+              Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${place_id}`);
+            } else if (address) {
+              Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`);
+            }
+          },
+        },
+        {
+          icon: "🔖",
+          label: "Save for later",
+          onPress: () => {
+            Alert.alert("Saved!", `${placeDetails.name} saved for later.`);
+          },
+        },
+      ];
+    }
+
+    if (suggestion.prompts?.length) {
+      return [
+        {
+          icon: "✍️",
+          label: "Write a reflection",
+          onPress: () => {
+            router.push({
+              pathname: "/journal",
+              params: { prompt: suggestion.prompts?.[0] ?? suggestion.suggestion },
+            });
+          },
+        },
+      ];
+    }
+
+    if (suggestion.actions?.length) {
+      return [
+        { icon: "🎵", label: "Audio Soundscapes",  onPress: () => router.push("../../../Selfcare_tips/Audiosession") },
+        { icon: "🌿", label: "Grounding Exercise", onPress: () => router.push("../../../Selfcare_tips/breathingSuggestion") },
+        { icon: "🎙️", label: "Guided Audio",       onPress: () => router.push("../../../Selfcare_tips/Mindful_Movement") },
+        { icon: "📓", label: "Emotional Journal",  onPress: () => router.push("/journal") },
+        { icon: "🎤", label: "Voice Note Release", onPress: () => router.push("/../../../Selfcare_tips/Gratitute") },
+        { icon: "💨", label: "Breathing Relief",   onPress: () => router.push("../../../Selfcare_tips/breathingSuggestion") },
+      ].filter((opt) =>
+        suggestion.actions!.some((a) =>
+          a.toLowerCase().replace(/_/g, " ").includes(opt.label.toLowerCase().split(" ")[0].toLowerCase())
+        )
+      );
+    }
+    
+    return [];
+  }, [currentMood, ctaLabel, suggestion, router, isPlace, placeDetails]);
+
+  // Don't show CTA button if no dropdown options and not a special case
+  if (!ctaLabel || dropdownOptions.length === 0) {
+    return (
+      <GlassCard style={styles.suggestionCardSpacing}>
+        <View style={styles.suggestionHeader}>
+          <Text style={styles.suggestionIconText}>{icon}</Text>
+          <Text style={styles.suggestionTitle}>{suggestion.suggestion}</Text>
+        </View>
+        {detailText && <Text style={styles.suggestionDetails}>{detailText}</Text>}
+        {placeDetails && (
+          <View style={styles.placeBlock}>
+            <View style={styles.placeHeaderRow}>
+              <Text style={styles.placePin}>📍</Text>
+              <Text style={styles.placeLabel}>Place details</Text>
+            </View>
+            <Text style={styles.placeName}>
+              {placeDetails.name}
+              {placeDetails.rating ? (
+                <Text style={styles.placeRating}>{"  "}{placeDetails.rating} {renderStars(placeDetails.rating)}</Text>
+              ) : null}
+            </Text>
+            <Text style={styles.placeAddress}>{placeDetails.address}</Text>
+          </View>
+        )}
+      </GlassCard>
+    );
+  }
+
+  return (
+    <GlassCard style={styles.suggestionCardSpacing}>
+      {/* Header row */}
+      <View style={styles.suggestionHeader}>
+        <Text style={styles.suggestionIconText}>{icon}</Text>
+        <Text style={styles.suggestionTitle}>{suggestion.suggestion}</Text>
+      </View>
+
+      {/* Details text */}
+      {detailText && <Text style={styles.suggestionDetails}>{detailText}</Text>}
+
+      {/* Place details block */}
+      {placeDetails && (
+        <View style={styles.placeBlock}>
+          <View style={styles.placeHeaderRow}>
+            <Text style={styles.placePin}>📍</Text>
+            <Text style={styles.placeLabel}>Place details</Text>
+          </View>
+          <Text style={styles.placeName}>
+            {placeDetails.name}
+            {placeDetails.rating ? (
+              <Text style={styles.placeRating}>{"  "}{placeDetails.rating} {renderStars(placeDetails.rating)}</Text>
+            ) : null}
+          </Text>
+          <Text style={styles.placeAddress}>{placeDetails.address}</Text>
+        </View>
+      )}
+
+      {/* CTA button — toggles inline dropdown */}
+      <TouchableOpacity
+        style={[styles.ctaButton, dropdownOpen && styles.ctaButtonActive]}
+        onPress={() => setDropdownOpen((prev) => !prev)}
+        activeOpacity={0.75}
+      >
+        <Text style={styles.ctaButtonText}>{ctaLabel}</Text>
+      </TouchableOpacity>
+
+      {/* Inline dropdown */}
+      <InlineDropdown
+        visible={dropdownOpen}
+        title="How would you like to act?"
+        options={dropdownOptions}
+      />
+    </GlassCard>
+  );
+};
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
+
+export default function MoodScreen() {
+  const [data, setData] = useState<CheckInData | null>(null);
+  const [suggestions, setSuggestions] = useState<SuggestionsData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
+  const params = useLocalSearchParams();
+
+  const handleAiAnalysis = async (isRefresh = false) => {
+    try {
+      isRefresh ? setRefreshing(true) : setLoading(true);
+
+      const response = await getCheckInAiAnalysis();
+      if (response) setData(response);
+
+      const suggestionsResponse = await getMoodSuggestions();
+      if (suggestionsResponse) setSuggestions(suggestionsResponse);
+    } catch (error: any) {
       if (error?.response?.status === 400) {
         setData(null);
       } else {
         console.log("Unexpected AI Analysis Error:", error);
       }
     } finally {
-     if (isRefresh) {
-        setRefreshing(false);
-      } else {
-        setLoading(false);
-      }
+      isRefresh ? setRefreshing(false) : setLoading(false);
     }
   };
 
-  useEffect(() => {
-    handleAiAnalysis();
-  }, []);
+  useEffect(() => { handleAiAnalysis(); }, []);
 
-    // Refresh when screen comes into focus
   useFocusEffect(
-    useCallback(() => {
-      // Refresh data when returning to this screen
-      handleAiAnalysis(true);
-    }, [])
+    useCallback(() => { handleAiAnalysis(true); }, [])
   );
 
-
-  useEffect(() => {
-    try {
-      const parsed = JSON.parse(params.data as string);
-      setMood(parsed);
-    } catch {
-      setMood(null);
-    }
-  }, [params.data]);
-
-  // Pull-to-refresh handler
-  const onRefresh = useCallback(() => {
-    handleAiAnalysis(true);
-  }, [])
-
-  const getMoodGradient = (mood) => {
-    switch (mood) {
-      case "happy":
-        return ["#FFE59A", "#FFB347"];
-      case "calm":
-        return ["#A2E8E0", "#5CC4B8"];
-      case "grateful":
-        return ["#FF9A8B", "#FF6A88"];
-      case "stressed":
-        return ["#D1C4E9", "#B39DDB"];
-      case "lonely":
-        return ["#6A5ACD", "#483D8B"];
-      case "sad":
-        return ["#90A4AE", "#607D8B"];
-      case "frustrated":
-        return ["#FF6F61", "#E53935"];
-      default:
-        return ["#a5f3fc", "#0ea5e9"];
-    }
-  };
-
-// Update the renderSuggestionDetails function
-const renderSuggestionDetails = (suggestion, index) => {
-  const isExpanded = expandedSuggestion === index;
-  const suggestionConfig = getMoodSuggestionRoute(suggestion);
-
-  // if (!isExpanded || !suggestion?.details || !suggestionConfig) return null;
-
-    // MODIFIED: Don't require suggestion?.details to be truthy
-  if (!isExpanded || !suggestionConfig) return null;
-  
-  // Check if this is a null details case but we have a config from routing
-  const hasDetails = suggestion?.details && Object.keys(suggestion.details).length > 0;
-  
-  // Handle message_choice type
-  if (suggestionConfig.type === 'message_suggestion') {
-    return (
-      <View style={styles.detailsContainer}>
-        <Text style={styles.detailsTitle}>💬 Connect with Someone</Text>
-        <Text style={styles.detailsDescription}>
-          {suggestion.suggestion || "Reach out to someone who cares about you."}
-        </Text>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => handleSuggestionPress(suggestion, index)}
-        >
-          <Text style={styles.actionButtonText}>Send appretiation</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  // Handle null details cases first (camera, social, journal)
-  if (!hasDetails) {
-    const lowerSuggestion = suggestion?.suggestion?.toLowerCase() || '';
-    
-    // Camera suggestion
-    if (lowerSuggestion.includes('photo') || lowerSuggestion.includes('capture')) {
-      return (
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>📸 Capture Moment</Text>
-          <Text style={styles.detailsDescription}>
-            Take a photo to capture how you're feeling right now.
-          </Text>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleSuggestionPress(suggestion, index)}
-          >
-            <Text style={styles.actionButtonText}>navigate</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-    
-    // Social/Talk to friend
-    if (lowerSuggestion.includes('talk') || lowerSuggestion.includes('friend')) {
-      return (
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>💬 Connect with Someone</Text>
-          <Text style={styles.detailsDescription}>
-            Talking to someone can help. Start a conversation now.
-          </Text>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleSuggestionPress(suggestion, index)}
-          >
-            <Text style={styles.actionButtonText}>Navigate</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-    
-    // Journal/Reflection
-    if (lowerSuggestion.includes('journal') || lowerSuggestion.includes('write') || 
-        lowerSuggestion.includes('reflect') || lowerSuggestion.includes('helped you')) {
-      return (
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>📝 Write Your Thoughts</Text>
-          <Text style={styles.detailsDescription}>
-            {suggestion.suggestion || "Take a moment to reflect and write down your thoughts."}
-          </Text>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleSuggestionPress(suggestion, index)}
-          >
-            <Text style={styles.actionButtonText}>Navigate</Text>
-          </TouchableOpacity>
-        </View>
-      );
-    }
-    
-    // Generic null details fallback
-    return (
-      <View style={styles.detailsContainer}>
-        <Text style={styles.detailsTitle}>✨ Suggestion</Text>
-        <Text style={styles.detailsDescription}>
-          {suggestion.suggestion || "Take a moment for yourself."}
-        </Text>
-        {suggestionConfig.route && (
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleSuggestionPress(suggestion, index)}
-          >
-            <Text style={styles.actionButtonText}>Get Started</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    );
-  }
-
-  const { details } = suggestion;
-
-  switch (suggestionConfig.type) {
-    case 'place':
-      return (
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>📍 Place Details:</Text>
-          <Text style={styles.detailsName}>{details.name}</Text>
-          <Text style={styles.detailsAddress}>{details.address}</Text>
-          
-          {/* {details.rating && (
-            <View style={styles.ratingContainer}>
-              <Text style={styles.ratingText}>⭐ {details.rating} ({details.user_ratings_total} reviews)</Text>
-            </View>
-          )} */}
-          
-          {/* {details.types && (
-            <View style={styles.tagsContainer}>
-              {details.types.slice(0, 3).map((type, idx) => (
-                <View key={idx} style={styles.tag}>
-                  <Text style={styles.tagText}>{type}</Text>
-                </View>
-              ))}
-            </View>
-          )} */}
-          
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleSuggestionPress(suggestion, index)}
-          >
-            <Text style={styles.actionButtonText}>Navigate</Text>
-          </TouchableOpacity>
-        </View>
-      );
-      
-    case 'spotify_music':
-      return (
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>🎵 Spotify Playlist:</Text>
-          <Text style={styles.detailsName}>{details.name}</Text>
-          
-          {details.description && (
-            <Text style={styles.detailsDescription}>
-              {details.description.replace(/<[^>]*>/g, '')}
-            </Text>
-          )}
-          
-          {details.tracks_total && (
-            <Text style={styles.detailsTracks}>{details.tracks_total} tracks</Text>
-          )}
-          
-          {details.image && (
-            <Image 
-              source={{ uri: details.image }} 
-              style={styles.playlistImage}
-              resizeMode="cover"
-            />
-          )}
-          
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleSuggestionPress(suggestion, index)}
-          >
-            <Text style={styles.actionButtonText}>Navigate</Text>
-          </TouchableOpacity>
-        </View>
-      );
-      
-    case 'activity':
-            // Check if this is a social_feature activity
-      const isSocialFeature = details?.type === 'social_feature' || 
-                              suggestionConfig?.subType === 'social_feature' ||
-                              suggestion?.suggestion?.toLowerCase().includes('toggle open to talk') ||
-                              suggestion?.suggestion?.toLowerCase().includes('connect with others');
-    
-      return (
-        <View style={styles.detailsContainer}>
-          {/* <Text style={styles.detailsTitle}>🧘‍♀️ Activity:</Text> */}
-          <Text style={styles.detailsName}>
-            {/* {details.type ? details.type.replace(/_/g, ' ').toUpperCase() : 'Activity'} */}
-          </Text>
-          
-          {details.reason && (
-            <Text style={styles.detailsDescription}>
-              {details.reason}
-            </Text>
-          )}
-          
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleSuggestionPress(suggestion, index)}
-          >
-            <Text style={styles.actionButtonText}>
-              {isSocialFeature ? 'Find Someone to Talk To' : (suggestionConfig.route ? 'Navigate' : 'Send appreciation')}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      );
-      
-    case 'prompt':
-      return (
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>📝 Reflection Prompt:</Text>
-          <Text style={styles.detailsMessage}>
-            "{details.prompt || suggestion.suggestion}"
-          </Text>
-          
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => handleSuggestionPress(suggestion, index)}
-          >
-            <Text style={styles.actionButtonText}>Write Reflection</Text>
-          </TouchableOpacity>
-        </View>
-      );
-      
-    default:
-      // For other suggestion types (text or unknown)
-      return (
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsTitle}>Details:</Text>
-          <Text style={styles.detailsMessage}>
-            {suggestion.suggestion}
-          </Text>
-          
-          {details && Object.keys(details).length > 0 && (
-            <View style={styles.jsonContainer}>
-              <Text style={styles.jsonText}>
-                {JSON.stringify(details, null, 2)}
-              </Text>
-            </View>
-          )}
-        </View>
-      );
-  }
-};
-
-  const getSuggestionIcon = (suggestion) => {
-  const suggestionConfig = getMoodSuggestionRoute(suggestion);
-  
-  if (!suggestionConfig) return "✨";
-  
-  switch (suggestionConfig.type) {
-    case 'spotify_music':
-      return "🎵";
-    case 'place':
-      return "📍";
-    case 'activity':
-      return "✨";
-    case 'prompt':
-      return "📝";
-    case 'message_suggestion':  // ← Add this case
-      return "💬";
-    default:
-      return "✨";
-  }
-};
-
-const handleImagePicker = async () => {
-        try {
-            // Request permission
-            const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-            if (permissionResult.granted === false) {
-                Alert.alert("Permission required", "Permission to access camera roll is required!");
-                return;
-            }
-
-            const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [1, 1],
-                quality: 0.8,
-            });
-
-            // if (!result.canceled) {
-            //     setEditedProfileImage(result.assets[0].uri);
-            // }
-        } catch (error) {
-            Alert.alert("Error", "Failed to pick image");
-        }
-    };
-
-    
-//   const handleSuggestionPress = (suggestion, index) => {
-//   const suggestionConfig = getMoodSuggestionRoute(suggestion);
-  
-//   if (!suggestionConfig) {
-//     // If no config, toggle expansion
-//     setExpandedSuggestion(expandedSuggestion === index ? null : index);
-//     return;
-//   }
-  
-//   switch (suggestionConfig.type) {
-//     case 'spotify_music':
-//       Linking.openURL(suggestion.details.url).catch(err => 
-//         console.error("Couldn't open Spotify:", err)
-//       );
-//       break;
-      
-//     case 'place':
-//       if (suggestion.details.place_id) {
-//         const url = `https://www.google.com/maps/search/?api=1&query=${suggestion.details.lat},${suggestion.details.lng}&query_place_id=${suggestion.details.place_id}`;
-//         Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
-//       } else if (suggestion.details.address) {
-//         // Fallback if no coordinates
-//         const encodedAddress = encodeURIComponent(suggestion.details.address);
-//         const url = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
-//         Linking.openURL(url).catch(err => console.error("Couldn't open maps:", err));
-//       }
-//       break;
-      
-//     case 'activity':
-//       // Use the new routing for activity suggestions
-//       handleMoodSuggestionClick(suggestion, router);
-//       break;
-      
-//     case 'prompt':
-//       handleMoodSuggestionClick(suggestion, router);
-//       break;
-
-//     case 'text':
-//       // Just expand/collapse, no navigation
-//       setExpandedSuggestion(expandedSuggestion === index ? null : index);
-//       break;
-      
-//     default:
-//       // For other types, toggle expansion
-//       setExpandedSuggestion(expandedSuggestion === index ? null : index);
-//       break;
-//   }
-// };
-
-// Add this function near your other helper functions (around line 206)
-const showMessageOptions = () => {
-  Alert.alert(
-    "Choose an option",
-    "How would you like to connect?",
-    [
-      {
-        text: "Message",
-        onPress: () => router.push('/chat_comments')
-      },
-      {
-        text: "Virtual Hug",
-        onPress: () => router.push('/hugs-selection')
-      },
-      {
-        text: "Cancel",
-        style: "cancel"
-      }
-    ],
-    { cancelable: true }
-  );
-};
-
-
-// Replace your existing handleSuggestionPress with this
-const handleSuggestionPress = (suggestion, index) => {
-  const config = getMoodSuggestionRoute(suggestion);
-  
-  console.log('Pressed suggestion:', suggestion);
-
-  // const config = getMoodSuggestionRoute(suggestion);
-  console.log('Generated config:', config);
-
-    // Check if this suggestion should navigate to journal
-  const targetRoute = config?.route;
-  const isJournalRoute = targetRoute === '/journal';
-  
-  if (isJournalRoute) {
-    // Extract the prompt text from suggestion
-    let promptText = '';
-    
-    // Try to get prompt from different possible locations
-    if (config.type === 'prompt' && suggestion.details?.prompt) {
-      // For prompt type suggestions
-      promptText = suggestion.details.prompt;
-    } else if (suggestion.suggestion) {
-      // For other suggestions, use the main suggestion text
-      promptText = suggestion.suggestion;
-    } else if (suggestion.details?.prompt) {
-      // Fallback to details.prompt
-      promptText = suggestion.details.prompt;
-    }
-    
-    // Navigate to journal with prompt parameter
-    router.push({
-      pathname: targetRoute,
-      params: { 
-        prompt: promptText,
-        // fromMoodSuggestion: true //optional flag
-      }
-    });
-    return;
-  }
-  
-   // Handle message suggestion type - show alert with options
-  if (config?.type === 'activity' && config.route === null) {
-    showMessageOptions(); // Call the dedicated function
-    return;
-  }
-
-
-  // Handle null details cases first
-  if (config.type === 'camera') {
-    // Open camera directly
-    // alert('Camera would open here'); // Replace with actual camera function
-    handleImagePicker();
-    return;
-  }
-  
-  if (config.type === 'activity' && config.route) {
-    router.push(config.route);
-    return;
-  }
-
-  // Your existing navigation logic for place/spotify...
-  if (config.type === 'spotify_music' && suggestion.details?.url) {
-    Linking.openURL(suggestion.details.url);
-    return;
-  }
-  
-  if (config.type === 'place' && suggestion.details) {
-    const { lat, lng, place_id, address } = suggestion.details;
-    if (place_id && lat && lng) {
-      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}&query_place_id=${place_id}`);
-    } else if (address) {
-      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`);
-    }
-    return;
-  }
-
-  // Default: toggle expansion
-  setExpandedSuggestion(expandedSuggestion === index ? null : index);
-};
+  const onRefresh = useCallback(() => { handleAiAnalysis(true); }, []);
 
   const moodGradient = getMoodGradient(data?.last_check_in_mood);
+  const noCheckIn = !data?.last_check_in_mood || data?.has_checked_in === false;
 
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#000" />
-        <Text style={styles.loadingText}>Loading AI-Analysis...</Text>
+        <ActivityIndicator size="large" color="#FFF" />
+        <Text style={styles.loadingText}>Loading AI Analysis…</Text>
       </SafeAreaView>
     );
   }
 
-  const noCheckIn =
-    !data?.last_check_in_mood || data?.has_checked_in === false;
-
-  if (noCheckIn) {
-    return (
-      <LinearGradient colors={["#8BE8DE", "#0B5E63"]} style={{ flex: 1 }}>
-        <SafeAreaView style={styles.safeArea}>
-          <Header title="MOOD" showBack />
-
-          <View style={{ marginTop: 0 }}>
-            <Image
-              source={StaticEmotionalEmoji}
-              style={{ width: 120, height: 120 }}
-              resizeMode="contain"
-            />
-          </View>
-
-          <View style={styles.noCard}>
-            <Text style={styles.noCardTitle}>AI INTERPRETATION</Text>
-            <Text style={styles.noMainText}>No recent check-in detected</Text>
-            <Text style={styles.noSubText}>
-              Checking in helps us support your well-being. How are you feeling
-              today?
-            </Text>
-          </View>
-
-          <View style={styles.sliderRow}>
-            <Text style={styles.sliderLabel}>WEAK</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={100}
-              value={50}
-              minimumTrackTintColor="#fff"
-              maximumTrackTintColor="#fff"
-              thumbTintColor="#fff"
-              disabled
-            />
-            <Text style={styles.sliderLabel}>STRONG</Text>
-          </View>
-
-          <TouchableOpacity
-            style={styles.tile}
-            onPress={() => router.push("/addCheckIn")}
-          >
-            <Text style={styles.tileEmoji}>⏱️</Text>
-            <Text style={styles.tileText}>
-              Take a quick moment to check in now.
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.tile}
-            onPress={() => router.push("/Emotional-AI-trends/Calm_trend")}
-          >
-            <Text style={styles.tileEmoji}>🧘</Text>
-            <Text style={styles.tileText}>
-              Try a calming exercise even without a mood log.
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.tile}
-          onPress={() => router.push("/moodpattern")}
-          >
-            <Text style={styles.tileEmoji}>💡</Text>
-            <Text style={styles.tileText}>
-              Read a gentle insight from your past check-ins.
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.checkInBtnLarge}
-            onPress={() => router.push("/addCheckIn")}
-          >
-            <Text style={styles.checkInTextLarge}>Check In</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
-      </LinearGradient>
-    );
-  }
+  if (noCheckIn) return <NoCheckInScreen />;
 
   return (
     <LinearGradient colors={moodGradient} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           style={{ flex: 1, width: "100%" }}
-          contentContainerStyle={{ alignItems: "center", paddingBottom: 90 }}
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-                            refreshing={refreshing}
-                            onRefresh={onRefresh}
-                            tintColor="#FFF"
-                            colors={['#FFF']}
-                          />
-            }
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#FFF"
+              colors={["#FFF"]}
+            />
+          }
         >
           <Header title="Mood" showBack />
 
-          {data?.last_check_in_mood === "happy" && (
-            <Happy width={88} height={88} />
-          )}
-          {data?.last_check_in_mood === "calm" && (
-            <Calm width={93} height={93} />
-          )}
-          {data?.last_check_in_mood === "stressed" && (
-            <Stressed width={88} height={88} />
-          )}
-          {data?.last_check_in_mood === "lonely" && (
-            <Lonely width={103} height={103} />
-          )}
-          {data?.last_check_in_mood === "grateful" && (
-            <Grateful width={74} height={73} />
-          )}
-          {data?.last_check_in_mood === "sad" && <Sad width={79} height={79} />}
-          {data?.last_check_in_mood === "frustrated" && (
-            <Frustrated width={71} height={73} />
-          )}
+          {/* ── Mood Emoji ── */}
+          <View style={styles.emojiWrapper}>
+            {data?.last_check_in_mood === "happy"     && <Happy      width={100} height={100} />}
+            {data?.last_check_in_mood === "calm"      && <Calm       width={100} height={100} />}
+            {data?.last_check_in_mood === "stressed"  && <Stressed   width={100} height={100} />}
+            {data?.last_check_in_mood === "lonely"    && <Lonely     width={100} height={100} />}
+            {data?.last_check_in_mood === "grateful"  && <Grateful   width={100} height={100} />}
+            {data?.last_check_in_mood === "sad"       && <Sad        width={100} height={100} />}
+            {data?.last_check_in_mood === "frustrated"&& <Frustrated width={100} height={100} />}
+          </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>AI INTERPRETATION</Text>
-            <Text style={styles.cardText}>
+          {/* ── AI Interpretation Card ── */}
+          <GlassCard style={styles.interpretationCard}>
+            <Text style={styles.interpretationLabel}>AI INTERPRETATION</Text>
+            <Text style={styles.interpretationMood}>
               {suggestions?.emotion_message || data?.last_check_in_mood || "—"}
             </Text>
-            <Text style={styles.cardSubText}>
-              {data?.ai_interpretation ?? "No interpretation available."}
-            </Text>
-          </View>
+            {data?.ai_interpretation ? (
+              <Text style={styles.interpretationSub}>{data.ai_interpretation}</Text>
+            ) : null}
+          </GlassCard>
 
-          <View style={styles.sliderRow}>
-            <Text style={styles.sliderLabel}>WEAK</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={100}
-              value={data?.mood_strength_meter || 0}
-              minimumTrackTintColor="#fff"
-              maximumTrackTintColor="#fff"
-              thumbTintColor="#fff"
-              disabled
-            />
-            <Text style={styles.sliderLabel}>STRONG</Text>
-          </View>
-
-
-          {/* NEW: Mood Pattern Summary Card */}
+          {/* ── Mood Pattern Card ── */}
           {suggestions?.ai_mood_pattern_summary && (
-            <View style={[styles.patternCard, { backgroundColor: moodGradient[1] }]}>
+            <GlassCard style={styles.patternCard}>
               <View style={styles.patternHeader}>
                 <Text style={styles.patternIcon}>📊</Text>
                 <Text style={styles.patternTitle}>Mood Pattern</Text>
@@ -799,446 +474,292 @@ const handleSuggestionPress = (suggestion, index) => {
               <View style={styles.patternContent}>
                 {formatMoodPatternSummary(suggestions.ai_mood_pattern_summary)}
               </View>
-            </View>
+              <TouchableOpacity
+                style={styles.moodPatternBtn}
+                onPress={() => router.push("/moodpattern")}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.moodPatternText}>View Mood Pattern</Text>
+              </TouchableOpacity>
+            </GlassCard>
           )}
 
-          {/* // Update the suggestion card rendering in your JSX */}
-          {suggestions?.suggestions?.length > 0 && suggestions.suggestions.map((suggestion, idx) => {
-            if (!suggestion) return null;
-            
-            const suggestionConfig = getMoodSuggestionRoute(suggestion);
-            const hasDetails = !!suggestion?.details;
-            
-            // Determine if clickable based on type
-            let isClickable = false;
-            let shouldShowExpansion = false;
-            
-            if (suggestionConfig) {
-              switch (suggestionConfig.type) {
-                case 'spotify_music':
-                case 'place':
-                  isClickable = true;
-                  shouldShowExpansion = true; // Show expansion for these
-                  break;
-                case 'activity':
-                  isClickable = true;
-                  shouldShowExpansion = suggestionConfig.route ? true : true; // Show expansion only if no route
-                  break;
-                case 'prompt':
-                  isClickable = true;
-                  shouldShowExpansion = true; // Direct navigation
-                  break;
-                default:
-                  isClickable = true;
-                  shouldShowExpansion = true; // Show expansion for text/details
-              }
-            }
-            
-            return (
-              <TouchableOpacity
+          {/* ── Suggestion Cards ── */}
+          {suggestions?.suggestions?.map((suggestion, idx) =>
+            suggestion ? (
+              <SuggestionCard
                 key={idx}
-                style={[
-                  styles.suggestionCard, 
-                  { 
-                    backgroundColor: moodGradient[1],
-                    opacity: isClickable ? 1 : 0.7,
-                  }
-                ]}
-                onPress={() => {
-                  if (shouldShowExpansion) {
-                    setExpandedSuggestion(expandedSuggestion === idx ? null : idx);
-                  } else {
-                    handleSuggestionPress(suggestion, idx);
-                  }
-                }}
-                activeOpacity={isClickable ? 0.8 : 1}
-                disabled={!isClickable}
-              >
-                <View style={styles.suggestionHeader}>
-                  <Text style={styles.suggestionIcon}>
-                    {suggestionConfig?.type === 'message_suggestion' 
-                      ? '💬' 
-                      : getSuggestionIcon(suggestion)}
-                  </Text>
-                  <Text style={[
-                    styles.suggestionText,
-                    !isClickable && styles.nonClickableText
-                  ]}>
-                    {suggestion?.suggestion || "Suggestion"}
-                  </Text>
-                </View>
-                {renderSuggestionDetails(suggestion, idx)}
-              </TouchableOpacity>
-            );
-          })}
+                suggestion={suggestion}
+                moodGradient={moodGradient}
+                router={router}
+                currentMood={data?.last_check_in_mood} // Pass the current mood
+              />
+            ) : null
+          )}
 
-
-          {/* OLD SUGGESTED ACTIONS - Keep if needed */}
-          {/* {data?.suggested_actions?.map((action, idx) => (
-            <TouchableOpacity
-              key={`action-${idx}`}
-              style={[styles.actionBtn, { backgroundColor: moodGradient[1] }]}
-              onPress={() => {
-                if (action?.type === "playlist") {
-                  Linking.openURL(action.data.url);
-                } else {
-                  router.push(`/activities/${action?.data?.id}`);
-                }
-              }}
-            >
-              <Text style={{ fontSize: 20 }}>{action.emoji}</Text>
-              <Text style={styles.btnText}>{action.description}</Text>
-            </TouchableOpacity>
-          ))} */}
-          
-          
-          <TouchableOpacity
-            style={[styles.checkInBtn, { backgroundColor: moodGradient[0] }]}
-            onPress={() => router.push("/moodpattern")}
-          >
-            <Text style={styles.checkInText}>View Mood Pattern</Text>
-          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
+
   safeArea: {
     flex: 1,
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 40,
-  },
-  card: {
-    backgroundColor: "white",
-    marginHorizontal: 16,
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
-    marginTop: 14,
-    width: "90%",
-  },
-  cardTitle: {
-    fontSize: 12,
-    color: "#555",
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  cardText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#000",
-  },
-  cardSubText: {
-    fontSize: 14,
-    color: "#333",
-    marginTop: 4,
-  },
-  sliderRow: {
-    marginTop: 30,
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 16,
-    marginVertical: 16,
-    width: "90%",
-  },
-  sliderLabel: {
-    color: "white",
-    fontSize: 12,
-    width: 50,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  slider: {
-    flex: 1,
-    color:"#333"
+    paddingHorizontal: 0,
+    paddingTop: Platform.OS === "android" ? 30 : 10,
   },
 
-  // NEW SUGGESTION CARD STYLES
-  suggestionCard: {
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 12,
-    width: "90%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  suggestionHeader: {
-    flexDirection: "row",
+  scrollContent: {
     alignItems: "center",
-  },
-  suggestionIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  suggestionText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-    flex: 1,
-    lineHeight: 22,
-  },
-  nonClickableText: {
-    opacity: 0.7,
-    fontStyle: 'italic',
-  },
-  detailsContainer: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255, 255, 255, 0.3)",
-  },
-  detailsTitle: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "700",
-    marginBottom: 8,
-    opacity: 0.9,
-  },
-  detailsName: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  detailsAddress: {
-    color: "white",
-    fontSize: 14,
-    opacity: 0.9,
-    marginBottom: 8,
-  },
-  detailsDescription: {
-    color: "white",
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 8,
-    opacity: 0.9,
-  },
-  detailsMessage: {
-    color: "white",
-    fontSize: 15,
-    lineHeight: 22,
-    fontStyle: "italic",
-    marginBottom: 12,
-  },
-  detailsTracks: {
-    color: "white",
-    fontSize: 13,
-    opacity: 0.8,
-    marginBottom: 8,
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  ratingText: {
-    color: "white",
-    fontSize: 14,
-    opacity: 0.9,
-  },
-  tagsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 12,
-  },
-  tag: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginRight: 6,
-    marginBottom: 6,
-  },
-  tagText: {
-    color: "white",
-    fontSize: 12,
-  },
-  playlistImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  actionButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.25)",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  actionButtonText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "700",
+    paddingBottom: 100,
+    paddingHorizontal: 0,
   },
 
-  // OLD ACTION BUTTON STYLES
-  actionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 14,
-    borderRadius: 12,
-    marginTop: 12,
-    width: "90%",
-  },
-  btnText: {
-    color: "white",
-    marginLeft: 10,
-    fontSize: 16,
-  },
-  checkInBtn: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginTop: 16,
-    alignItems: "center",
-    width: "90%",
-  },
-  checkInText: {
-    fontSize: 16,
-    color: "#000",
-    fontWeight: "bold",
-  },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#5f9194',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#5f9194",
   },
   loadingText: {
     marginTop: 12,
     fontSize: 16,
-    color: '#FFF',
+    color: "#FFF",
+    fontWeight: "500",
   },
 
-  // NO CHECK-IN STYLES
-  noCard: {
-    backgroundColor: "#E3F7F6",
-    padding: 16,
-    width: "90%",
-    borderRadius: 20,
-    marginTop: 20,
-  },
-  noCardTitle: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#366",
-  },
-  noMainText: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginTop: 4,
-    color: "#000",
-  },
-  noSubText: {
-    fontSize: 14,
-    color: "#444",
-    marginTop: 6,
-  },
-  tile: {
-    flexDirection: "row",
-    backgroundColor: "rgba(0,0,0,0.25)",
-    padding: 16,
-    marginTop: 12,
-    borderRadius: 16,
-    width: "90%",
+  // ── Emoji ──
+  emojiWrapper: {
+    marginTop: 8,
+    marginBottom: 16,
     alignItems: "center",
-  },
-  tileEmoji: {
-    fontSize: 22,
-  },
-  tileText: {
-    fontSize: 16,
-    color: "#fff",
-    marginLeft: 12,
-    flex: 1,
-  },
-  checkInBtnLarge: {
-    backgroundColor: "#8CF2E3",
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 30,
-    marginTop: 20,
-    width: "85%",
-    alignItems: "center",
-  },
-  checkInTextLarge: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#033",
   },
 
-  // New styles for Mood Pattern Card
-  patternCard: {
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 12,
-    width: "90%",
+  // ── Glass Card ──
+  glassCard: {
+    width: "88%",
+    borderRadius: 22,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.22)",
+    // borderWidth: 1.5,
+    // borderColor: "rgba(255,255,255,0.55)",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    // elevation: 6,
   },
+  glassCardInner: {
+    padding: 20,
+  },
+
+  // ── AI Interpretation ──
+  interpretationCard: { marginBottom: 14 },
+  interpretationLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.2,
+    color: "rgba(0,0,0,0.45)",
+    marginBottom: 6,
+    textTransform: "uppercase",
+  },
+  interpretationMood: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#1a1a1a",
+    marginBottom: 6,
+  },
+  interpretationSub: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#333",
+    opacity: 0.85,
+  },
+
+  // ── Mood Pattern ──
+  patternCard: { marginBottom: 14 },
   patternHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
+    paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.3)",
-    paddingBottom: 8,
+    borderBottomColor: "rgba(255,255,255,0.45)",
   },
-  patternIcon: {
-    fontSize: 20,
-    marginRight: 8,
-  },
+  patternIcon: { fontSize: 18, marginRight: 8 },
   patternTitle: {
-    color: "white",
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
-    letterSpacing: 0.5,
+    color: "#1a1a1a",
+    letterSpacing: 0.3,
   },
   patternContent: {
-    marginTop: 4,
+    marginBottom: 16,
   },
   summaryText: {
-    color: "white",
     fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 8,
-    opacity: 0.95,
+    lineHeight: 21,
+    color: "#333",
+    marginBottom: 6,
   },
   bulletPoint: {
     flexDirection: "row",
-    marginBottom: 8,
-    paddingLeft: 4,
+    marginBottom: 6,
+    paddingLeft: 2,
   },
   bulletIcon: {
-    color: "white",
     fontSize: 14,
     fontWeight: "bold",
     marginRight: 8,
-    opacity: 0.9,
+    color: "#444",
   },
   bulletText: {
-    color: "white",
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 21,
     flex: 1,
-    opacity: 0.95,
+    color: "#333",
+  },
+
+  // ── Suggestion Card ──
+  suggestionCardSpacing: { marginBottom: 14 },
+  suggestionHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  suggestionIconText: {
+    fontSize: 22,
+    marginRight: 12,
+    marginTop: 1,
+  },
+  suggestionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    flex: 1,
+    lineHeight: 23,
+  },
+  suggestionDetails: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#333",
+    opacity: 0.88,
+    marginBottom: 14,
+  },
+
+  // ── Place Block ──
+  placeBlock: {
+    backgroundColor: "rgba(255,255,255,0.35)",
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 14,
+  },
+  placeHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  placePin: { fontSize: 14, marginRight: 6 },
+  placeLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#555",
+    letterSpacing: 0.3,
+  },
+  placeName: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#1a1a1a",
+    marginBottom: 4,
+  },
+  placeRating: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#c8860a",
+  },
+  placeAddress: {
+    fontSize: 13,
+    color: "#555",
+    lineHeight: 18,
+  },
+
+  ctaButton: {
+    backgroundColor: "rgba(255,255,255,0.6)",
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.8)",
+  },
+  ctaButtonActive: {
+    backgroundColor: "rgba(255,255,255,0.75)",
+    borderColor: "rgba(255,255,255,1)",
+  },
+  ctaButtonText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#c8860a",
+    letterSpacing: 0.2,
+  },
+
+  // ── Inline Dropdown ──
+  inlineDropdown: {
+    marginTop: 12,
+    backgroundColor: "rgba(255,255,255,0.72)",
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.9)",
+  },
+  dropdownTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#777",
+    paddingHorizontal: 18,
+    paddingTop: 14,
+    paddingBottom: 8,
+  },
+  dropdownOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    backgroundColor: "rgba(255,255,255,0.5)",
+  },
+  dropdownOptionBorder: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(0,0,0,0.07)",
+  },
+  dropdownOptionIcon: {
+    fontSize: 20,
+    marginRight: 14,
+    width: 28,
+    textAlign: "center",
+  },
+  dropdownOptionLabel: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#1a1a1a",
+  },
+
+  // ── View Mood Pattern Button (inside pattern card) ──
+  moodPatternBtn: {
+    backgroundColor: "rgba(255,255,255,0.6)",
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.8)",
+  },
+  moodPatternText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    letterSpacing: 0.2,
   },
 });

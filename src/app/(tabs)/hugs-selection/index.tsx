@@ -17,6 +17,7 @@ import { router, useRouter } from 'expo-router';
 import { getUsers } from '@/src/services/apis';
 
 const VirtualHugFlow = () => {
+ const [showLonelyUser, setShowLonelyUser] = useState(false);
   const {
     // State
     currentScreen,
@@ -26,12 +27,16 @@ const VirtualHugFlow = () => {
     searchText,
     selectedFriends,
     message,
-    
+    lastCheckInMood,    
+    isSelectHugDisabled,
     // Data
     hugs,
     friends,
     presets,
-    
+
+    filteredUsers,
+    communityUsers,
+     bestUser,          // ← ADD
     // Navigation functions
     goToNextScreen,
     goToPreviousScreen,
@@ -76,7 +81,7 @@ const VirtualHugFlow = () => {
 
     return (
        <ImageBackground
-        source={require('../../assets/images/backgrounds/Sending a hug - Screen 7.png')} // Set your image path
+        source={require('../../../assets/images/backgrounds/Sending a hug - Screen 7.png')} // Set your image path
         style={styles.backgroundImage}
         resizeMode="cover"
       >
@@ -116,8 +121,12 @@ const VirtualHugFlow = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.buttonWrapper}
+          style={[
+            styles.buttonWrapper,
+            isSelectHugDisabled && styles.disabledButton
+          ]}
           onPress={goToNextScreen}
+          disabled={isSelectHugDisabled}
         >
           <LinearGradient
             colors={['#B09CFF', '#7D75FF']}
@@ -135,7 +144,7 @@ const VirtualHugFlow = () => {
 
   // Screen 2: Choose Recipient
   const renderChooseRecipientScreen = () => {
-
+    
    
     const renderFriendItem = ({ item }) => {
       const isSelected = selectedFriends.includes(item?.id);
@@ -164,7 +173,7 @@ const VirtualHugFlow = () => {
 
     return (
        <ImageBackground
-        source={require('../../assets/images/backgrounds/Sending a hug - Screen 9.png')} // Set your image path
+        source={require('../../../assets/images/backgrounds/Sending a hug - Screen 9.png')} // Set your image path
         style={styles.backgroundImage}
         resizeMode="cover"
       >
@@ -190,7 +199,7 @@ const VirtualHugFlow = () => {
 
             {/* Tab Navigation */}
             <View style={styles.tabContainer}>
-              {/* <TouchableOpacity
+              <TouchableOpacity
                 style={[
                   styles.tab,
                   activeTab === 'Friend List' && styles.activeTab,
@@ -205,7 +214,7 @@ const VirtualHugFlow = () => {
                 >
                   Friend List
                 </Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.tab,
@@ -225,7 +234,7 @@ const VirtualHugFlow = () => {
             </View>
 
             {/* Search Bar */}
-            {/* <View style={styles.searchContainer}>
+            <View style={styles.searchContainer}>
               <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
               <TextInput
                 style={styles.searchInput}
@@ -234,22 +243,39 @@ const VirtualHugFlow = () => {
                 onChangeText={setSearchText}
                 placeholderTextColor="#999"
               />
-            </View> */}
-
-            {/* Lonely Message */}
-            <View style={styles.lonelyMessage}>
-              <View style={styles.heartIcon}>
-                <Text style={styles.heartEmoji}>💗</Text>
-              </View>
-              <Text style={styles.lonelyText}>
-              {virtualHugsSuggestions?.suggestion ?? "Feeling lonely? Send a hug to someone special!"}  
-              </Text>
             </View>
 
-            {/* Friends List */}
-            <View style={styles.friendsListContainer}>
-              {friends?.map((item) => renderFriendItem({ item }))}
-            </View>
+            {/* Lonely Message Card */}
+<TouchableOpacity
+  style={styles.lonelyMessage}
+  onPress={() => {
+    if (lastCheckInMood?.toLowerCase() === 'lonely') {
+      setShowLonelyUser(prev => !prev);
+    }
+  }}
+  activeOpacity={0.8}
+>
+  <View style={styles.heartIcon}>
+    <Text style={styles.heartEmoji}>💗</Text>
+  </View>
+  <Text style={styles.lonelyText}>
+    {virtualHugsSuggestions?.suggestion ?? "Feeling lonely? Send a hug to someone!"}
+  </Text>
+  {/* <Ionicons
+    name={showLonelyUser ? "chevron-up" : "chevron-down"}
+    size={18}
+    color="#7D75FF"
+  /> */}
+</TouchableOpacity>
+
+{/* List */}
+<View style={styles.friendsListContainer}>
+  {showLonelyUser && lastCheckInMood?.toLowerCase() === 'lonely' ? (
+    bestUser && renderFriendItem({ item: bestUser })
+  ) : (
+    filteredUsers?.map((item) => renderFriendItem({ item }))
+  )}
+</View>
           </View>
         </ScrollView>
 
@@ -273,7 +299,7 @@ const VirtualHugFlow = () => {
   const renderPersonalMessageScreen = () => {
     return (
        <ImageBackground
-        source={require('../../assets/images/backgrounds/Sending a hug - Screen 8.png')} // Set your image path
+        source={require('../../../assets/images/backgrounds/Sending a hug - Screen 8.png')} // Set your image path
         style={styles.backgroundImage}
         resizeMode="cover"
       >
@@ -345,7 +371,7 @@ const VirtualHugFlow = () => {
       //   style={styles.confirmationContainer}
       // >
          <ImageBackground
-        source={require('../../assets/images/backgrounds/Sending a hug - Screen 10.png')}
+        source={require('../../../assets/images/backgrounds/Sending a hug - Screen 10.png')}
         style={styles.backgroundImage}
         resizeMode="cover"
       >
@@ -363,7 +389,7 @@ const VirtualHugFlow = () => {
             {/* <Text style={styles.heartPlaceholderText}>💝</Text> */}
             {/* Replace this View with your Image component */}
               <Image 
-                source={require('../../assets/images/Heart-preview.png')} 
+                source={require('../../../assets/images/Heart-preview.png')} 
                 style={styles.characterImage}
                 resizeMode="contain"
               />
@@ -380,7 +406,7 @@ const VirtualHugFlow = () => {
           {/* Back to Dashboard Button */}
           <TouchableOpacity
             style={styles.dashboardButton}
-            onPress={() => router.push('/(tabs)/home')} // <-- '/dashboard'  route
+            onPress={() => router.push('/(tabs)/recevie_hugs')} // <-- '/dashboard'  route
           >
             <Text style={styles.dashboardButtonText}>Back to Dashboard</Text>
           </TouchableOpacity>

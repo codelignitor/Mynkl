@@ -9,6 +9,7 @@ import {
   ImageBackground,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export default function HugReceivedScreen() {
   const { message } = useLocalSearchParams();
@@ -37,6 +38,10 @@ export default function HugReceivedScreen() {
     >
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       <SafeAreaView style={styles.safeArea}>
+        <ScrollView 
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+          >
         <View style={styles.container}>
 
           {/* Message Card - positioned in middle over background */}
@@ -78,7 +83,9 @@ export default function HugReceivedScreen() {
           </View>
 
         </View>
+        </ScrollView>
       </SafeAreaView>
+      
     </ImageBackground>
   );
 }
@@ -89,6 +96,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  scrollContainer: {
+  flexGrow: 1,
+},
   safeArea: {
     flex: 1,
   },

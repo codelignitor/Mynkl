@@ -2,7 +2,7 @@ import firebase from '@react-native-firebase/app';
 import React, { useEffect, useState } from 'react';
 import { Alert, Platform, StyleSheet, View } from 'react-native';
 import { useSelector } from 'react-redux';
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { RootState } from '@/src/store';
 
 import messaging from '@react-native-firebase/messaging';
@@ -114,15 +114,49 @@ const App = () => {
           });
         });
 
+        // --- Add notification tap handler ---
+    const handleNotificationResponse = (remoteMessage: any) => {
+      const data = remoteMessage?.data;
+      if (!data) return;
+///virtual-hug/hug-community/Hug-moment?hugId=${data.hug_id}
+      switch (data.type) {
+        case 'new_hug':
+          router.push(`/(tabs)/recevie_hugs`);
+          break;
+        case 'mood_boost_suggestion':
+          router.push('/addCheckIn');
+          break;
+        case 'notificationCenter':
+          router.push('/Notifications');
+          break;
+        default:
+          console.log('Unknown notification type:', data.type);
+      }
+    };
+
+    // ✅ Notification tapped handler
+      const responseListener = Notifications.addNotificationResponseReceivedListener(
+        response => {
+          const data = response.notification.request.content.data;
+          console.log('📲 Notification tapped:', data);
+
+          if (data.type === 'new_hug' && data.hug_id) {
+            router.push(`/(tabs)/recevie_hugs?openHugId=${data.hug_id}`);
+          }
+        }
+      );
+
         // When app is opened from background due to notification
         const unsubscribeOpened = messaging().onNotificationOpenedApp(remoteMessage => {
           console.log('📥 App opened from background via notification:', remoteMessage);
+          handleNotificationResponse(remoteMessage);
         });
 
         // When app is opened from quit state via notification
         const initialNotification = await messaging().getInitialNotification();
         if (initialNotification) {
           console.log('📲 Opened from quit state via notification:', initialNotification);
+          handleNotificationResponse(initialNotification);
         }
 
         setLoading(false);
@@ -130,6 +164,7 @@ const App = () => {
         return () => {
           unsubscribeForeground();
           unsubscribeOpened();
+          responseListener.remove()
         };
       } catch (err) {
         console.error('🔥 Firebase init error:', err);

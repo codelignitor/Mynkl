@@ -178,6 +178,12 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginBottom: 20,
   },
+
+  nextButtonDisabled: {
+    backgroundColor: '#D1D5DB',
+    opacity: 0.6,
+  },
+
   nextButton: {
     backgroundColor: '#FF9B9B',
     paddingVertical: 20,

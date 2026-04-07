@@ -13,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 const FeelingLonelyScreen = () => {
   const router = useRouter();
@@ -82,6 +83,12 @@ const handleListen = () => {
       
       {/* Header */}
       <View style={styles.header}>
+        <TouchableOpacity
+    style={styles.backButton}
+    onPress={() => router.back()}
+  >
+    <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+  </TouchableOpacity>
         <Text style={styles.title}>Leaving the 'Feeling Lonely' room?</Text>
         <Text style={styles.subtitle}>Did this chat make you feel better?</Text>
       </View>
@@ -198,6 +205,14 @@ const styles = StyleSheet.create({
     marginTop: 120,
     marginBottom: 40,
   },
+ 
+  backButton: {
+    position: 'absolute',
+    left: 10,
+    top: -50,
+    // padding: 10,
+    zIndex: 1,
+},
   title: {
     fontSize: 20,
     fontWeight: 'bold',

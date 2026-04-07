@@ -1,6 +1,7 @@
 // app/hug-onboarding/useCheckInStatus.ts
 import { useState, useCallback } from 'react';
 import { getCheckInAiAnalysis } from '@/src/services/apis';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const useCheckInStatus = () => {
   const [checkInLoading, setCheckInLoading] = useState(false);
@@ -11,19 +12,29 @@ export const useCheckInStatus = () => {
   const checkUserCheckInStatus = useCallback(async () => {
     try {
       setCheckInLoading(true);
-      setError(null);
+      // setError(null);
       
       const response = await getCheckInAiAnalysis();
       
-      // Your condition: user hasn't checked in or hasn't checked in last 24 hours
-      const noCheckIn = !response?.data?.last_check_in_mood === false;
+       const lastMood = response?.last_check_in_mood;
+      // console.log('✅ API Response received:', JSON.stringify(response, null, 2));
+      // ✅ Store in local storage
+      if (lastMood) {
+        await AsyncStorage.setItem('last_check_in_mood', lastMood);
+        console.log('💾 Storing last_check_in_mood in AsyncStorage:', lastMood);
+      }
+
+      console.log('🎭 Extracted last_check_in_mood:', lastMood);
+      // Your condition
+      const noCheckIn = !lastMood;
+
       
       setNeedsCheckIn(noCheckIn);
       return noCheckIn;
       
     } catch (error) {
-      console.error('❌ Error checking check-in status:', error);
-      setError('Failed to check check-in status');
+      console.log('❌ Error checking check-in status:', error);
+      // setError('Failed to check check-in status');
       setNeedsCheckIn(false); // Default to not needing check-in on error
       return false;
     } finally {
@@ -36,12 +47,12 @@ export const useCheckInStatus = () => {
     if (checkInLoading) {
       return 'Checking...';
     }
-    return needsCheckIn ? 'All Set! Check-in' : 'All Set!  Take me in';
+    return needsCheckIn ? 'All Set! Take me in' : 'All Set! Check-in';
   };
 
   // Get navigation route based on check-in status
   const getNextRoute = () => {
-    return needsCheckIn ? '/addCheckIn' : '/recevie_hugs';
+    return needsCheckIn ? '/recevie_hugs' : '/addCheckIn';
   };
 
   return {

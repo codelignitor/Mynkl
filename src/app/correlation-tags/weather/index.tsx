@@ -13,6 +13,8 @@ import { LineChart } from "react-native-chart-kit";
 import { LinearGradient } from "expo-linear-gradient";
 import axios from "axios";
 import {weatherGraph } from '@/src/services/apis';
+import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 
 /* ─────────── Weather Enum ──────────── */
@@ -127,9 +129,21 @@ const WeatherScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         
-        <Text style={styles.title}>Weather</Text>
-        <Text style={styles.subtitle}>Rain or shine = mood decline.</Text>
-        <Text style={styles.sectionTitle}>Past 30 Days</Text>
+        
+        
+        
+
+      {/* ✅ ADDED: Header with Back Button */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <MaterialIcons name="arrow-back" size={24} color="#111" />
+          </TouchableOpacity>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.title}>Weather</Text>
+           <Text style={styles.subtitle}>Rain or shine = mood decline.</Text>
+           <Text style={styles.sectionTitle}>Past 30 Days</Text>
+          </View>
+        </View>
 
         {graphData.length > 0 ? (
           <LineChart
@@ -217,6 +231,21 @@ const styles = StyleSheet.create({
     flex: 1, 
     justifyContent: "center", 
     alignItems: "center" 
+  },
+  header: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    // paddingTop: 10,
+    paddingBottom: 10,
+  },
+  backButton: { 
+    // marginTop: 40, 
+    padding: 5 
+  },
+  headerTextContainer: { 
+    flex: 1, 
+    // marginTop: 40, 
+    alignItems: 'center',
   },
   title: { 
     fontSize: 30, 

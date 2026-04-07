@@ -6,6 +6,7 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { stepStyles } from '../GuideSteps/Styles/stepStyles';
+import { router } from 'expo-router';
 
 const ThemeStep = ({ preferences, onUpdatePreferences, onComplete }) => {
   const [selectedOption, setSelectedOption] = useState(preferences.themePreference);
@@ -16,7 +17,9 @@ const ThemeStep = ({ preferences, onUpdatePreferences, onComplete }) => {
 
   const handleFinish = () => {
     onUpdatePreferences({ themePreference: selectedOption });
+    router.push('/virtual-hug/Hug-onboarding')
     onComplete();
+   
   };
 
   return (

@@ -102,8 +102,13 @@ export const styles = StyleSheet.create({
     color: '#333',
   },
   buttonWrapper: {
-    width: '100%',
+    width: '90%',
   },
+  
+  disabledButton: {
+    opacity: 0.5,
+  },
+  
   button: {
     borderRadius: 999,
     paddingVertical: 14,
