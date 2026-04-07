@@ -13,6 +13,17 @@ export const styles = StyleSheet.create({
     paddingTop: 40,
     paddingBottom: 30,
   },
+    backButton: {
+    position: 'absolute',
+    left: 16,
+    top: 60,
+    zIndex: 10,
+  },
+
+  headerText: {
+    alignItems: 'center',
+  },
+  
   appTitle: {
     fontSize: 32,
     fontWeight: 'bold',

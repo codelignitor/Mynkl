@@ -21,6 +21,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 // import { useHugSending } from '@/src/hooks/useHugSending';
 import Toast from 'react-native-toast-message';
 import { useHugSending } from '@/src/screenHooks/useHugSending';
+import { getVirtualHugsAISuggestions } from '@/src/services/apis';
 
 export default function AddFewWordsScreen() {
   const params = useLocalSearchParams();
@@ -28,7 +29,7 @@ export default function AddFewWordsScreen() {
     const receiverId = params.receiverId as string;
     const hugType = params.hugType as string;
     const isAiChoice = params.isAiChoice === 'true';
-
+    const emoji = params.emoji;
   
       const {
       sendHugToReceiver,
@@ -41,11 +42,34 @@ export default function AddFewWordsScreen() {
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [localLoading, setLocalLoading] = useState(false);
 
-  const suggestions = [
-    "You're not alone",
-    "Sending you comfort",
-    "Here for you",
-  ];
+  // const suggestions = [
+  //   "You're not alone",
+  //   "Sending you comfort",
+  //   "Here for you",
+  // ];
+
+  // Add these:
+const [suggestions, setSuggestions] = useState<string[]>([]);
+const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+
+useEffect(() => {
+  const fetchSuggestions = async () => {
+    try {
+      setLoadingSuggestions(true);
+      const response = await getVirtualHugsAISuggestions();
+      if (response?.messages?.length) {
+        setSuggestions(response.messages);
+        // Pre-fill message with first suggestion
+        setMessage(response.messages[0]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch suggestions:", error);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+  fetchSuggestions();
+}, []);
 
   // Show error toast if there's an error
   useEffect(() => {
@@ -67,12 +91,26 @@ export default function AddFewWordsScreen() {
     setMessage(suggestion);
   };
 
-  const handleSkip = () => {
-    console.log('Skipped message');
-    // Navigate back or to confirmation screen
-    handleSendHug();
-    // router.back();
-  };
+ const handleSkip = () => {
+  Alert.alert(
+    "Send Without Message?",
+    "Would you like to send this hug without a message?",
+    [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Yes, Send",
+        onPress: async () => {
+          setMessage("");
+          await handleSendHug(true); // pass flag to send empty message
+        },
+      },
+    ],
+    { cancelable: true }
+  );
+};
 
   // const handleSendHug = async () => {
   //   if (!receiverId) {
@@ -123,7 +161,9 @@ export default function AddFewWordsScreen() {
   //   }
   // };
 
-  const handleSendHug = async () => {
+
+
+  const handleSendHug = async (skipMessage: boolean = false) => {
   if (!receiverId || !hugType) {
     Alert.alert('Error', 'Missing hug information');
     return;
@@ -133,8 +173,9 @@ export default function AddFewWordsScreen() {
     const success = await sendHugToReceiver({
       receiverId,
       hugType,
-      message,
+      message: skipMessage ? "" : message,
       isAiChoice,
+      emoji,
     });
 
     if (success) {
@@ -151,12 +192,12 @@ export default function AddFewWordsScreen() {
   }
 };
 
-  const isSendDisabled = loading || localLoading || !message.trim();
+  const isSendDisabled = loading || localLoading;
 
   return (
     <KeyboardAvoidingView 
       style={styles.wrapper}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      // behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar barStyle="dark-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.safeArea}>
@@ -237,39 +278,35 @@ export default function AddFewWordsScreen() {
               </View>
 
               {/* Suggestion Chips */}
-              <View style={styles.suggestionsContainer}>
-                <Text style={styles.suggestionsTitle}>Quick Suggestions:</Text>
-                <View style={styles.suggestionsRow}>
-                  {suggestions.slice(0, 2).map((suggestion, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={[
-                        styles.suggestionChip,
-                        selectedSuggestion === suggestion && styles.suggestionChipSelected,
-                        (loading || localLoading) && styles.suggestionChipDisabled,
-                      ]}
-                      onPress={() => handleSuggestionPress(suggestion)}
-                      activeOpacity={0.7}
-                      disabled={loading || localLoading}
-                    >
-                      <Text style={styles.suggestionText}>{suggestion}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                <TouchableOpacity
-                  style={[
-                    styles.suggestionChip,
-                    styles.suggestionChipCenter,
-                    selectedSuggestion === suggestions[2] && styles.suggestionChipSelected,
-                    (loading || localLoading) && styles.suggestionChipDisabled,
-                  ]}
-                  onPress={() => handleSuggestionPress(suggestions[2])}
-                  activeOpacity={0.7}
-                  disabled={loading || localLoading}
-                >
-                  <Text style={styles.suggestionText}>{suggestions[2]}</Text>
-                </TouchableOpacity>
-              </View>
+<View style={styles.suggestionsContainer}>
+  <Text style={styles.suggestionsTitle}>Quick Suggestions:</Text>
+
+  {loadingSuggestions ? (
+    <ActivityIndicator size="small" color="#8B7BC8" style={{ marginVertical: 12 }} />
+  ) : (
+    <ScrollView
+      horizontal={false}
+      showsVerticalScrollIndicator={false}
+    >
+      {suggestions.map((suggestion, index) => (
+        <TouchableOpacity
+          key={index}
+          style={[
+            styles.suggestionChip,
+            styles.suggestionChipFull,
+            selectedSuggestion === suggestion && styles.suggestionChipSelected,
+            (loading || localLoading) && styles.suggestionChipDisabled,
+          ]}
+          onPress={() => handleSuggestionPress(suggestion)}
+          activeOpacity={0.7}
+          disabled={loading || localLoading}
+        >
+          <Text style={styles.suggestionText}>{suggestion}</Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  )}
+</View>
 
               {/* Action Buttons */}
               <View style={styles.buttonsContainer}>
@@ -290,7 +327,7 @@ export default function AddFewWordsScreen() {
                     styles.sendButton,
                     isSendDisabled && styles.sendButtonDisabled,
                   ]}
-                  onPress={handleSendHug}
+                  onPress={() => handleSendHug(false)}
                   activeOpacity={0.8}
                   disabled={isSendDisabled}
                 >
@@ -517,12 +554,29 @@ const styles = StyleSheet.create({
   suggestionChipDisabled: {
     opacity: 0.5,
   },
-  suggestionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#5A4B7A',
-    textAlign: 'center',
-  },
+
+  suggestionChipFull: {
+  flex: 0,
+  width: '100%',
+  marginBottom: 10,
+  paddingVertical: 12,
+  paddingHorizontal: 16,
+  borderRadius: 16,
+  alignItems: 'flex-start', // left-align longer messages
+},
+suggestionText: {
+  fontSize: 15,          // slightly smaller for longer text
+  fontWeight: '500',
+  color: '#5A4B7A',
+  textAlign: 'left',
+  lineHeight: 21,
+},
+  // suggestionText: {
+  //   fontSize: 16,
+  //   fontWeight: '600',
+  //   color: '#5A4B7A',
+  //   textAlign: 'center',
+  // },
   buttonsContainer: {
     flexDirection: 'row',
     gap: 12,

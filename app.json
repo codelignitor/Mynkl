@@ -22,6 +22,11 @@
         "NSLocationWhenInUseUsageDescription": "We need your location to show nearby moods.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
+        },
+        "config": {
+          "googleMaps": {
+            "apiKey": "AIzaSyDnoc6XxrzYXuCC2Tg-QKcoIs3RLcHmuS0"
+          }
         }
       }
     },

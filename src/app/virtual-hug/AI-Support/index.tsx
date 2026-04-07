@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
+import { getAISupportPreferences, saveAISupportPreferences } from '@/src/services/apis';
 
 export default function AISupportPreferencesScreen( ) {
   const [selectedTone, setSelectedTone] = useState('Calm');
@@ -28,21 +29,75 @@ export default function AISupportPreferencesScreen( ) {
     router.back();
   };
 
-  const handleSave = () => {
-    console.log('Settings saved:', {
-      tone: selectedTone,
-      whileWaiting,
-      nighttime,
-      veryAlone,
-    });
-    Toast.show({
-            type: 'success',
-            text1: 'AI-support saved.💖',
-            // text2: 'Now, let\'s check-in your mood',
-            visibilityTime: 2000,
-            position: 'top',
-     });
-    // Add save logic here
+  const fetchAISupportPreferences = async () => {
+  try {
+    const response = await getAISupportPreferences();
+
+    const data = response?.ai_support_preferences;
+
+    if (data) {
+      setSelectedTone(data?.tone || 'Calm');
+      setPeopleOnly(data?.temporary_override?.people_only ?? false);
+
+      setWhileWaiting(
+        data?.availability?.while_waiting_for_hug ?? true
+      );
+
+      setNighttime(
+        data?.availability?.nighttime_comforts ?? true
+      );
+
+      setVeryAlone(
+        data?.availability?.when_very_alone ?? true
+      );
+    }
+
+  } catch (error) {
+    console.log('Error fetching AI preferences', error);
+  }
+};
+
+  useEffect(() => {
+    fetchAISupportPreferences();
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      const payload = {
+        ai_support_preferences: {
+          tone: selectedTone,
+          temporary_override: {
+            people_only: peopleOnly,
+          },
+          availability: {
+            while_waiting_for_hug: whileWaiting,
+            nighttime_comforts: nighttime,
+            when_very_alone: veryAlone,
+          },
+        },
+      };
+
+      await saveAISupportPreferences(payload);
+
+      Toast.show({
+        type: 'success',
+        text1: 'AI-Affirmations saved Successfully.',
+        visibilityTime: 2000,
+        position: 'top',
+      });
+
+      // console.log('Saved Preferences:', payload);
+
+    } catch (error) {
+      console.log('Error saving AI preferences', error);
+
+      Toast.show({
+        type: 'error',
+        text1: 'Error saving preferences',
+        visibilityTime: 2000,
+        position: 'top',
+      });
+    }
   };
 
   return (

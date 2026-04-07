@@ -19,13 +19,23 @@ export default function BadgesRewardsScreen({ }) {
  
   const [badges, setBadges] = useState<any[]>([]);
 
-
+  const [showAll, setShowAll] = useState(false);
  
   const BADGE_IMAGES: Record<string, any> = {
     hug_hero: require('../../../assets/images/badges/Hug_Hero.png'),
     affirmation_angel: require('../../../assets/images/badges/Affirmation_Angel.png'),
     streak_star: require('../../../assets/images/badges/7-Day_Straight.png'),
     creative_explorer: require('../../../assets/images/badges/Creative_Explorer.png'),
+    Kindness_champion: require('../../../assets/images/badges/Kindness_champion.png'),
+
+    //Other list of badges. for ALL acheievements
+    Vibe_Alchemeist: require('../../../assets/images/badges/Vibe Alchemeist.png'),
+    Heart_Healer: require('../../../assets/images/badges/Heart Healer.png'),
+    AI_Whisper: require('../../../assets/images/badges/AI Whisper.png'),
+    Echo_Gratitude: require('../../../assets/images/badges/Echo Gratitude.png'),
+    Day_Midfulness_Streak: require('../../../assets/images/badges/3 Day Midfulness Streak.png'),
+    Perfect_Match: require('../../../assets/images/badges/Perfect Match.png'),
+    
 };
 
 
@@ -50,8 +60,7 @@ const fetchBadges = async () => {
   };
 
   const handleViewAll = () => {
-    console.log('View All Achievements pressed');
-    router.push('/virtual-hug/Hug-settings')
+    setShowAll(true);
   };
 
   return (
@@ -82,68 +91,9 @@ const fetchBadges = async () => {
               {/* Title */}
               <Text style={styles.title}>Badges & Rewards</Text>
 
-              {/* Main Badge Card */}
-              {/* <View style={styles.mainBadgeCard}>
-                Featured Badge - Hug Hero
-                <View style={styles.featuredBadge}>
-                  <View style={styles.starContainer}>
-                    
-                    
-                    
-                    
-                    Decorative stars
-                    <Text style={[styles.decorStar, styles.decorStar1]}>✦</Text>
-                    <Text style={[styles.decorStar, styles.decorStar2]}>✦</Text>
-                    <Text style={[styles.decorStar, styles.decorStar3]}>✦</Text>
-                    <Text style={[styles.decorStar, styles.decorStar4]}>✦</Text>
 
-                    Main Star
-                    <View style={styles.mainStar}>
-                      <Text style={styles.starEmoji}>⭐</Text>
-                      <Text style={styles.starFace}>😊</Text>
-                    </View>
-
-                    Purple Badge
-                    <View style={styles.purpleBadge}>
-                      <Text style={styles.badgeText}>HUG HERO</Text>
-                    </View>
-                  </View>
-                </View>
-
-                Other Badges Row
-                <View style={styles.badgesRow}>
-                  Affirmation Angel
-                  <View style={styles.smallBadgeContainer}>
-                    <View style={[styles.smallBadge, styles.orangeBadge]}>
-                      <Text style={styles.smallBadgeEmoji}>👼</Text>
-                      <View style={styles.smallBadgeLabel}>
-                        <Text style={styles.smallBadgeLabelText}>
-                          AFFIRMATION{'\n'}ANGEL
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={styles.badgeName}>AFFIRMATION ANGEL</Text>
-                  </View>
-
-                  Streak Star
-                  <View style={styles.smallBadgeContainer}>
-                    <View style={[styles.smallBadge, styles.purpleSmallBadge]}>
-                      <Text style={styles.smallBadgeEmoji}>⭐</Text>
-                      <View style={styles.smallBadgeLabel}>
-                        <Text style={styles.smallBadgeLabelText}>
-                          streak Star
-                        </Text>
-                      </View>
-                    </View>
-                    <Text style={styles.badgeName}>
-                      7 Days{'\n'}Straight
-                    </Text>
-                  </View>
-                </View>
-              </View> */}
-
-              {/* Main Badge Card */}
-              <View style={styles.mainBadgeCard}>
+            {/* Main Badge Card */}
+            <View style={styles.mainBadgeCard}>
 
                 {/* Featured Badge – Hug Hero */}
                 <View
@@ -217,11 +167,109 @@ const fetchBadges = async () => {
                       />
                     </View>
                   </View>
+
+                  {showAll && (
+                    <View style={styles.allBadgesContainer}>
+                      
+                      {/* Vibe Alchemist */}
+                      <View
+                        style={[
+                          styles.smallBadgeContainer,
+                          { opacity: isEarned('Vibe_Alchemeist') ? 1 : 0.35 },
+                        ]}
+                      >
+                        <View style={styles.smallBadge}>
+                          <Image
+                            source={BADGE_IMAGES.Vibe_Alchemeist}
+                            style={{ width: 170, height: 170, resizeMode: 'contain' }}
+                          />
+                        </View>
+                      </View>
+
+                      {/* Heart Healer */}
+                      <View
+                        style={[
+                          styles.smallBadgeContainer,
+                          { opacity: isEarned('Heart_Healer') ? 1 : 0.35 },
+                        ]}
+                      >
+                        <View style={styles.smallBadge}>
+                          <Image
+                            source={BADGE_IMAGES.Heart_Healer}
+                            style={{ width: 170, height: 170, resizeMode: 'contain' }}
+                          />
+                        </View>
+                      </View>
+
+                      {/* AI Whisper */}
+                      <View
+                        style={[
+                          styles.smallBadgeContainer,
+                          { opacity: isEarned('AI_Whisper') ? 1 : 0.35 },
+                        ]}
+                      >
+                        <View style={styles.smallBadge}>
+                          <Image
+                            source={BADGE_IMAGES.AI_Whisper}
+                            style={{ width: 170, height: 170, resizeMode: 'contain' }}
+                          />
+                        </View>
+                      </View>
+
+                      {/* Echo Gratitude */}
+                      <View
+                        style={[
+                          styles.smallBadgeContainer,
+                          { opacity: isEarned('Echo_Gratitude') ? 1 : 0.35 },
+                        ]}
+                      >
+                        <View style={styles.smallBadge}>
+                          <Image
+                            source={BADGE_IMAGES.Echo_Gratitude}
+                            style={{ width: 170, height: 170, resizeMode: 'contain' }}
+                          />
+                        </View>
+                      </View>
+
+                      {/* 3 Day Midfulness Streak */}
+                      <View
+                        style={[
+                          styles.smallBadgeContainer,
+                          { opacity: isEarned('Day_Midfulness_Streak') ? 1 : 0.35 },
+                        ]}
+                      >
+                        <View style={styles.smallBadge}>
+                          <Image
+                            source={BADGE_IMAGES.Day_Midfulness_Streak}
+                            style={{ width: 170, height: 170, resizeMode: 'contain' }}
+                          />
+                        </View>
+                      </View>
+
+                       {/* Perfect Match */}
+                      <View
+                        style={[
+                          styles.smallBadgeContainer,
+                          { opacity: isEarned('Perfect_Match') ? 1 : 0.35 },
+                        ]}
+                      >
+                        <View style={styles.smallBadge}>
+                          <Image
+                            source={BADGE_IMAGES.Perfect_Match}
+                            style={{ width: 170, height: 170, resizeMode: 'contain' }}
+                          />
+                        </View>
+
+
+                      </View>
+                    </View>
+                  )}
               </View>
+              
 
 
               {/* View All Button */}
-              {/* <TouchableOpacity
+              <TouchableOpacity
                 style={styles.viewAllButton}
                 onPress={handleViewAll}
                 activeOpacity={0.8}
@@ -229,7 +277,7 @@ const fetchBadges = async () => {
                 <Text style={styles.viewAllButtonText}>
                   View All Achievements
                 </Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
             </View>
           </ScrollView>
         </LinearGradient>
@@ -400,6 +448,7 @@ const styles = StyleSheet.create({
   viewAllButton: {
     backgroundColor: '#8B6FBF',
     paddingVertical: 18,
+    marginTop: 28,
     borderRadius: 30,
     alignItems: 'center',
     shadowColor: '#000',
@@ -411,6 +460,12 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 5,
   },
+  allBadgesContainer: {
+  marginTop: 20,
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+},
   viewAllButtonText: {
     fontSize: 18,
     fontWeight: '700',

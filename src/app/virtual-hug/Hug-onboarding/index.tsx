@@ -31,6 +31,7 @@ const OnboardingFlow = () => {
     anonymousEnabled,
     setAnonymousEnabled,
     
+    isWhoCanHugDisabled,
     // Screen 3 state
     hapticEnabled,
     setHapticEnabled,
@@ -191,9 +192,13 @@ const OnboardingFlow = () => {
                 {/* Next Button */}
                 <View style={styles.nextButtonContainer}>
                   <TouchableOpacity
-                    style={styles.nextButton}
+                    style={[
+                      styles.nextButton,
+                      isWhoCanHugDisabled && styles.nextButtonDisabled
+                    ]}
                     onPress={goToNextScreen}
                     activeOpacity={0.8}
+                    disabled={isWhoCanHugDisabled}
                   >
                     <Text style={styles.nextButtonText}>Next</Text>
                   </TouchableOpacity>

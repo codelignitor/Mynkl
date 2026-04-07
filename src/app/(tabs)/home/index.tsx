@@ -441,7 +441,7 @@ const MoodMapScreen = () => {
             <Text style={styles.appIconText}>MoodMap</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             style={[
               styles.appIconCard, 
               selectedSections.hugs && { backgroundColor: '#b7c2cc' }
@@ -452,7 +452,7 @@ const MoodMapScreen = () => {
               <Icon name="heart" size={24} color="#ff4f8b" />
             </View>
             <Text style={styles.appIconText}>Hugs</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         <View style={styles.menuSectionContainer}>
@@ -515,7 +515,7 @@ const MoodMapScreen = () => {
             </View>
           </TouchableOpacity>
           
-           <TouchableOpacity 
+           {/* <TouchableOpacity 
             style={[styles.largeMenuCard, { backgroundColor: '#b7c2cc' }]}
             onPress={() => { 
               router.push({
@@ -533,7 +533,7 @@ const MoodMapScreen = () => {
               </View>
               <Icon name="chevron-right" size={24} color="#8c8c8c" style={styles.chevronIcon} />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </ScrollView>
     </SafeAreaView>

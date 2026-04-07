@@ -36,6 +36,7 @@ const JournalScreen = () => {
   
   // States for GET API
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [journalImage, setJournalImage] = useState<string | null>(null); // ← ADD
   const [loadingEntries, setLoadingEntries] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,13 +62,13 @@ const JournalScreen = () => {
   type MoodType = typeof moods[number];
 
   const emojiMap: Record<MoodType, any> = {
-    happy: require('../../assets/images/happy-icon.png'),
-    calm: require('../../assets/images/calm-icon.png'),
-    stressed: require('../../assets/images/stressed-icon.png'),
-    grateful: require('../../assets/images/grateful-icon.png'),
-    sad: require('../../assets/images/sad-icon.png'),
-    lonely: require('../../assets/images/lonely-icon.png'),
-    annoyed: require('../../assets/images/frustrated.png'),
+    happy: require('../../../assets/images/happy-icon.png'),
+    calm: require('../../../assets/images/calm-icon.png'),
+    stressed: require('../../../assets/images/stressed-icon.png'),
+    grateful: require('../../../assets/images/grateful-icon.png'),
+    sad: require('../../../assets/images/sad-icon.png'),
+    lonely: require('../../../assets/images/lonely-icon.png'),
+    annoyed: require('../../../assets/images/frustrated.png'),
   };
 
   useEffect(() => {
@@ -127,6 +128,7 @@ const JournalScreen = () => {
       
       setCurrentPage(response.page);
       setTotalPages(response.total_pages);
+      setJournalImage(response.journal_image ?? null); // ← ADD
       
     } catch (error) {
       console.error("Error fetching journal entries:", error);
@@ -636,33 +638,27 @@ const JournalScreen = () => {
               <Text style={styles.noEntriesText}>No journal entries yet. Start writing!</Text>
             ) : (
               <>
-                {journalEntries.map((entry) => (
-                  <BlurView key={entry.id} intensity={40} tint="light" style={styles.entryCard}>
-                    <View style={styles.entryHeader}>
-                      <Image 
-                        source={emojiMap[entry.mood as MoodType] || emojiMap.calm} 
-                        style={styles.entryMoodImage} 
-                      />
-                      <Text style={styles.entryDate}>
-                        {formatDate(entry.created_at)}
-                      </Text>
-                    </View>
-                    <Text style={styles.entryText}>
-                      {entry.reflection_text}
-                    </Text>
-                    
-                    {/* NEW: Display attached image if exists */}
-                    {entry.image && (
-                      <View style={styles.entryImageContainer}>
-                        <Image 
-                          source={{ uri: entry.image }} 
-                          style={styles.entryImage}
-                          resizeMode="cover"
-                        />
-                      </View>
-                    )}
-                  </BlurView>
-                ))}
+               {journalEntries.map((entry, index) => (
+  <BlurView key={entry.id} intensity={40} tint="light" style={styles.entryCard}>
+    <View style={styles.entryHeader}>
+      <Image
+        source={emojiMap[entry.mood as MoodType] || emojiMap.calm}
+        style={styles.entryMoodImage}
+      />
+      <Text style={styles.entryDate}>{formatDate(entry.created_at)}</Text>
+    </View>
+    <Text style={styles.entryText}>{entry.reflection_text}</Text>
+
+    {/* Show journal_image only on the most recent entry */}
+    {index === 0 && journalImage && (
+      <Image
+        source={{ uri: journalImage }}
+        style={styles.entryImage}
+        resizeMode="cover"
+      />
+    )}
+  </BlurView>
+))}
                 
                 {/* Load More Button */}
                 {currentPage < totalPages && (
@@ -992,10 +988,12 @@ appName: {
     marginTop: 12,
     borderRadius: 8,
     overflow: 'hidden',
+    
   },
   entryImage: {
-    width: '100%',
-    height: 150,
+    width: '50%',
+    height: 100,
     borderRadius: 8,
+    alignItems: 'flex-end'
   }
 });

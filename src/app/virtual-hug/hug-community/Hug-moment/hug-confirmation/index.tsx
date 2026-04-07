@@ -12,6 +12,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export default function HugOnWayScreen({ }) {
   const handleSendAnother = () => {
@@ -22,7 +23,7 @@ export default function HugOnWayScreen({ }) {
 
   const handleBackToHome = () => {
     console.log('Back to Home pressed');
-    router.push('/(tabs)/home');
+    router.push('/(tabs)/recevie_hugs');
     // Add navigation logic here
   };
 
@@ -41,6 +42,11 @@ export default function HugOnWayScreen({ }) {
             style={styles.backgroundImage}
             resizeMode="cover"
           >
+         <ScrollView 
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            
           <View style={styles.container}>
             {/* Title */}
             <Text style={styles.title}>Your Hug is on its Way!</Text>
@@ -114,6 +120,7 @@ export default function HugOnWayScreen({ }) {
               <Text style={[styles.star, styles.star5]}>✨</Text>
             </View>
           </View>
+          </ScrollView>
           </ImageBackground>
         {/* </LinearGradient> */}
       </SafeAreaView>
@@ -128,6 +135,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  scrollContainer: {
+  flexGrow: 1,
+},
   gradientContainer: {
     flex: 1,
   },

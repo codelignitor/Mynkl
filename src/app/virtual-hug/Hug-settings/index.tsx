@@ -15,7 +15,7 @@ import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useHugSettings } from '@/src/screenHooks/useHugSettings';
-// import { useHugSettings } from '@/src/hooks/useHugSettings';
+import Toast from 'react-native-toast-message';
 
 export default function HugSettingsScreen() {
   const {
@@ -44,13 +44,32 @@ useEffect(() => {
   };
 
   // Update a setting and sync with API
-  const handleToggle = useCallback(async (key: keyof typeof settings, value: boolean) => {
-    // Update local state immediately for responsive UI
+ const handleToggle = useCallback(
+  async (key: keyof typeof settings, value: boolean) => {
+    // Update UI instantly
     setLocalSettings(prev => ({ ...prev, [key]: value }));
-    
-    // Call API to save
-    await updateSetting(key, value);
-  }, [updateSetting]);
+
+    try {
+      await updateSetting(key, value);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Updated',
+        text2: 'Your setting has been updated successfully',
+        position: 'top',
+      });
+
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to update setting',
+        position: 'top',
+      });
+    }
+  },
+  [updateSetting]
+);
 
   // Update intensity handler
 const handleIntensityChange = useCallback(async (value: number) => {
@@ -120,7 +139,7 @@ const handleIntensityChange = useCallback(async (value: number) => {
               <View style={styles.divider} />
               <View style={styles.sliderSection}>
                 <Text style={styles.intensityLabel}>Intensity</Text>
-                // Update your slider component:
+                {/* // Update your slider component: */}
                   <Slider
                     style={styles.slider}
                     minimumValue={0}

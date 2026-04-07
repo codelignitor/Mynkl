@@ -30,10 +30,6 @@ export const useHugSending = () => {
         return false;
       }
 
-      if (!message.trim()) {
-        setError('Please add a message');
-        return false;
-      }
 
       // 🎨 Emoji mapping
       const emojiMap: Record<string, string> = {
@@ -54,14 +50,15 @@ if (isAiChoice) {
   finalHugType = validHugTypes[randomIndex];
 }
 
-const payload = {
-  receiver_id: receiverId,
-  hug_type: finalHugType, // ✅ Always valid now
-  ai_choice: isAiChoice,
-  message,
-  emoji: emojiMap[finalHugType] || '🤗',
-  receiver_type: 'Community',
-};
+    const payload = {
+      receiver_id: receiverId,
+      hug_type: finalHugType, // ✅ Always valid now
+      ai_choice: isAiChoice,
+      message,
+      emoji: emojiMap[finalHugType] || '🤗',
+      receiver_type: 'Community',
+      type: 'anonymous', 
+    };
 
 
       try {

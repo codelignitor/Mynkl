@@ -11,6 +11,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useNotification } from './useNotification';
 import { NotificationItem, NotificationSection } from '../../services/notification_types';
 import { styles } from './style';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function NotificationCenter() {
   const { 
@@ -61,6 +63,10 @@ export default function NotificationCenter() {
     }
     return null;
   };
+
+  const handleBack = () => {
+    router.back();
+};
 
   const handleLoadMore = () => {
     if (hasNextPage && !loadingMore) {
@@ -115,16 +121,29 @@ export default function NotificationCenter() {
         style={styles.gradientBackground}
       >
         <View style={styles.header}>
-          <Text style={styles.appTitle}>Mynkl</Text>
-          <Text style={styles.screenTitle}>Notification Center</Text>
-          <TouchableOpacity 
-            style={styles.refreshButton} 
-            onPress={refreshNotifications}
-            disabled={loading}
-          >
-            <Text style={styles.refreshButtonText}>🔄</Text>
-          </TouchableOpacity>
-        </View>
+  
+  {/* Back Button */}
+  <TouchableOpacity 
+    style={styles.backButton}
+    onPress={handleBack}
+  >
+    <Ionicons name="arrow-back" size={24} color="#1E3A8A" />
+  </TouchableOpacity>
+
+  <View style={styles.headerText}>
+    <Text style={styles.appTitle}>Mynkl</Text>
+    <Text style={styles.screenTitle}>Notification Center</Text>
+  </View>
+
+  <TouchableOpacity 
+    style={styles.refreshButton} 
+    onPress={refreshNotifications}
+    disabled={loading}
+  >
+    <Text style={styles.refreshButtonText}>🔄</Text>
+  </TouchableOpacity>
+
+</View>
 
         <FlatList
           data={screenContent.type === 'notifications' ? screenContent.sections : []}

@@ -24,6 +24,8 @@ export const useOnboardingLogic = () => {
   const [friendsEnabled, setFriendsEnabled] = useState(false);
   const [communityEnabled, setCommunityEnabled] = useState(false);
   const [anonymousEnabled, setAnonymousEnabled] = useState(false);
+
+  const isWhoCanHugDisabled = !friendsEnabled && !communityEnabled && !anonymousEnabled;
   
   // Screen 3: Haptic Feedback Screen State
   const [hapticEnabled, setHapticEnabled] = useState(true);
@@ -229,7 +231,7 @@ export const useOnboardingLogic = () => {
       
       // Small delay before navigation for better UX
       setTimeout(() => {
-        router.push('/recevie_hugs');
+        router.push('/(tabs)/home');
       }, 800);
       
       return response;
@@ -277,6 +279,7 @@ export const useOnboardingLogic = () => {
     setCommunityEnabled,
     anonymousEnabled,
     setAnonymousEnabled,
+    isWhoCanHugDisabled,
     
     // Screen 3 state
     hapticEnabled,

@@ -10,9 +10,10 @@ import {
   Button,
   ImageBackground,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { receiveHugsList } from '@/src/services/apis';
+import { getPendingHugsDashboard, receiveHugsList, updateHugStatus } from '@/src/services/apis';
 import { router } from 'expo-router';
 import hugsLogo from '../../../assets/images/hugs_logo-removebg.png';
 import { LinearGradient } from 'expo-linear-gradient'; 
@@ -21,42 +22,74 @@ const PendingHugsDetailScreen = ({ onBack }) => {
 
   const [hugsData, setHugsData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);      // ← ADD
+const [totalPages, setTotalPages] = useState(1);         // ← ADD
+const [loadingMore, setLoadingMore] = useState(false);   // ← ADD
 
-  const receiveHugsListHandler = async () => {
-    try {
-      setLoading(true);
-      const response = await receiveHugsList();
+ const receiveHugsListHandler = async (page: number = 1, isLoadMore: boolean = false) => {
+  try {
+    isLoadMore ? setLoadingMore(true) : setLoading(true);
+
+    const response = await receiveHugsList(page, 10);
+
+    if (page === 1) {
       setHugsData(response?.list);
-    } catch (error) {
-      
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    receiveHugsListHandler();
-  }, []);
-
-  // Helper function to calculate relative time
-  const getRelativeTime = (dateString) => {
-    if (!dateString) return '';
-    
-    const now = new Date();
-    const past = new Date(dateString);
-    const diffInMs = now - past;
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInHours / 24);
-    const diffInWeeks = Math.floor(diffInDays / 7);
-    
-    if (diffInHours < 24) {
-      return `${diffInHours} ${diffInHours === 1 ? 'hr' : 'hrs'} ago`;
-    } else if (diffInDays < 7) {
-      return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
     } else {
-      return `${diffInWeeks} ${diffInWeeks === 1 ? 'week' : 'weeks'} ago`;
+      // Append new entries to existing list
+      setHugsData((prev) => [...(prev ?? []), ...response?.list]);
     }
-  };
+
+    setCurrentPage(response?.page);
+    setTotalPages(response?.total_pages);
+
+  } catch (error) {
+    console.error("Failed to fetch hugs:", error);
+  } finally {
+    setLoading(false);
+    setLoadingMore(false);
+  }
+};
+
+useEffect(() => {
+  receiveHugsListHandler();
+}, []);
+
+
+  const loadMore = () => {
+  if (currentPage < totalPages && !loadingMore) {
+    receiveHugsListHandler(currentPage + 1, true);
+  }
+};
+
+  const getRelativeTime = (dateString) => {
+  if (!dateString) return '';
+
+  // Append 'Z' if missing to treat as UTC
+  const utcString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+  
+  const now = new Date();
+
+  // Convert API time to UTC+5
+  const utcPlus5Offset = 5 * 60 * 60 * 1000;
+  const past = new Date(new Date(utcString).getTime() + utcPlus5Offset);
+  const nowPlus5 = new Date(now.getTime() + utcPlus5Offset);
+
+  const diffInMs = nowPlus5 - past;
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInHours / 24);
+  const diffInWeeks = Math.floor(diffInDays / 7);
+
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} ${diffInMinutes === 1 ? 'min' : 'mins'} ago`;
+  } else if (diffInHours < 24) {
+    return `${diffInHours} ${diffInHours === 1 ? 'hr' : 'hrs'} ago`;
+  } else if (diffInDays < 7) {
+    return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+  } else {
+    return `${diffInWeeks} ${diffInWeeks === 1 ? 'week' : 'weeks'} ago`;
+  }
+};
 
   // Helper function to get gradient colors based on hug type
   const getHugGradient = (hugType) => {
@@ -94,42 +127,38 @@ const PendingHugsDetailScreen = ({ onBack }) => {
     
   // };
 
-  const handleHugReceive = (item) => {
-  const receiverType = item?.receiver_type?.toLowerCase();
+  const handleHugReceive = async (item) => {
+  try {
+    // Update status to seen before navigating
+    await updateHugStatus(item?.id, "seen");
 
-  if (receiverType === 'ai' || receiverType === 'community') {
-    router.push({
-      pathname: '/virtual-hug/receive-hug',
-      params: { message: item?.message },
-    });
-  } else {
-    router.push('/hug_recevied'); // 🔁 Replace with actual path
+    // Remove it from local list instantly (optimistic update)
+    setHugsData((prev) => prev.filter((hug) => hug.id !== item.id));
+
+    // Navigate
+    const receiverType = item?.receiver_type?.toLowerCase();
+    if (receiverType === 'ai' || receiverType === 'community') {
+      router.push({
+        pathname: '/virtual-hug/receive-hug',
+        params: { message: item?.message },
+      });
+    } else {
+      router.push('/hug_recevied');
+    }
+  } catch (error) {
+    console.error("Failed to update hug status:", error);
+    // Navigate anyway so user isn't blocked
+    const receiverType = item?.receiver_type?.toLowerCase();
+    if (receiverType === 'ai' || receiverType === 'community') {
+      router.push({
+        pathname: '/virtual-hug/receive-hug',
+        params: { message: item?.message },
+      });
+    } else {
+      router.push('/hug_recevied');
+    }
   }
 };
-
-  // const renderHugItem = ({ item }) => (
-  //   <TouchableOpacity style={styles.hugItemCard} activeOpacity={0.7}>
-  //     <View style={styles.hugCardContent}>
-  //       {/* Left: Avatar */}
-  //       <View style={styles.avatarContainer}>
-  //         <Image
-  //           source={{ uri: item?.user?.profile_pic ?? 'https://cdn-icons-png.flaticon.com/512/12173/12173945.png' }}
-  //           style={styles.avatarImage}
-  //         />
-  //       </View>
-       
-  //       {/* Center: Hug Info */}
-  //       <View style={styles.hugInfoContainer}>
-  //         <Text style={styles.hugMessage}>You got a {item?.hug_type}</Text>
-  //         <Text style={styles.hugSubMessage}>{item?.message}</Text>
-  //         <Text style={styles.timeStamp}>{getRelativeTime(item?.created_at)}</Text>
-  //       </View>
-
-  //       {/* Right: Chevron */}
-  //       <Ionicons name="chevron-forward" size={24} color="#9B8DC8" />
-  //     </View>
-  //   </TouchableOpacity>
-  // );
 
   const renderHugItem = ({ item }) => (
     
@@ -153,11 +182,7 @@ const PendingHugsDetailScreen = ({ onBack }) => {
                 source={{ uri: item.user.profile_pic ?? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" }}
                 style={styles.avatarImage}
               />
-            {/* ) : (
-              <Text style={styles.avatarEmoji}>
-                {'🤗'}
-              </Text>
-            )} */}
+            
           </View>
           
           {/* Content */}
@@ -186,49 +211,60 @@ const PendingHugsDetailScreen = ({ onBack }) => {
       >
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
-        <View style={styles.detailHeader}>
-          <TouchableOpacity onPress={onBack} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={28} color="#6B4C9A" />
-          </TouchableOpacity>
-          
-          {/* Decorative Hearts */}
-          <View style={styles.heartsContainer}>
-            <Text style={styles.smallHeart}>💕</Text>
-            <Text style={styles.bigHeart}>💗</Text>
-            <Text style={styles.sparkle}>✨</Text>
-          </View>
+      <View style={styles.detailHeader}>
+        <TouchableOpacity onPress={onBack} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={28} color="#6B4C9A" />
+        </TouchableOpacity>
+        <View style={styles.heartsContainer}>
+          <Text style={styles.smallHeart}>💕</Text>
+          <Text style={styles.bigHeart}>💗</Text>
+          <Text style={styles.sparkle}>✨</Text>
         </View>
+      </View>
 
         
-        {/* Title and Subtitle */}
-        <View style={styles.titleContainer}>
-          <Text style={styles.detailTitle}>Hugs Waiting for You</Text>
-          <Text style={styles.subtitle}>Open a hug to respond when you're ready.</Text>
-        </View>
-        
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+
           {/* Hugs List */}
           <FlatList
-            data={hugsData}
-            renderItem={renderHugItem}
-            keyExtractor={(item) => item?.id?.toString()}
-            style={styles.hugsList}
-            contentContainerStyle={styles.hugsListContent}
-            showsVerticalScrollIndicator={false}
-          />
-
-          {/* Bottom Supportive Message */}
-          <View style={styles.bottomMessageContainer}>
-            <Text style={styles.cloudIcon}>☁️</Text>
-            <Text style={styles.bottomMessageText}>
-              Take your time. These hugs will be here{'\n'}when you're ready.
-            </Text>
+        data={hugsData}
+        renderItem={renderHugItem}
+        keyExtractor={(item) => item?.id?.toString()}
+        contentContainerStyle={styles.hugsListContent}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View style={styles.titleContainer}>
+            <Text style={styles.detailTitle}>Hugs Waiting for You</Text>
+            <Text style={styles.subtitle}>Open a hug to respond when you're ready.</Text>
           </View>
-        </ScrollView>
+        }
+
+         ListFooterComponent={
+  <>
+    {/* Load More Button */}
+    {currentPage < totalPages && (
+      <TouchableOpacity
+        style={styles.loadMoreButton}
+        onPress={loadMore}
+        disabled={loadingMore}
+      >
+        {loadingMore ? (
+          <ActivityIndicator size="small" color="#6B4C9A" />
+        ) : (
+          <Text style={styles.loadMoreText}>Load More</Text>
+        )}
+      </TouchableOpacity>
+    )}
+
+    {/* Bottom Supportive Message */}
+    <View style={styles.bottomMessageContainer}>
+      <Text style={styles.cloudIcon}>☁️</Text>
+      <Text style={styles.bottomMessageText}>
+        Take your time. These hugs will be here{'\n'}when you're ready.
+      </Text>
+    </View>
+  </>
+}
+      />
         
       </SafeAreaView>
     {/* </LinearGradient> */}
@@ -236,9 +272,37 @@ const PendingHugsDetailScreen = ({ onBack }) => {
   );
 };
 
+interface DashboardData {
+  latest_mood?: string;
+  ai_interpretation?: string;
+  pending_hugs?: number;
+}
+
 export default function PendingHugsScreen() {
   const [selectedTab, setSelectedTab] = useState('Receive');
   const [showDetail, setShowDetail] = useState(false);
+
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [loadingDashboard, setLoadingDashboard] = useState(false);
+
+  const fetchDashboard = async () => {
+    try {
+      setLoadingDashboard(true);
+      const response = await getPendingHugsDashboard();
+      setDashboardData(response);
+    } catch (error) {
+      console.error("Failed to fetch dashboard:", error);
+    } finally {
+      setLoadingDashboard(false);
+    }
+  };
+
+  // Re-fetch when user returns from detail screen
+  useEffect(() => {
+    if (!showDetail) {
+      fetchDashboard();
+    }
+  }, [showDetail]);
 
   const renderTab = (tabName) => (
     <TouchableOpacity
@@ -284,14 +348,14 @@ export default function PendingHugsScreen() {
       </View>
 
       {/* Mood Box */}
-      <View style={styles.moodBox}>
-        <Text style={styles.moodText}>
-          <Text style={styles.emoji}>😊</Text> You are feeling calm
-        </Text>
-        <Text style={styles.subText}>
-          Take a deep breath and{'\n'}appreciate the moment.
-        </Text>
-      </View>
+<View style={styles.moodBox}>
+  <Text style={styles.moodText}>
+    <Text style={styles.emoji}>😊</Text> You are feeling {dashboardData?.latest_mood ?? '...'}
+  </Text>
+  <Text style={styles.subText}>
+    {dashboardData?.ai_interpretation ?? ''}
+  </Text>
+</View>
 
       {/* Nav Tabs */}
       <View style={styles.navTabs}>
@@ -303,7 +367,9 @@ export default function PendingHugsScreen() {
       {/* Pending Hugs */}
       {selectedTab === 'Receive' && (
         <View style={styles.pendingContainer}>
-          <Text style={styles.pendingText}>You have pending hugs</Text>
+          <Text style={styles.pendingText}>
+      You have {dashboardData?.pending_hugs ?? '—'} pending hugs
+    </Text>
           <Text style={styles.heart}>💗</Text>
           <TouchableOpacity onPress={handleHugImagePress}>
             <Image
@@ -319,7 +385,7 @@ export default function PendingHugsScreen() {
           <Text style={styles.heart}>💗</Text>
          <Button
             title="Send Hug"
-            onPress={() => router.push('/hugs-selection')}
+            onPress={() => router.push('/(tabs)/hugs-selection')}
             color="#8b7cf6"
           />  
         </View>
@@ -500,7 +566,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   hugsListContent: {
-    paddingBottom: 20,
+    // paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 80,
   },
 
  // Redesigned Hug Card with Gradient
@@ -568,7 +636,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderRadius: 20,
     padding: 16,
-    marginHorizontal: 20,
+    // marginHorizontal: 2,
     marginBottom: 15,
   },
   cloudIcon: {
@@ -581,29 +649,19 @@ const styles = StyleSheet.create({
     color: '#7B6B9E',
     lineHeight: 20,
   },
-
-  // Bottom Navigation Bar
-  bottomNavBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingVertical: 12,
-    paddingBottom: 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  navButton: {
-    padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navHeartIcon: {
-    fontSize: 32,
-  },
+  loadMoreButton: {
+  backgroundColor: 'rgba(255,255,255,0.6)',
+  borderRadius: 16,
+  paddingVertical: 12,
+  alignItems: 'center',
+  marginHorizontal: 20,
+  marginBottom: 26,
+  borderWidth: 1,
+  borderColor: 'rgba(107, 76, 154, 0.2)',
+},
+loadMoreText: {
+  fontSize: 14,
+  fontWeight: '600',
+  color: '#6B4C9A',
+},
 });
