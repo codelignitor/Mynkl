@@ -117,56 +117,73 @@ const fetchBadges = async () => {
                 </View>
 
                 {/* Other Badges Row */}
-                <View style={styles.badgesRow}>
+                <View style={styles.badgesGrid}>
 
-                  {/* Affirmation Angel */}
-                  <View
-                    style={[
-                      styles.smallBadgeContainer,
-                      { opacity: isEarned('affirmation_angel') ? 1 : 0.35 },
-                    ]}
-                  >
-                    <View style={[styles.smallBadge, styles.orangeBadge]}>
-                      <Image
-                        source={BADGE_IMAGES.affirmation_angel}
-                        style={{ width: 190, height: 190, resizeMode: 'contain' }}
-                      />
+                 {/* Other Badges Grid */}
+<View style={styles.badgesGrid}>
 
-                    </View>
-                  </View>
+  {/* Affirmation Angel */}
+  <View
+    style={[
+      styles.smallBadgeContainer,
+      { opacity: isEarned('affirmation_angel') ? 1 : 0.35 },
+    ]}
+  >
+    <View style={styles.smallBadge}>
+      <Image
+        source={BADGE_IMAGES.affirmation_angel}
+        style={styles.badgeImage}
+      />
+    </View>
+  </View>
 
-                  {/* Streak Star */}
-                  <View
-                    style={[
-                      styles.smallBadgeContainer,
-                      { opacity: isEarned('streak_star') ? 1 : 0.35 },
-                    ]}
-                  >
-                    <View style={[styles.smallBadge, styles.purpleSmallBadge]}>
-                      <Image
-                        source={BADGE_IMAGES.streak_star}
-                        style={{ width: 170, height: 170, resizeMode: 'contain' }}
-                      />
-                    </View>
-                  </View>
+  {/* Streak Star */}
+  <View
+    style={[
+      styles.smallBadgeContainer,
+      { opacity: isEarned('streak_star') ? 1 : 0.35 },
+    ]}
+  >
+    <View style={styles.smallBadge}>
+      <Image
+        source={BADGE_IMAGES.streak_star}
+        style={styles.badgeImage}
+      />
+    </View>
+  </View>
 
-                  
+  {/* Kindness Champion */}
+  <View
+    style={[
+      styles.smallBadgeContainer,
+      { opacity: isEarned('Kindness_champion') ? 1 : 0.35 },
+    ]}
+  >
+    <View style={styles.smallBadge}>
+      <Image
+        source={BADGE_IMAGES.Kindness_champion}
+        style={styles.badgeImage}
+      />
+    </View>
+  </View>
 
-                </View>
+  {/* Creative Explorer */}
+  <View
+    style={[
+      styles.smallBadgeContainer,
+      { opacity: isEarned('creative_explorer') ? 1 : 0.35 },
+    ]}
+  >
+    <View style={styles.smallBadge}>
+      <Image
+        source={BADGE_IMAGES.creative_explorer}
+        style={styles.badgeImage}
+      />
+    </View>
+  </View>
+  
 
-                 <View
-                    style={[
-                      styles.smallBadgeContainer,
-                      { opacity: isEarned('creative_explorer') ? 1 : 0.35 },
-                    ]}
-                  >
-                    <View style={[styles.smallBadge, styles.purpleSmallBadge]}>
-                      <Image
-                        source={BADGE_IMAGES.creative_explorer}
-                        style={{ width: 170, height: 170, resizeMode: 'contain' }}
-                      />
-                    </View>
-                  </View>
+</View>
 
                   {showAll && (
                     <View style={styles.allBadgesContainer}>
@@ -265,7 +282,7 @@ const fetchBadges = async () => {
                     </View>
                   )}
               </View>
-              
+              </View>
 
 
               {/* View All Button */}
@@ -332,6 +349,18 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
   },
+  badgesGrid: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  marginTop: 10,
+},
+
+badgeImage: {
+  width: 150,
+  height: 150,
+  resizeMode: 'contain',
+},
   featuredBadge: {
     alignItems: 'center',
     marginBottom: 10,

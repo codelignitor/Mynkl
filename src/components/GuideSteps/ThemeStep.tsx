@@ -17,7 +17,7 @@ const ThemeStep = ({ preferences, onUpdatePreferences, onComplete }) => {
 
   const handleFinish = () => {
     onUpdatePreferences({ themePreference: selectedOption });
-    router.push('/virtual-hug/Hug-onboarding')
+    // router.push('/virtual-hug/Hug-onboarding')
     onComplete();
    
   };

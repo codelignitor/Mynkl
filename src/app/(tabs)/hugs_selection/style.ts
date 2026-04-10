@@ -133,9 +133,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 15,
     // backgroundColor: '#f8f7ff',
   },
-  backButton: {
-    padding: 5,
-  },
+  
   headerTitle: {
     flex: 1,
     textAlign: 'center',
@@ -290,6 +288,40 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+//   tabContainer: {
+//   flexDirection: 'row',
+//   backgroundColor: '#ECEAF3',
+//   borderRadius: 16,
+//   padding: 4,
+//   marginBottom: 25,
+// },
+
+tabButton: {
+  flex: 1,
+  paddingVertical: 12,
+  borderRadius: 14,
+  alignItems: 'center',
+},
+
+activeTabButton: {
+  backgroundColor: '#fff',
+  shadowColor: '#000',
+  shadowOffset: {
+    width: 0,
+    height: 1,
+  },
+  shadowOpacity: 0.08,
+  shadowRadius: 2,
+  elevation: 2,
+},
+
+tabButtonText: {
+  fontSize: 14,
+  fontWeight: '500',
+  color: '#6B7280',
+},
+
   nextButton: {
     marginBottom:40,
     position: 'absolute',

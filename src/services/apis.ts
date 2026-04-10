@@ -456,6 +456,10 @@ export const saveReflection = async (payload: any) => {
   return response.data;
 };
 
+export const getVirtualHugOnboardingStatus = async () => {
+  const response = await axiosInstance.get('/virtual_hugs/virtual-hug-onboarding-status');
+  return response.data;
+};
 export interface PlaceData {
   name: string;
   lat: number;
@@ -642,7 +646,12 @@ export interface OnboardingResponse {
   };
 };
 
-
+export const updateVirtualHugOnboardingStatus = async () => {
+  const response = await axiosInstance.put(
+    '/virtual_hugs/virtual-hug-onboarding-status?status=true'
+  );
+  return response.data;
+};
 
 export const transcribeAudio = async (audioFile: any): Promise<{ text: string }> => {
   try {

@@ -13,7 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getPendingHugsDashboard, receiveHugsList, updateHugStatus } from '@/src/services/apis';
+import { getPendingHugsDashboard, getVirtualHugOnboardingStatus, receiveHugsList, updateHugStatus } from '@/src/services/apis';
 import { router } from 'expo-router';
 import hugsLogo from '../../../assets/images/hugs_logo-removebg.png';
 import { LinearGradient } from 'expo-linear-gradient'; 
@@ -304,7 +304,7 @@ export default function PendingHugsScreen() {
     }
   }, [showDetail]);
 
-  const renderTab = (tabName) => (
+  const renderTab = (tabName: any) => (
     <TouchableOpacity
       onPress={() => setSelectedTab(tabName)}
       style={selectedTab === tabName ? styles.activeTab : styles.inactiveTab}
@@ -316,6 +316,24 @@ export default function PendingHugsScreen() {
       </Text>
     </TouchableOpacity>
   );
+
+  const checkOnboardingAndNavigate = async (navigateTo: string) => {
+  try {
+    const response = await getVirtualHugOnboardingStatus();
+    
+    if (response?.virtualhug_onboard === true) {
+      // Already onboarded — go to intended screen
+      router.push(navigateTo as any);
+    } else {
+      // New user — redirect to onboarding
+      router.push('/virtual-hug/Hug-onboarding'); // ← replace with your actual onboarding route
+    }
+  } catch (error) {
+    console.log('Error checking onboarding status:', error);
+    // On error navigate to intended screen so user isn't blocked
+    router.push(navigateTo as any);
+  }
+};
 
   const handleHugImagePress = () => {
     setShowDetail(true);
@@ -379,7 +397,7 @@ export default function PendingHugsScreen() {
           </TouchableOpacity>
         </View>
       )}
-      {selectedTab === 'Send' && (
+      {/* {selectedTab === 'Send' && (
         <View style={styles.pendingContainer}>
           <Text style={styles.pendingText}>You want to send Hug!</Text>
           <Text style={styles.heart}>💗</Text>
@@ -401,7 +419,32 @@ export default function PendingHugsScreen() {
             color="#8b7cf6"
           />  
         </View>
-      )}
+      )} */}
+      {selectedTab === 'Send' && (
+  <View style={styles.pendingContainer}>
+    <Text style={styles.pendingText}>You want to send Hug!</Text>
+    <Text style={styles.heart}>💗</Text>
+    <TouchableOpacity
+      style={styles.sendHugButton}
+      onPress={() => checkOnboardingAndNavigate('/(tabs)/hugs_selection')}
+    >
+      <Text style={styles.sendHugButtonText}>Send Hug</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
+{selectedTab === 'Community' && (
+  <View style={styles.pendingContainer}>
+    <Text style={styles.pendingText}>You want to join community!</Text>
+    <Text style={styles.heart}>💗</Text>
+    <TouchableOpacity
+      style={styles.sendHugButton}
+      onPress={() => checkOnboardingAndNavigate('/virtual-hug/hug-community/hug-challenge')}
+    >
+      <Text style={styles.sendHugButtonText}>Join Community</Text>
+    </TouchableOpacity>
+  </View>
+)}
        </ImageBackground>
     </SafeAreaView> 
   );
@@ -570,6 +613,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 80,
   },
+  sendHugButton: {
+  backgroundColor: '#8b7cf6',
+  paddingVertical: 12,
+  paddingHorizontal: 32,
+  borderRadius: 12,
+  marginTop: 16,
+  alignItems: 'center',
+},
+sendHugButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
 
  // Redesigned Hug Card with Gradient
   hugCard: {

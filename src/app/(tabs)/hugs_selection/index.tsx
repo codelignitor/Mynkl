@@ -198,40 +198,41 @@ const VirtualHugFlow = () => {
             <Text style={styles.recipientSubtitle}>Who would you like to send{'\n'}the hug to?</Text>
 
             {/* Tab Navigation */}
-            <View style={styles.tabContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.tab,
-                  activeTab === 'Friend List' && styles.activeTab,
-                ]}
-                onPress={() => setActiveTab('Friend List')}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === 'Friend List' && styles.activeTabText,
-                  ]}
-                >
-                  Friend List
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.tab,
-                  activeTab === 'Community Match' && styles.activeTab,
-                ]}
-                onPress={() => setActiveTab('Community Match')}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === 'Community Match' && styles.activeTabText,
-                  ]}
-                >
-                  Community Match
-                </Text>
-              </TouchableOpacity>
-            </View>
+<View style={styles.tabContainer}>
+  <TouchableOpacity
+    style={[
+      styles.tabButton,
+      activeTab === 'Friend List' && styles.activeTabButton,
+    ]}
+    onPress={() => setActiveTab('Friend List')}
+  >
+    <Text
+      style={[
+        styles.tabButtonText,
+        activeTab === 'Friend List' && styles.activeTabText,
+      ]}
+    >
+      Friend List
+    </Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={[
+      styles.tabButton,
+      activeTab === 'Community Match' && styles.activeTabButton,
+    ]}
+    onPress={() => setActiveTab('Community Match')}
+  >
+    <Text
+      style={[
+        styles.tabButtonText,
+        activeTab === 'Community Match' && styles.activeTabText,
+      ]}
+    >
+      Community Match
+    </Text>
+  </TouchableOpacity>
+</View>
 
             {/* Search Bar */}
             <View style={styles.searchContainer}>
@@ -261,11 +262,13 @@ const VirtualHugFlow = () => {
   <Text style={styles.lonelyText}>
     {virtualHugsSuggestions?.suggestion ?? "Feeling lonely? Send a hug to someone!"}
   </Text>
-  {/* <Ionicons
-    name={showLonelyUser ? "chevron-up" : "chevron-down"}
-    size={18}
-    color="#7D75FF"
-  /> */}
+  {lastCheckInMood?.toLowerCase() === 'lonely' && (
+    <Ionicons
+      name={showLonelyUser ? "chevron-up" : "chevron-down"}
+      size={18}
+      color="#7D75FF"
+    />
+  )}
 </TouchableOpacity>
 
 {/* List */}

@@ -46,6 +46,7 @@ interface CheckInData {
 }
 
 interface PlaceDetails {
+  fallback: boolean;
   name: string;
   address: string;
   place_id?: string;
@@ -225,7 +226,10 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
   const placeDetails = isPlace ? (suggestion.details as PlaceDetails) : null;
   
   // Get the CTA from suggestion or use default
-  const ctaLabel = suggestion.cta || (isPlace ? "Save for later" : null);
+  const ctaLabel =
+  suggestion.cta ||
+  (typeof suggestion.details === "object" && suggestion.details?.fallback ? "Explore Events" : null) ||
+  (isPlace ? "Save for later" : null);
   
   // Get routing actions based on mood and CTA
   const dropdownOptions = useMemo(() => {

@@ -38,6 +38,7 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "INTERNET",
+        "VIBRATE",
         "ACCESS_NETWORK_STATE"
       ],
       "config": {

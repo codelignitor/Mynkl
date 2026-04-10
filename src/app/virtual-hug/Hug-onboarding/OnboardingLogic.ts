@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { Vibration } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { updateHugSettings } from '@/src/services/apis';
+import { updateHugSettings, updateVirtualHugOnboardingStatus } from '@/src/services/apis';
 import Toast from 'react-native-toast-message';
 import { useCheckInStatus } from '@/src/screenHooks/useCheckInStatus';
 
@@ -168,6 +168,11 @@ export const useOnboardingLogic = () => {
       
       const response = await updateHugSettings(payload);
       console.log('✅ Hug settings saved successfully:', response);
+
+      // ← UPDATE ONBOARDING STATUS
+      await updateVirtualHugOnboardingStatus();
+      console.log('✅ Onboarding status updated to true');
+
       
       // Show success toast
       Toast.show({
@@ -219,6 +224,11 @@ export const useOnboardingLogic = () => {
       // Call API
       const response = await updateHugSettings(payload);
       console.log('✅ Hug settings saved successfully:', response);
+
+      // ← UPDATE ONBOARDING STATUS
+    await updateVirtualHugOnboardingStatus();
+    console.log('✅ Onboarding status updated to true');
+
       
       // Show success toast before navigating
       Toast.show({

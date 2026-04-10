@@ -354,7 +354,7 @@ const getSocialActions = (router: Router): RoutingAction[] => [
   { 
     icon: "🤗", 
     label: "Send Virtual Hug", 
-    onPress: () => router.push("/hugs-selection") 
+    onPress: () => router.push("/(tabs)/hugs_selection") 
   },
   { 
     icon: "💬", 
@@ -546,13 +546,13 @@ export const moodSuggestionRoutes: Record<string, Record<string, SuggestionConfi
   },
   
   lonely: {
-    "Talk to someone": {
+    " Talk to someone": {
       cta: "Talk to someone",
       getActions: (suggestion, router) => [
         { 
           icon: "🤗", 
           label: "Send Virtual Hug", 
-          onPress: () => router.push("/hugs-selection") 
+          onPress: () => router.push("/(tabs)/hugs_selection") 
         },
         { 
           icon: "💬", 
@@ -585,7 +585,22 @@ export const moodSuggestionRoutes: Record<string, Record<string, SuggestionConfi
           onPress: () => router.push("/Selfcare_tips/breathingSuggestion") 
         },
       ]
+    },
+    "Explore Events": {
+  cta: "Explore Events",
+  getActions: (suggestion, router) => [
+    {
+      icon: "🎉",
+      label: "View Social Events",
+      // onPress: () => router.push("/events_social/social_events")
+      onPress: () =>
+        Alert.alert(
+          "Coming Soon 🚧",
+          "This will be developed during the Events feature."
+        )
     }
+  ]
+}
   }
 };
 
@@ -594,7 +609,7 @@ export const getDefaultActions = (router: Router): RoutingAction[] => [
   { 
     icon: "🤗", 
     label: "Send Virtual Hug", 
-    onPress: () => router.push("/hugs-selection") 
+    onPress: () => router.push("/(tabs)/hugs_selection") 
   },
   { 
     icon: "💬", 

@@ -118,16 +118,7 @@ export default function TabLayout() {
         }}
       />
 
-       <Tabs.Screen
-        name="hugs-selection/index"
-        options={{
-          href: null, // 🔥 IMPORTANT
-          title: 'hugs-selection',
-          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
-        }}
-      />
-
-       
+      
 
        <Tabs.Screen
         name="journal/index"
@@ -154,7 +145,16 @@ export default function TabLayout() {
           title: 'mood_diary',
           tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
-      />      
+      /> 
+
+       <Tabs.Screen
+        name="hugs_selection/index"
+        options={{
+          href: null, // 🔥 IMPORTANT
+          title: 'hugs_selection',
+          // tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+        }}
+      />
      
     </Tabs>
     

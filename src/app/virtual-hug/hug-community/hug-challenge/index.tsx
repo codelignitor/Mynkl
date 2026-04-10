@@ -83,6 +83,7 @@ export default function DailyHugMissionScreen() {
             resizeMode="cover"
           >
             <ScrollView
+              style={styles.scrollView}
               contentContainerStyle={styles.container}
               refreshControl={
                 <RefreshControl
@@ -230,6 +231,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   safeArea: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   container: {

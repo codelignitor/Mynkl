@@ -50,7 +50,7 @@ export const useHugSettings = () => {
   const [sliderValue, setSliderValue] = useState(apiToSlider(7));
 
   // Trigger haptic feedback
-  const triggerHapticFeedback = useCallback((testMode: boolean = false) => {
+  const triggerHapticFeedback = useCallback(async (testMode: boolean = false) => {
     if (!settings.haptic_feedback && !testMode) {
       return; // Don't vibrate if haptic feedback is disabled
     }
@@ -64,7 +64,7 @@ export const useHugSettings = () => {
       
       // Option 2: Using Expo Haptics (more refined, iOS specific)
       // You can use either or both
-      triggerExpoHaptics(intensity);
+      await triggerExpoHaptics(intensity);
       
       if (testMode) {
         Toast.show({
@@ -80,7 +80,7 @@ export const useHugSettings = () => {
   }, [settings.haptic_feedback, settings.intensity]);
 
   // Trigger Expo Haptics based on intensity
-  const triggerExpoHaptics = (intensity: number) => {
+  const triggerExpoHaptics = async (intensity: number) => {
     try {
       if (intensity <= 3) {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

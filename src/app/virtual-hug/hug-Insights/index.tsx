@@ -79,6 +79,33 @@ const getMoodStatus = (value: number) => {
 };
 
 
+// Build dynamic points from API data
+const chartData = insights?.chart ?? [];
+
+const getChartPoints = () => {
+  if (chartData.length === 0) return { points: '', dots: [], fillPath: '' };
+
+  const maxY = Math.max(...chartData.map((p: any) => p.y), 1); // avoid div by 0
+
+  const coords = chartData.map((point: any, index: number) => {
+    const x = PADDING + (index / (chartData.length - 1)) * (CHART_WIDTH - PADDING * 2);
+    // Invert Y: higher value = higher on chart
+    const y = CHART_HEIGHT - PADDING - (point.y / maxY) * (CHART_HEIGHT - PADDING * 2);
+    return { x, y };
+  });
+
+  const points = coords.map((c: { x: any; y: any; }) => `${c.x},${c.y}`).join(' ');
+
+  // Fill path: go along the line then close at the bottom
+  const first = coords[0];
+  const last = coords[coords.length - 1];
+  const fillPath = `M ${first.x} ${CHART_HEIGHT - PADDING} L ${coords.map((c: { x: any; y: any; }) => `${c.x},${c.y}`).join(' L ')} L ${last.x} ${CHART_HEIGHT - PADDING} Z`;
+
+  return { points, dots: coords, fillPath };
+};
+
+const { points, dots, fillPath } = getChartPoints();
+
   const handleViewAll = () => {
     console.log('View All Insights pressed');
     // Add navigation logic here
@@ -114,53 +141,75 @@ const getMoodStatus = (value: number) => {
               {/* Header Text */}
               <Text style={styles.moodHeader}>
                 {getMoodStatus(moodTrendPercent)}
-                {/* Your mood has improved */}
-                </Text>
+                 {/* Your mood has improved  */}
+              </Text>
+
+                {/* Chart Insight from API */}
+                {/* <Text style={styles.chartInsightText}>
+                  {insights?.chartInsight ?? '—'}
+                  
+                </Text> */}
               <View style={styles.percentageRow}>
                  <Text style={styles.percentage}>
                     {moodTrendPercent}%
-                    {/* {insights?.chart?.[insights.chart.length - 1]?.y ?? 0}% */}
+                    
+                    {/* {insights?.chart?.[insights.chart.length - 1]?.y ?? 0}%   */}
                   </Text>
                  <Text style={styles.timeframe}> over recent hugs.</Text>
               </View>
 
+
               {/* Chart */}
               <View style={styles.chartContainer}>
-                <Svg width="100%" height="200" viewBox="0 0 350 200">
-                  <Defs>
-                    <SvgLinearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-                      <Stop offset="0" stopColor="#FFE4D6" stopOpacity="0.4" />
-                      <Stop offset="0.5" stopColor="#FFD6E8" stopOpacity="0.4" />
-                      <Stop offset="1" stopColor="#E8CCFF" stopOpacity="0.6" />
-                    </SvgLinearGradient>
-                  </Defs>
-                  
-                  {/* Background gradient area */}
-                  <Path
-                    d="M 30 180 L 30 120 L 90 100 L 150 90 L 210 70 L 270 40 L 320 20 L 320 180 Z"
-                    fill="url(#grad)"
-                  />
-                  
-                  {/* Background peach circle */}
-                  <Circle cx="180" cy="110" r="80" fill="#FFE4D6" opacity="0.5" />
-                  
-                  {/* Line */}
-                 <Polyline
-                    points={chartPoints.join(' ')}
+               <Svg width="100%" height="200" viewBox={`0 0 ${CHART_WIDTH + PADDING} ${CHART_HEIGHT + PADDING}`}>
+                <Defs>
+                  <SvgLinearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                    <Stop offset="0" stopColor="#FFE4D6" stopOpacity="0.4" />
+                    <Stop offset="0.5" stopColor="#FFD6E8" stopOpacity="0.4" />
+                    <Stop offset="1" stopColor="#E8CCFF" stopOpacity="0.6" />
+                  </SvgLinearGradient>
+                </Defs>
+
+                {/* Background peach circle — your original */}
+                <Circle cx="180" cy="110" r="80" fill="#FFE4D6" opacity="0.5" />
+
+                {/* Dynamic gradient fill under line */}
+                {fillPath ? <Path d={fillPath} fill="url(#grad)" /> : null}
+
+                {/* Dynamic line */}
+                {points ? (
+                  <Polyline
+                    points={points}
                     fill="none"
                     stroke="#9370DB"
                     strokeWidth="4"
                   />
+                ) : null}
 
-                  
-                  {/* Dots */}
-                  <Circle cx="30" cy="120" r="8" fill="#9370DB" stroke="#FFFFFF" strokeWidth="3" />
-                  <Circle cx="90" cy="100" r="8" fill="#9370DB" stroke="#FFFFFF" strokeWidth="3" />
-                  <Circle cx="150" cy="90" r="8" fill="#9370DB" stroke="#FFFFFF" strokeWidth="3" />
-                  <Circle cx="210" cy="70" r="8" fill="#9370DB" stroke="#FFFFFF" strokeWidth="3" />
-                  <Circle cx="270" cy="40" r="8" fill="#9370DB" stroke="#FFFFFF" strokeWidth="3" />
-                  <Circle cx="320" cy="20" r="8" fill="#9370DB" stroke="#FFFFFF" strokeWidth="3" />
-                </Svg>
+                {/* First dot — START */}
+                {dots.length > 0 && (
+                  <Circle
+                    cx={dots[0].x}
+                    cy={dots[0].y}
+                    r="8"
+                    fill="#9370DB"
+                    stroke="#FFFFFF"
+                    strokeWidth="3"
+                  />
+                )}
+
+                {/* Last dot — NOW */}
+                {dots.length > 1 && (
+                  <Circle
+                    cx={dots[dots.length - 1].x}
+                    cy={dots[dots.length - 1].y}
+                    r="8"
+                    fill="#9370DB"
+                    stroke="#FFFFFF"
+                    strokeWidth="3"
+                  />
+                )}
+              </Svg>
 
                 {/* Chart Labels */}
                 <View style={styles.chartLabels}>
@@ -278,6 +327,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#5B3A8F',
   },
+  chartInsightText: {
+  fontSize: 16,
+  fontWeight: '500',
+  color: '#5B3A8F',
+  // lineHeight: 21,
+  // marginBottom: 16,
+},
   timeframe: {
     fontSize: 16,
     fontWeight: '500',

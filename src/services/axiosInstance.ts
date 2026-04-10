@@ -9,7 +9,7 @@ import { router } from 'expo-router';
 
 const axiosInstance = axios.create({
    baseURL: 'http://18.199.96.45:8000',
-  //  baseURL: 'https://cb20-119-73-112-212.ngrok-free.app',
+  //  baseURL: 'https://88bd-149-40-247-166.ngrok-free.app',
 
 
  // timeout: 10000,
