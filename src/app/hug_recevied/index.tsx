@@ -7,9 +7,11 @@ import {
   StatusBar,
   SafeAreaView,
   ImageBackground,
+  ScrollView,
+  
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ScrollView } from 'react-native-gesture-handler';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HugReceivedScreen() {
   const { message } = useLocalSearchParams();
@@ -38,11 +40,20 @@ export default function HugReceivedScreen() {
     >
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView 
-            contentContainerStyle={styles.scrollContainer}
-            showsVerticalScrollIndicator={false}
-          >
+        
+        {/* Back Button */}
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          {/* <Text style={styles.backText}>‹ Back</Text> */}
+           <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        
+        <ScrollView
+              contentContainerStyle={styles.container}
+              showsVerticalScrollIndicator={false}
+            >
+
         <View style={styles.container}>
+           
 
           {/* Message Card - positioned in middle over background */}
           {/* {message ? ( */}
@@ -81,10 +92,10 @@ export default function HugReceivedScreen() {
               <Text style={styles.buttonText}>Start a Chat</Text>
             </TouchableOpacity>
           </View>
-
+        
         </View>
         </ScrollView>
-      </SafeAreaView>
+       </SafeAreaView>
       
     </ImageBackground>
   );
@@ -96,18 +107,27 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  scrollContainer: {
-  flexGrow: 1,
-},
+  
   safeArea: {
     flex: 1,
+    paddingTop:10
   },
   container: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: 24,
     paddingTop: 20,
     justifyContent: 'space-between',
   },
+
+  backButton: {
+    position: 'absolute',
+    top: 60,
+    left: 16,
+    zIndex: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+
   messageCard: {
     // backgroundColor: 'rgba(255, 248, 240, 0.75)',
     borderRadius: 20,

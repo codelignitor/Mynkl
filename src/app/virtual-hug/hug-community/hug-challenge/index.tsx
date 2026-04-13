@@ -10,13 +10,13 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useHugMission } from '@/src/screenHooks/useHugMission';
-import { ScrollView } from 'react-native-gesture-handler';
 import { useSimpleCrisisCheck } from '@/src/screenHooks/useCrisisCheck';
 import { Ionicons } from '@expo/vector-icons';
-// import { useSimpleCrisisCheck } from '@/src/hooks/useSimpleCrisisCheck';
+
 
 export default function DailyHugMissionScreen() {
   const {
@@ -83,18 +83,17 @@ export default function DailyHugMissionScreen() {
             resizeMode="cover"
           >
             <ScrollView
-              style={styles.scrollView}
-              contentContainerStyle={styles.container}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={refreshData}
-                  tintColor="#FFF"
-                  colors={['#FFF']}
-                />
-              }
-              showsVerticalScrollIndicator={false}
-            >
+                contentContainerStyle={styles.container}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={refreshData}
+                    tintColor="#FFF"
+                    colors={['#FFF']}
+                  />
+                }
+              >
                       
               {/* Header Badge */}
               <View style={styles.badge}>
@@ -233,15 +232,12 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
   container: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: 24,
     alignItems: 'center',
     paddingTop: 60,
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   backgroundImage: {
     flex: 1,

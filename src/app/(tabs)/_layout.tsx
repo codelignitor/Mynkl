@@ -125,7 +125,7 @@ export default function TabLayout() {
         options={{
           href: null, // 🔥 IMPORTANT
           title: 'journal',
-          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="grid-outline" size={24} color={color} />,
         }}
       />
 
@@ -150,9 +150,10 @@ export default function TabLayout() {
        <Tabs.Screen
         name="hugs_selection/index"
         options={{
-          href: null, // 🔥 IMPORTANT
+          // href: null, 
           title: 'hugs_selection',
-          // tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+          tabBarButton: () => null, 
+          tabBarIcon: ({ color }) => <Ionicons name="chatbox" size={24} color={color} />,
         }}
       />
      

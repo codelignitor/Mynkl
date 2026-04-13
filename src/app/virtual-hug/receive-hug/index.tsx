@@ -7,6 +7,7 @@ import {
   StatusBar,
   SafeAreaView,
   Image,
+  ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -41,6 +42,11 @@ export default function ReceivedHugScreen() {
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
         >
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+          >
+          
           <View style={styles.container}>
             {/* Title */}
             <Text style={styles.title}>You've Received a Hug!</Text>
@@ -114,6 +120,9 @@ export default function ReceivedHugScreen() {
               <Text style={styles.closeText}>Close</Text>
             </TouchableOpacity>
 
+            </View>
+          </ScrollView>
+          
             {/* Decorative Stars */}
             <View style={styles.starsContainer}>
               <Text style={[styles.star, styles.star1]}>✨</Text>
@@ -121,7 +130,6 @@ export default function ReceivedHugScreen() {
               <Text style={[styles.star, styles.star3]}>⭐</Text>
               <Text style={[styles.star, styles.star4]}>✨</Text>
             </View>
-          </View>
         </LinearGradient>
       </SafeAreaView>
     </View>
@@ -135,13 +143,16 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  scrollContainer: {
+  flexGrow: 1,
+},
   gradientContainer: {
     flex: 1,
   },
   container: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 70,
+    paddingTop: 100,
     position: 'relative',
   },
   title: {
@@ -300,7 +311,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginHorizontal: 50,
     alignItems: 'center',
-    marginTop: 'auto',
+    // marginTop: 'auto',
     marginBottom: 40,
     shadowColor: '#000',
     shadowOffset: {
