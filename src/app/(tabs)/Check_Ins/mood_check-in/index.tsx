@@ -35,7 +35,7 @@ import Frustrated from "../../../../assets/svgs/frustrated.svg";
 import Grateful from "../../../../assets/svgs/grateful-icon.svg";
 
 import NoCheckInScreen from "@/src/components/NoCheckInScreen/NoCheckInScreen";
-import { getMoodSuggestionActions, shouldHaveDropdown } from "@/src/utils/moodSuggestionRouting";
+import { getMoodSuggestionActions, handleSavePlace, shouldHaveDropdown } from "@/src/utils/moodSuggestionRouting";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ const getMoodGradient = (mood?: string): [string, string] => {
   switch (mood) {
     case "happy":     return ["#FFE59A", "#FFB347"];
     case "calm":      return ["#A2E8E0", "#5CC4B8"];
-    case "grateful":  return ["#8bffaa", "#6aff85"];
+    case "grateful":  return ["#b7dea9", "#83c86a"];
     case "stressed":  return ["#D1C4E9", "#B39DDB"];
     case "lonely":    return ["#6A5ACD", "#483D8B"];
     case "sad":       return ["#90A4AE", "#607D8B"];
@@ -262,8 +262,8 @@ const SuggestionCard: React.FC<SuggestionCardProps> = ({
           icon: "🔖",
           label: "Save for later",
           onPress: () => {
-            Alert.alert("Saved!", `${placeDetails.name} saved for later.`);
-          },
+            handleSavePlace(placeDetails, currentMood, router);
+  },
         },
       ];
     }
@@ -416,6 +416,8 @@ export default function MoodScreen() {
 
   const moodGradient = getMoodGradient(data?.last_check_in_mood);
   const noCheckIn = !data?.last_check_in_mood || data?.has_checked_in === false;
+
+  
 
   if (loading) {
     return (

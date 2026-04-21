@@ -29,8 +29,9 @@ const AuthScreen = () => {
   const handleLoginSuccess = (data, isLogin) => {
     if (!isLogin) {
       dispatch(setTokenOnly(data));
-      setShowGuide(true);
-      setIsNewUser(false);
+      // setShowGuide(true);
+      // setIsNewUser(false);
+      router.push('/onboarding/onboarding-splash'); 
     } else {
       dispatch(setToken(data));
       router.push('/(tabs)/home');

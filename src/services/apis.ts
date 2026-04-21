@@ -555,17 +555,16 @@ export const getPlaceDetails = async (placeId: string) => {
 };
 
 
-// moodDiary API's
-
-export const getMoodCalendar = async (year: number, month: number) => {
+export const getMoodSegments = async (year: number, month: number) => {
   try {
     const response = await axiosInstance.get('/home/mood-calendar', { params: { year, month } });
     return response.data;
   } catch (error) {
-    console.log('❌ Error fetching mood calendar:', error);
+    console.log('❌ Error fetching mood segments:', error);
     throw error;
   }
 };
+
 
 //Dailydetail page APi (dynamic)
 export const getMoodDayDetail = async (date: string) => {
@@ -684,6 +683,35 @@ export const transcribeAudio = async (audioFile: any): Promise<{ text: string }>
   }
 }
     
+
+export const buildOnboardingPayload = (answers) => {
+  return {
+    q1_expression: answers["1"]?.value || null,
+    q2_coping: answers["3"]?.value || null,
+    q3_suggestions: answers["4"]?.value || null,
+    q4_location: answers["2"]?.value || null,
+    q5_hugs: answers["6"]?.value || null,
+    q6_reminders: answers["7"]?.value || null,
+    q7_motivation: answers["5"]?.value || null,
+    q8_support: answers["9"]?.value || null,
+    q9_open_to_talk: answers["10"]?.value || null,
+    note: "User completed onboarding",
+  };
+};
+
+export const submitOnboarding = async (answers: any) => {
+  try {
+    const payload = buildOnboardingPayload(answers);
+
+    const res = await axiosInstance.post("/home/onboarding", payload);
+
+    return await res.data;
+  } catch (err) {
+    console.error("Onboarding API error:", err);
+  }
+};
+
+
 // Get users for a specific ai_tag
 export const getUsersByAiTag = async (ai_tag: string) => {
   try {
@@ -755,5 +783,75 @@ export const getPendingHugsDashboard = async () => {
 
 export const getVirtualHugInsights = async () => {
   const response = await axiosInstance.get('/virtual_hugs/insights');
+  return response.data;
+};
+
+
+
+export const acknowledgeHug = async (hugId: any, responseType = "SEND_GRATITUDE") => {
+  try {
+    const response = await axiosInstance.post(`/virtual_hugs/${hugId}/acknowledge`, {
+      hug_id: hugId,
+      response_type: responseType
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error("Error acknowledging hug:", error);
+    throw error;
+  }
+};
+
+
+export const respondToHug = async (payload: { original_hug_id: string | string[]; hug_type: any; message: string; }) => {
+  try {
+    const response = await axiosInstance.post(
+      "/hug/respond",
+      payload
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error responding to hug:", error);
+    throw error;
+  }
+};
+
+
+export const sendHugBack = async (hugId: any, payload: {
+  // receiver_id: string;
+  hug_type: string;
+  message: string;
+  emoji: string
+  // is_anonymous: boolean;
+}) => {
+  const response = await axiosInstance.post(`/virtual_hugs/${hugId}/hug-back`, payload);
+  return response.data;
+};
+
+
+export interface SavedPlace {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  mood: string;
+  place_id: string;
+  address: string;
+  rating: number;
+  user_ratings_total: number;
+  types: string[];
+  distance: string;
+}
+
+export interface SavedPlacesWithInsightsResponse {
+  insight: string[];
+  places: SavedPlace[];
+}
+
+export const getSavedPlacesWithInsights = async (lat: number, lng: number): Promise<SavedPlacesWithInsightsResponse> => {
+  const response = await axiosInstance.get(`/home/saved-places-with-insights`, {
+    params: { lat, lng }
+  });
   return response.data;
 };

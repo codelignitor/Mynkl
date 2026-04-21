@@ -8,6 +8,7 @@ import {
   ScrollView,
   Image,
   ImageBackground,
+  Switch,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,7 +37,10 @@ const VirtualHugFlow = () => {
 
     filteredUsers,
     communityUsers,
-     bestUser,          // ← ADD
+    bestUser,          
+    isAnonymous,
+    setIsAnonymous,
+
     // Navigation functions
     goToNextScreen,
     goToPreviousScreen,
@@ -315,7 +319,13 @@ const VirtualHugFlow = () => {
           <View style={styles.headerSpacer} />
         </View>
 
-        <View style={styles.messageContent}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          // keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.messageContent}
+        >
+
+        {/* <View style={styles.messageContent}> */}
           <Text style={styles.messageTitle}>Add a Personal{'\n'}Message</Text>
           <Text style={styles.messageSubtitle}>What would you like to say?</Text>
 
@@ -346,12 +356,28 @@ const VirtualHugFlow = () => {
             <Text style={styles.addEmoji}>Add Emoji or GIF</Text>
           </TouchableOpacity>
 
+          <View style={styles.anonymousContainer}>
+              <View>
+                <Text style={styles.anonymousTitle}>Send Anonymously</Text>
+                <Text style={styles.anonymousSubtitle}>
+                  Send quietly. Support without being seen 🤍
+                </Text>
+              </View>
+
+              <Switch
+                value={isAnonymous}
+                onValueChange={setIsAnonymous}
+                trackColor={{ false: '#E5E7EB', true: '#8B7CF6' }}
+                thumbColor={'#fff'}
+              />
+            </View>
+
           <TouchableOpacity
             style={styles.buttonWrapper}
             onPress={handleSendHug}
           >
             <LinearGradient
-              colors={['#8B7CF6', '#7C3AED']}
+              colors={['#8B7CF6', '#6972eb']}
               style={styles.button}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -359,7 +385,8 @@ const VirtualHugFlow = () => {
               <Text style={styles.buttonText}>Send Hug</Text>
             </LinearGradient>
           </TouchableOpacity>
-        </View>
+       
+        </ScrollView>
       </SafeAreaView>
       </ImageBackground>
     );

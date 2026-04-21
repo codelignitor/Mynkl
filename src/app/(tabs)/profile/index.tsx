@@ -221,6 +221,8 @@ const ProfileScreen = () => {
                         <Text style={styles.editButtonText}>Mood Diay</Text>
                     </TouchableOpacity>
 
+           
+           
             {/* Navigation Options */}
             <View style={styles.navigationContainer}>
                 <TouchableOpacity
@@ -231,11 +233,21 @@ const ProfileScreen = () => {
                     <Ionicons name="chevron-forward" size={24} color="black" />
                 </TouchableOpacity>
 
+                
+
                 <TouchableOpacity
                     style={styles.navigationItem}
                     onPress={() => router.push("/chat/room")}
                 >
                     <Text style={styles.navigationText}>Chat Rooms</Text>
+                    <Ionicons name="chevron-forward" size={24} color="black" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.navigationItem}
+                    onPress={() => router.push("/(tabs)/Saved_places")}
+                >
+                    <Text style={styles.navigationText}>Saved Places</Text>
                     <Ionicons name="chevron-forward" size={24} color="black" />
                 </TouchableOpacity>
             </View>

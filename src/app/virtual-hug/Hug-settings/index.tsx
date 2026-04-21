@@ -213,22 +213,46 @@ const handleIntensityChange = useCallback(async (value: number) => {
             </View>
 
             {/* Notification Settings Card */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Notification Settings</Text>
-              <View style={styles.settingRow}>
-                <Text style={styles.settingLabel}>
-                  Send hugs without revealing{'\n'}your name
-                </Text>
-                <Switch
-                  value={localSettings.reveal_name_in_hugs}
-                  onValueChange={(value) => handleToggle('reveal_name_in_hugs', value)}
-                  trackColor={{ false: '#D1D5DB', true: '#10B981' }}
-                  thumbColor="#FFFFFF"
-                  ios_backgroundColor="#D1D5DB"
-                  disabled={saving}
-                />
-              </View>
-            </View>
+           {/* Sending Preferences Card */}
+<View style={styles.card}>
+  <Text style={styles.cardTitle}>Sending Preferences</Text>
+
+  <Text style={styles.preferenceSubtitle}>
+    Default sending mode:
+  </Text>
+
+  {/* Show my name */}
+  <TouchableOpacity
+    style={styles.radioRow}
+    onPress={() => handleToggle('reveal_name_in_hugs', false)}
+    activeOpacity={0.7}
+  >
+    <View style={styles.radioOuter}>
+      {!localSettings.reveal_name_in_hugs && (
+        <View style={styles.radioInner} />
+      )}
+    </View>
+    <Text style={styles.radioText}>Show my name</Text>
+  </TouchableOpacity>
+
+  {/* Send anonymously */}
+  <TouchableOpacity
+    style={styles.radioRow}
+    onPress={() => handleToggle('reveal_name_in_hugs', true)}
+    activeOpacity={0.7}
+  >
+    <View style={styles.radioOuter}>
+      {localSettings.reveal_name_in_hugs && (
+        <View style={styles.radioInner} />
+      )}
+    </View>
+    <Text style={styles.radioText}>Send anonymously</Text>
+  </TouchableOpacity>
+
+  <Text style={styles.preferenceNote}>
+    This is your default. You can change it anytime before sending a hug.
+  </Text>
+</View>
 
             {/* Saving indicator */}
             {saving && (
@@ -401,4 +425,45 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  preferenceSubtitle: {
+  fontSize: 15,
+  color: '#6B7280',
+  marginBottom: 10,
+},
+
+radioRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginTop: 12,
+},
+
+radioOuter: {
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+  borderWidth: 2,
+  borderColor: '#4f3aed',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginRight: 12,
+},
+
+radioInner: {
+  width: 10,
+  height: 10,
+  borderRadius: 5,
+  backgroundColor: '#3a43ed',
+},
+
+radioText: {
+  fontSize: 16,
+  color: '#1A1A1A',
+},
+
+preferenceNote: {
+  fontSize: 13,
+  color: '#6B7280',
+  marginTop: 14,
+  lineHeight: 18,
+},
 });

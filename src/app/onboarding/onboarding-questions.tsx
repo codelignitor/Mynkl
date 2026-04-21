@@ -1,3 +1,4 @@
+import { getCurrentLocation } from "@/src/utils/locationUtils";
 import { router } from "expo-router";
 import React, { useRef, useState, useEffect } from "react";
 import {
@@ -223,11 +224,27 @@ export default function OnboardingQuestions({ onComplete }) {
     });
   };
 
-  const handleSelect = (questionId, option) => {
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [questionId]: option,
-    }));
+  const handleSelect = async (questionId, option) => {
+    const updatedAnswers = {
+    ...selectedOptions,
+    [questionId]: option,
+  };
+
+  setSelectedOptions(updatedAnswers);
+
+  // ─────────────────────────────
+  // Q4 LOCATION HANDLING
+  // ─────────────────────────────
+  if (questionId === "2" && option.value === "auto") {
+    try {
+      const location = await getCurrentLocation();
+      console.log("Location:", location);
+      // optionally store in state if needed
+    } catch (err) {
+      console.log("Location denied");
+      return;
+    }
+  }
 
     setTimeout(() => {
       const currentIndex = QUESTIONS.findIndex(q => q.id === questionId);
@@ -273,7 +290,7 @@ export default function OnboardingQuestions({ onComplete }) {
           }
         }
       }
-    }, 250);
+    }, 400);
   };
 
   const renderItem = ({ item }) => {

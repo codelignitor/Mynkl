@@ -1,28 +1,72 @@
-import React from "react";
-import { View, Text, StyleSheet, SafeAreaView, Dimensions } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, SafeAreaView, ActivityIndicator, Dimensions } from "react-native";
+import { router } from "expo-router";
+import { submitOnboarding } from "@/src/services/apis";
+// import { submitOnboarding } from "@/src/services/onboarding";
 
 const { width, height } = Dimensions.get("window");
 
-export default function FinalSetupScreen() {
+export default function FinalSetupScreen({ route }) {
+  const [loading, setLoading] = useState(true);
+
+  // answers passed from onboarding flow
+  const answers = route?.params?.answers;
+
+  useEffect(() => {
+    const submit = async () => {
+      try {
+        if (!answers) {
+          console.log("No onboarding data found");
+          router.replace("/home");
+          return;
+        }
+
+        // API CALL
+        await submitOnboarding(answers);
+
+        // small delay for UX smoothness
+        setTimeout(() => {
+          router.replace("/home");
+        }, 800);
+
+      } catch (error) {
+        console.log("Final onboarding submit error:", error);
+
+        // still allow navigation even if API fails
+        router.replace("/home");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    submit();
+  }, []);
+
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safe}>
-        
-        {/* Logo */}
+
         <Text style={styles.logo}>mynkl</Text>
 
-        {/* Title */}
-        <Text style={styles.title}>Step 4: Your Personal Setup Summary</Text>
+        <Text style={styles.title}>
+          Step 4: Your Personal Setup Summary
+        </Text>
 
-        {/* Description */}
         <Text style={styles.description}>
           Awesome, here's how{"\n"}
           your Mynkl space is{"\n"}
           set up 🌸
         </Text>
 
-        {/* Footer */}
-        <Text style={styles.footer}>11 of 11</Text>
+        {/* LOADING STATE */}
+        {loading && (
+          <View style={styles.loader}>
+            <ActivityIndicator size="large" color="#1A1A1A" />
+            <Text style={styles.loadingText}>Finalizing your setup...</Text>
+          </View>
+        )}
+
+        <Text style={styles.footer}>Completing setup...</Text>
 
       </SafeAreaView>
     </View>
@@ -70,4 +114,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#1A1A1A",
   },
+  loader: {
+  marginTop: 30,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+loadingText: {
+  marginTop: 12,
+  fontSize: 14,
+  color: "#1A1A1A",
+  fontWeight: "500",
+},
 });

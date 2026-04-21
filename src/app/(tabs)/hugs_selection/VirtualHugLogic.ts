@@ -23,7 +23,9 @@ export const useVirtualHugLogic = () => {
   const [friends, setFriends] = useState([]);
   const [communityUsers, setCommunityUsers] = useState([]);
   const [virtualHugsSuggestions, setVirtualHugsSuggestions] = useState([]);
+  const [isAnonymous, setIsAnonymous] = useState(false); // 👈 ADD THIS
 
+  
    const [bestUser, setBestUser] = useState(null);          // ← NEW
    const [lastCheckInMood, setLastCheckInMood] = useState<string | null>(null);
 
@@ -35,6 +37,8 @@ export const useVirtualHugLogic = () => {
     { emoji: '🧕', label: 'Excited\nHug', value: 'Excited Hug' },
     { emoji: '💙', label: 'Calm\nHug' , value: 'Calm Hug' },
   ];
+
+  const THREAD_ID_KEY = "LATEST_HUG_THREAD_ID";
 
   // const friends = [
   //   {
@@ -178,11 +182,16 @@ export const useVirtualHugLogic = () => {
   const handleSendHug =  async() => {
     const selectedHugData =
       selectedHug !== null ? hugs[selectedHug] : getRandomHugType();
-    console.log('Sending hug with:', {
+
+      const type = isAnonymous ? "anonymous" : "identified"; // 👈 ADD THIS
+
+      console.log('Sending hug with:', {
       // hugType: selectedHug !== null ? hugs[selectedHug] : 'AI Selected',
       hugType: selectedHugData?.value,
       recipients: selectedFriends,
-      message: message
+      message: message,
+      "is_anonymous": isAnonymous, // 👈 ADD THIS
+      "type": type, // 👈 ADD THIS
     });
 
     try {
@@ -193,12 +202,25 @@ export const useVirtualHugLogic = () => {
         "emoji": 'emoji',
         "receiver_id": selectedFriends[0],
         // "receiver_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        "receiver_type": "Friend List"
+        "receiver_type": "Friend List",
+        "is_anonymous": isAnonymous, // 👈 ADD THIS
+        "type": type, // 👈 ADD THIS
       }
 
       console.log('sending payload', payload);
-     const response = await sendHug(payload);
-        goToNextScreen();
+      const response = await sendHug(payload);
+
+      // ✅ Store latest thread id
+    if (response?.thread_id) {
+      await AsyncStorage.setItem(
+        "LATEST_HUG_THREAD_ID",
+        response.thread_id
+      );
+
+      console.log("Thread ID stored:", response.thread_id);
+    }
+      goToNextScreen();
+
     } catch (error) {
       
     }
@@ -270,6 +292,9 @@ const filteredUsers = (activeTab === 'Friend List' ? friends : communityUsers)
     // Action functions
     toggleFriendSelection,
     handleSendHug,
+    isAnonymous,
+    setIsAnonymous,
+
     
     // State setters
     setSelectedHug,

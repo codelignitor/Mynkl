@@ -26,7 +26,7 @@ export default function IntroScreen() {
         </Text>
 
         {/* Buttons */}
-        <TouchableOpacity onPress={()=> router.push('onboarding/onboarding-questions')} style={styles.beginBtn}>
+        <TouchableOpacity onPress={()=> router.push('/onboarding/onboarding-questions')} style={styles.beginBtn}>
           <Text style={styles.beginText}>Let’s Begin 💛</Text>
         </TouchableOpacity>
 

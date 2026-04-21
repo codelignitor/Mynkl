@@ -156,6 +156,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="chatbox" size={24} color={color} />,
         }}
       />
+
+       <Tabs.Screen
+        name="Saved_places/index"
+        options={{
+          href: null, // 🔥 IMPORTANT
+          title: 'Saved Places',
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
+        }}
+      /> 
      
     </Tabs>
     

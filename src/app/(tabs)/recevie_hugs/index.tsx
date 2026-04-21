@@ -22,9 +22,9 @@ const PendingHugsDetailScreen = ({ onBack }) => {
 
   const [hugsData, setHugsData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);      // ← ADD
-const [totalPages, setTotalPages] = useState(1);         // ← ADD
-const [loadingMore, setLoadingMore] = useState(false);   // ← ADD
+  const [currentPage, setCurrentPage] = useState(1);      
+  const [totalPages, setTotalPages] = useState(1);         
+  const [loadingMore, setLoadingMore] = useState(false);   
 
  const receiveHugsListHandler = async (page: number = 1, isLoadMore: boolean = false) => {
   try {
@@ -127,37 +127,85 @@ useEffect(() => {
     
   // };
 
-  const handleHugReceive = async (item) => {
+ const handleHugReceive = async (item) => {
   try {
-    // Update status to seen before navigating
+    const receiverType = item?.receiver_type?.toLowerCase();
+    const responseType = item?.responsetype?.toLowerCase();
+
+    const params = {
+      message: item?.message,
+      hugType: item?.hug_type,
+      hugId: item?.id,
+      hugSenderName: item?.user?.name,
+      hugprofilePic: item?.user?.profile_pic,
+      senderid: item?.user?.id,
+      sendedat: item?.created_at,
+      responseType: item?.responsetype,
+      isHugBack: item?.is_hug_back,
+    };
+
+    // ✅ GRATITUDE FLOW (NO STATUS UPDATE)
+    if (responseType === "gratitude") {
+      router.push({
+        pathname: "/sender_gratitude",
+        params,
+      });
+      return;
+    }
+
+    // ✅ HUG BACK FLOW (NO STATUS UPDATE)
+    if (item?.is_hug_back === true) {
+      router.push({
+        pathname: "/sender_hugback",
+        params,
+      });
+      return;
+    }
+
+    // ✅ NORMAL HUG FLOW → Update Status
     await updateHugStatus(item?.id, "seen");
 
-    // Remove it from local list instantly (optimistic update)
+    // Remove from list (only normal hugs)
     setHugsData((prev) => prev.filter((hug) => hug.id !== item.id));
 
-    // Navigate
-    const receiverType = item?.receiver_type?.toLowerCase();
-    if (receiverType === 'ai' || receiverType === 'community') {
+    // Existing routing logic
+    if (receiverType === "ai" || receiverType === "community") {
       router.push({
-        pathname: '/virtual-hug/receive-hug',
-        params: { message: item?.message },
+        pathname: "/virtual-hug/receive-hug",
+        params,
       });
     } else {
-      router.push('/hug_recevied');
+      router.push({
+        pathname: "/hug_recevied",
+        params,
+      });
     }
+
   } catch (error) {
-    console.error("Failed to update hug status:", error);
-    // Navigate anyway so user isn't blocked
-    const receiverType = item?.receiver_type?.toLowerCase();
-    if (receiverType === 'ai' || receiverType === 'community') {
-      router.push({
-        pathname: '/virtual-hug/receive-hug',
-        params: { message: item?.message },
-      });
-    } else {
-      router.push('/hug_recevied');
-    }
+    console.error("Failed to handle hug:", error);
   }
+};
+
+
+const getCardTitle = (item) => {
+  const responseType = item?.responsetype?.toLowerCase();
+  const userName = item?.user?.name;
+
+  if (responseType === "gratitude") {
+    if (userName?.toLowerCase() === "anonymous") {
+      return "Someone appreciated your hug";
+    }
+    return `${userName} sent gratitude for your hug`;
+  }
+
+  else if (item?.is_hug_back === true) {
+    if (userName?.toLowerCase() === "anonymous") {
+      return "Someone sent you a hug back";
+    }
+    return `${userName} hugged you back`;
+  }
+
+  return `You got a ${item?.hug_type}`;
 };
 
   const renderHugItem = ({ item }) => (
@@ -187,7 +235,7 @@ useEffect(() => {
           
           {/* Content */}
           <View style={styles.textContainer}>
-            <Text style={styles.hugType}>You got a {item?.hug_type}</Text>
+            <Text style={styles.hugType}>{getCardTitle(item)}</Text>
             <Text style={styles.message}>{item?.message}</Text>
             <Text style={styles.time}>{getRelativeTime(item?.created_at)}</Text>
           </View>

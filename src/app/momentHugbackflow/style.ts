@@ -1,10 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
+
 
 export const styles = StyleSheet.create({
   // Select Hug Screen Styles
   container: {
     flex: 1,
-    // backgroundColor: '#F3F0FF',
     alignItems: 'center',
     paddingTop: 20,
   },
@@ -37,6 +37,7 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#000',
     marginTop: 10,
+    marginBottom: 20,
   },
   subtitle: {
     fontSize: 21,
@@ -49,6 +50,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: 12,
+    
   },
   card: {
     backgroundColor: '#fff',
@@ -102,7 +104,8 @@ export const styles = StyleSheet.create({
     color: '#333',
   },
   buttonWrapper: {
-    width: '100%',
+    width: '80%',
+    paddingTop: 30,
   },
   
   disabledButton: {
@@ -110,7 +113,7 @@ export const styles = StyleSheet.create({
   },
   
   button: {
-    borderRadius: 999,
+    borderRadius: 99,
     paddingVertical: 18,
     alignItems: 'center',
   },
@@ -119,240 +122,7 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
-
-  // Choose Recipient Screen Styles
-  recipientContainer: {
-    flex: 1,
-    // backgroundColor: '#f8f7ff',
-  },
-  recipientHeader: {
-    marginTop: 35,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    // backgroundColor: '#f8f7ff',
-  },
-  
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 28,
-    fontWeight: '600',
-    color: '#000',
-  },
-  headerSpacer: {
-    width: 34,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  content: {
-    paddingHorizontal: 20,
-  },
-  recipientTitle: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  recipientSubtitle: {
-    fontSize: 22,
-    color: '#666',
-    marginBottom: 30,
-    lineHeight: 22,
-    textAlign: 'center',
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    marginBottom: 25,
-  },
-  tab: {
-    marginRight: 30,
-    paddingBottom: 8,
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#000',
-  },
-  tabText: {
-    fontSize: 16,
-    color: '#999',
-    fontWeight: '500',
-  },
-  activeTabText: {
-    color: '#000',
-    fontWeight: '600',
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#000',
-  },
-  lonelyMessage: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffeef5',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 20,
-  },
-  heartIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#ffb3d1',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  heartEmoji: {
-    fontSize: 20,
-  },
-  lonelyText: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 18,
-    width:'80%'
-  },
-  friendsListContainer: {
-    paddingBottom: 20,
-  },
-  friendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  selectedFriendItem: {
-    backgroundColor: '#e8f4fd',
-    borderColor: '#4a90e2',
-    borderWidth: 1,
-  },
-  avatar: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    marginRight: 15,
-  },
-  friendName: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#000',
-  },
-  selectedFriendName: {
-    color: '#4a90e2',
-    fontWeight: '600',
-  },
-  checkmarkContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#4a90e2',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-//   tabContainer: {
-//   flexDirection: 'row',
-//   backgroundColor: '#ECEAF3',
-//   borderRadius: 16,
-//   padding: 4,
-//   marginBottom: 25,
-// },
-
-tabButton: {
-  flex: 1,
-  paddingVertical: 12,
-  borderRadius: 14,
-  alignItems: 'center',
-},
-
-activeTabButton: {
-  backgroundColor: '#fff',
-  shadowColor: '#000',
-  shadowOffset: {
-    width: 0,
-    height: 1,
-  },
-  shadowOpacity: 0.08,
-  shadowRadius: 2,
-  elevation: 2,
-},
-
-tabButtonText: {
-  fontSize: 14,
-  fontWeight: '500',
-  color: '#6B7280',
-},
-
-  nextButton: {
-    marginBottom:40,
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    backgroundColor: '#4a90e2',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  nextButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginRight: 5,
-  },
-  nextArrow: {
-    marginLeft: 2,
-  },
-
-  // Personal Message Screen Styles
+// Personal Message Screen Styles
   messageContainer: {
     flex: 1,
     // backgroundColor: '#F5F3FF',

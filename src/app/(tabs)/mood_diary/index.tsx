@@ -33,8 +33,10 @@ export default function MoodDiaryScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 18,
+    // padding: 18,
     backgroundColor: '#BCE3FF',
+    paddingHorizontal: 9,
+    paddingVertical: 18,
   },
   headerContainer: {
     flexDirection: 'row',

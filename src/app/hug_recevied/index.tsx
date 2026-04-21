@@ -8,28 +8,63 @@ import {
   SafeAreaView,
   ImageBackground,
   ScrollView,
+  Alert,
   
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HugReceivedScreen() {
-  const { message } = useLocalSearchParams();
+   const { 
+    message, 
+    hugType, 
+    hugId, 
+    hugSenderName, 
+    hugprofilePic, 
+    senderid, 
+    sendedat 
+  } = useLocalSearchParams();
+
   const displayMessage = message || "You are not alone. You are loved. 💗";
 
   const handleSendGratitude = () => {
     console.log('Send Gratitude pressed');
-    // Add navigation logic here
+    
+    // Navigate to gratitude screen with all params
+    router.push({
+      pathname: '/Gratitude_normalflow', // Adjust this path to your actual screen
+      params: {
+        message,
+        hugType,
+        hugId,
+        hugSenderName,
+        hugprofilePic,
+        senderid,
+        sendedat,
+      },
+    });
   };
 
-  const handleSendHugBack = () => {
-    console.log('Send a Hug Back pressed');
-    // Add navigation logic here
+    const handleSendHugBack = () => {
+    console.log('normal Send a Hug Back pressed');
+    
+    // Navigate to send hug screen with sender info
+    router.push({
+      pathname: '/normalhugbackflow', // Adjust this path to your actual screen
+      params: {
+        receiverName: hugSenderName,
+        receiverId: senderid,
+        receiverProfilePic: hugprofilePic,
+        originalHugId: hugId,
+      },
+    });
   };
+
 
   const handleStartChat = () => {
     console.log('Start a Chat pressed');
     // Add navigation logic here
+    Alert.alert('Start Chat', 'will navigate to the chat feature once implemented');
   };
 
   return (

@@ -249,6 +249,7 @@ import { Router } from "expo-router";
 import * as ImagePicker from 'expo-image-picker';
 import { Alert, Linking } from "react-native";
 import { saveUserPlace ,type PlaceData} from "../services/apis";
+import { getCurrentLocation } from "./locationUtils";
 // import { saveUserPlace, type PlaceData } from "@/src/services/placeService";
 
 export interface RoutingAction {
@@ -263,43 +264,41 @@ export interface SuggestionConfig {
 }
 
 // Save place handler with API integration
-const handleSavePlace = async (placeDetails: any, mood: string, router: Router) => {
+export const handleSavePlace = async (placeDetails: any, mood: string, router: Router) => {
   try {
-    // Show loading indicator (optional)
     Alert.alert("Saving...", "Please wait", [{ text: "OK" }], { cancelable: false });
-    
-    // Prepare place data for API
+
+    // ⭐ Get user current location
+    // const currentLocation = await getCurrentLocation();
+
     const placeData: PlaceData = {
       name: placeDetails.name,
-      lat: placeDetails.lat || 0,
-      lng: placeDetails.lng || 0,
+      lat: placeDetails?.latitude || 0,   
+      lng: placeDetails?.longitude || 0,  
       address: placeDetails.address,
       place_id: placeDetails.place_id || "",
       rating: placeDetails.rating || 0,
       user_ratings_total: placeDetails.user_ratings_total || 0,
       types: placeDetails.types || [],
     };
+
+    console.log("PLACE DATA TO SAVE 👉", placeData);
     
-    // Call API to save place
     const response = await saveUserPlace(placeData, mood);
-    
+    console.log("SAVE PLACE RESPONSE 👉", response);
+
     if (response.status === "saved") {
       Alert.alert(
         "Success! 🎉",
         `${placeDetails.name} has been saved to your collection.`,
-        // [
-        //   { 
-        //     text: "View Saved", 
-        //     onPress: () => router.push("/saved-places") 
-        //   },
-        //   { text: "OK", style: "cancel" }
-        // ]
       );
     } else {
       Alert.alert("Saved!", `${placeDetails.name} has been saved for later.`);
     }
+
   } catch (error) {
     console.error("Error saving place:", error);
+
     Alert.alert(
       "Error",
       "Failed to save place. Please try again.",
@@ -448,8 +447,8 @@ export const moodSuggestionRoutes: Record<string, Record<string, SuggestionConfi
   },
   
   grateful: {
-    "Send appreciation": {
-      cta: "Send appreciation",
+    "Send appreciation ": {
+      cta: "Send appreciation ",
       getActions: (suggestion, router) => getSocialActions(router)
     },
     "Start Reflection": {

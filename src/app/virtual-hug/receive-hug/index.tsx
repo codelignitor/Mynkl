@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,18 +10,56 @@ import {
   ScrollView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { acknowledgeHug } from '@/src/services/apis';
 
 export default function ReceivedHugScreen() {
-  const handleThankYou = () => {
+  
+  // Get the passed parameters
+  const params = useLocalSearchParams();
+  const { message = 'Thinking of you tonight.', hugType = 'Calm Hug', hugId, senderId } = params;
+
+  const [loading, setLoading] = useState(false);
+
+  // const handleThankYou = () => {
+  //   console.log('Thank You pressed');
+  //   // Add navigation logic here
+  //   router.push('/ThankyouScreen');
+  // }
+  const handleThankYou = async () => {
+  try {
     console.log('Thank You pressed');
-    // Add navigation logic here
-  };
+
+    setLoading(true);
+
+    const response = await acknowledgeHug(hugId);
+
+    console.log('Acknowledgement Response:', response);
+
+    router.push({
+      pathname: '/ThankyouScreen',
+      // params: {
+      //   hugId: response.hug_id,
+      //   responseType: response.response_type,
+      //   privacyMode: response.privacy_mode
+      // }
+    });
+
+  } catch (error) {
+    console.error('Error sending thank you:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleHugBack = () => {
-    console.log('Hug Back pressed');
-    // Add navigation logic here
-    router.push('/virtual-hug/hug-community/Hug-moment')
+    router.push({
+    pathname: "/momentHugbackflow",
+    params: {
+      originalHugId: hugId,
+      sender_id: senderId
+      }
+    });
   };
 
   const handleClose = () => {
@@ -34,7 +72,7 @@ export default function ReceivedHugScreen() {
 
   return (
     <View style={styles.wrapper}>
-      <StatusBar barStyle="light-content" backgroundColor="#4A5B8C" />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" />
       <SafeAreaView style={styles.safeArea}>
         <LinearGradient
           colors={['#4A5B8C', '#7B6BA8', '#D8A8C8', '#F0C8D8']}
@@ -61,7 +99,7 @@ export default function ReceivedHugScreen() {
               
               <View style={styles.dividerContainer}>
                 <View style={styles.dividerLine} />
-                <Text style={styles.hugType}>Calm Hug</Text>
+                <Text style={styles.hugType}>{hugType}</Text>
                 <View style={styles.dividerLine} />
               </View>
 
@@ -84,7 +122,7 @@ export default function ReceivedHugScreen() {
               <View style={styles.messageDivider}>
                 <View style={styles.messageLine} />
               </View>
-              <Text style={styles.message}>Thinking of you tonight.</Text>
+              <Text style={styles.message}>{message}</Text>
               <View style={styles.messageDivider}>
                 <View style={styles.messageLine} />
               </View>
@@ -96,9 +134,10 @@ export default function ReceivedHugScreen() {
                 style={styles.thankYouButton}
                 onPress={handleThankYou}
                 activeOpacity={0.8}
+                disabled={loading}
               >
                 <Text style={styles.thankYouIcon}>❤️</Text>
-                <Text style={styles.thankYouText}>Thank You</Text>
+                <Text style={styles.thankYouText}> {loading ? "Sending..." : "Thank You"}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

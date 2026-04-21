@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, Text, Dimensions, StyleSheet, TouchableOpacity, 
-  ScrollView, ActivityIndicator 
+import React, { useEffect, useState } from 'react';
+import {
+  View, Text, Dimensions, StyleSheet, TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
+import Svg, {
+  Path, Defs, LinearGradient as SvgLinearGradient,
+  Stop, Circle, Text as SvgText, Line,
+} from 'react-native-svg';
 import { Calendar } from 'react-native-calendars';
 import { useMood } from '@/src/contexts/MoodContext';
 import MoodIcon from '../MoodIcons/moodIcons';
@@ -12,87 +15,366 @@ import { useRouter } from 'expo-router';
 
 const screenWidth = Dimensions.get('window').width;
 
-const moodColors = {
-  happy: "#FFD700",      
-  calm: "#09ededff",       
-  stressed: "#8A2BE2",   
-  grateful: "#32CD32",   
-  sad: "#5226cdff",        
-  lonely: "#00b3ffff",     
-  frustrated: "#FF6347", 
-  excited: "#FFD700",    
-  Unknown: "#CCCCCC",
+// ─── Mood config ────────────────────────────────────────────────────────────
+
+const moodColors: Record<string, string> = {
+  happy:      '#FFD700',
+  calm:       '#09eded',
+  stressed:   '#8A2BE2',
+  grateful:   '#32CD32',
+  sad:        '#5226cd',
+  lonely:     '#00b3ff',
+  frustrated: '#FF6347',
+  excited:    '#FFD700',
+  Unknown:    '#CCCCCC',
 };
 
+// Gradient stop pairs [top, bottom] per mood
+const moodGradients: Record<string, [string, string]> = {
+  happy:      ['#FFF176', '#FFD70022'],
+  calm:       ['#B2EBF2', '#09eded22'],
+  grateful:   ['#C8E6C9', '#32CD3222'],
+  excited:    ['#FFF176', '#FFD70022'],
+  stressed:   ['#E1BEE7', '#8A2BE222'],
+  sad:        ['#D1C4E9', '#5226cd22'],
+  lonely:     ['#B3E5FC', '#00b3ff22'],
+  frustrated: ['#FFCCBC', '#FF634722'],
+  Unknown:    ['#F5F5F5', '#CCCCCC22'],
+};
+
+// Legend items shown on the left side
+const legendItems = [
+  { label: 'Positive',  sub: 'Joyful, Grateful', mood: 'happy'  },
+  { label: 'Calm',      sub: 'Peaceful, Content', mood: 'calm'   },
+  { label: 'Mixed',     sub: 'Okay, Neutral',     mood: 'Unknown'},
+  { label: 'Low',       sub: 'Sad, Stressed',     mood: 'sad'    },
+];
+
+// ─── Score mapping ───────────────────────────────────────────────────────────
+// API returns average_score 0–1; convert to chart Y position (higher = better)
+const scoreToY = (score: number | null, chartH: number): number => {
+  if (score === null) return chartH / 2; // midpoint for null (no data)
+  // Clamp 0–1, then map to chart: 0 → bottom, 1 → top
+  const clamped = Math.max(0, Math.min(1, score));
+  const padding = chartH * 0.15;
+  return chartH - padding - clamped * (chartH - padding * 2);
+};
+
+// ─── Bezier curve helper ─────────────────────────────────────────────────────
+const buildBezierPath = (points: { x: number; y: number }[]): string => {
+  if (points.length < 2) return '';
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const cpX = (prev.x + curr.x) / 2;
+    d += ` C ${cpX} ${prev.y}, ${cpX} ${curr.y}, ${curr.x} ${curr.y}`;
+  }
+  return d;
+};
+
+// ─── Segment chart ───────────────────────────────────────────────────────────
+interface Segment {
+  label: string;
+  range: string;
+  average_score: number | null;
+  mood: string | null;
+  total_checkins: number;
+}
+
+interface MoodSegmentChartProps {
+  segments: Segment[];
+  monthLabel: string; // e.g. "Jan 2026"
+}
+
+function MoodSegmentChart({ segments, monthLabel }: MoodSegmentChartProps) {
+  // Card is 96% of screen, with 16px horizontal padding on each side
+  const CARD_W = screenWidth * 0.96 - 32;
+  const LEGEND_W = 60;                  // left legend column width
+  const SVG_W = CARD_W - LEGEND_W;     // remaining width for SVG
+  const H_PAD = 28;                     // horizontal inset so first/last nodes + labels don't clip
+  const CHART_H = 180;
+  const LABEL_H = 68;                   // space below chart for labels (extra for gap)
+  const SVG_H = CHART_H + LABEL_H;
+
+  const activeSegments = segments.filter(s => s.mood !== null && s.average_score !== null);
+  const hasData = activeSegments.length > 0;
+
+  // X positions: spaced within [H_PAD … SVG_W - H_PAD] so nodes stay inset
+  const usableW = SVG_W - H_PAD * 2;
+  const xStep = usableW / (segments.length - 1 || 1);
+  const points = segments.map((seg, i) => ({
+    x: H_PAD + i * xStep,
+    y: scoreToY(seg.average_score, CHART_H),
+    seg,
+  }));
+
+  const curvePath = buildBezierPath(points.map(p => ({ x: p.x, y: p.y })));
+
+  // Filled area under curve, closed down to bottom
+  const fillPath = hasData
+    ? `${curvePath} L ${points[points.length - 1].x} ${CHART_H} L ${points[0].x} ${CHART_H} Z`
+    : '';
+
+  // Determine dominant mood for gradient (most common non-null mood)
+  const dominantMood = (() => {
+    const counts: Record<string, number> = {};
+    segments.forEach(s => {
+      if (s.mood) counts[s.mood] = (counts[s.mood] || 0) + 1;
+    });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'calm';
+  })();
+
+  const [gradTop, gradBottom] = moodGradients[dominantMood] ?? moodGradients.calm;
+
+  // Node icon size — fits inside the 16px radius white circle
+  const NODE_ICON_SIZE = 26;
+
+  return (
+    <View style={chartStyles.root}>
+      {/* Left legend — MoodIcon replaces emoji text */}
+      <View style={chartStyles.legend}>
+        {legendItems.map(item => (
+          <View key={item.label} style={chartStyles.legendRow}>
+            <MoodIcon mood={item.mood} size="small" />
+            <View style={{ marginLeft: 4 }}>
+              <Text style={chartStyles.legendLabel}>{item.label}</Text>
+              <Text style={chartStyles.legendSub}>{item.sub}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* SVG chart + MoodIcon overlays */}
+      <View style={{ flex: 1 }}>
+        {hasData ? (
+          <View style={{ width: SVG_W, height: SVG_H }}>
+
+            {/* ── SVG layer: curve, fill, rings, dividers, labels ── */}
+            <Svg
+              width={SVG_W}
+              height={SVG_H}
+              style={{ position: 'absolute', top: 0, left: 0 }}
+            >
+              <Defs>
+                <SvgLinearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0%" stopColor={gradTop} stopOpacity={0.8} />
+                  <Stop offset="100%" stopColor={gradBottom} stopOpacity={0.05} />
+                </SvgLinearGradient>
+              </Defs>
+
+              {/* Vertical dashed dividers */}
+              {points.map((p, i) =>
+                i > 0 && i < points.length - 1 ? (
+                  <Line
+                    key={`div-${i}`}
+                    x1={p.x} y1={0}
+                    x2={p.x} y2={CHART_H}
+                    stroke="#E0E0E0"
+                    strokeWidth={1}
+                    strokeDasharray="4,4"
+                  />
+                ) : null
+              )}
+
+              {/* Gradient fill area */}
+              {fillPath ? <Path d={fillPath} fill="url(#fillGrad)" /> : null}
+
+              {/* Bezier curve */}
+              {curvePath ? (
+                <Path
+                  d={curvePath}
+                  fill="none"
+                  stroke="#2B4A7F"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              ) : null}
+
+              {/* Node rings (no emoji inside SVG) */}
+              {points.map((p, i) => {
+                const mood = p.seg.mood ?? 'Unknown';
+                const color = moodColors[mood] ?? moodColors.Unknown;
+                const isNull = p.seg.average_score === null;
+                return (
+                  <React.Fragment key={`ring-${i}`}>
+                    {/* Outer glow */}
+                    {!isNull && (
+                      <Circle cx={p.x} cy={p.y} r={22} fill={color} fillOpacity={0.18} />
+                    )}
+                    {/* White background disc */}
+                    {!isNull && (
+                      <Circle cx={p.x} cy={p.y} r={16} fill="white" stroke={color} strokeWidth={2.5} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+
+              {/* Segment labels */}
+              {points.map((p, i) => {
+                const seg = p.seg;
+                const monthShort = monthLabel.split(' ')[0];
+                const rangeLabel = `${monthShort} ${seg.range}`;
+                const checkins = seg.total_checkins;
+                return (
+                  <React.Fragment key={`lbl-${i}`}>
+                    <SvgText
+                      x={p.x} y={CHART_H + 22}
+                      textAnchor="middle"
+                      fontSize={9.5}
+                      fontWeight="600"
+                      fill={seg.mood ? '#2B4A7F' : '#AAAAAA'}
+                    >
+                      {seg.label}
+                    </SvgText>
+                    <SvgText
+                      x={p.x} y={CHART_H + 36}
+                      textAnchor="middle"
+                      fontSize={8.5}
+                      fill={seg.mood ? '#555' : '#BBBBBB'}
+                    >
+                      {rangeLabel}
+                    </SvgText>
+                    <SvgText
+                      x={p.x} y={CHART_H + 50}
+                      textAnchor="middle"
+                      fontSize={8}
+                      fill={checkins > 0 ? '#888' : '#CCCCCC'}
+                    >
+                      {checkins > 0 ? `${checkins} check-ins` : 'No data'}
+                    </SvgText>
+                  </React.Fragment>
+                );
+              })}
+            </Svg>
+
+            {/* ── MoodIcon overlay layer — positioned over each node ── */}
+            {points.map((p, i) => {
+              const mood = p.seg.mood;
+              const isNull = p.seg.average_score === null || !mood;
+              if (isNull) return null;
+              return (
+                <View
+                  key={`icon-${i}`}
+                  style={{
+                    position: 'absolute',
+                    left: p.x - NODE_ICON_SIZE / 2,
+                    top: p.y - NODE_ICON_SIZE / 2,
+                    width: NODE_ICON_SIZE,
+                    height: NODE_ICON_SIZE,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                  pointerEvents="none"
+                >
+                  <MoodIcon mood={mood} size="small" />
+                </View>
+              );
+            })}
+          </View>
+        ) : (
+          <View style={chartStyles.emptyState}>
+            <Text style={chartStyles.emptyEmoji}>📊</Text>
+            <Text style={chartStyles.emptyText}>No mood data yet</Text>
+            <Text style={chartStyles.emptySubText}>Check in to see your trends</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+const chartStyles = StyleSheet.create({
+  root: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    paddingVertical: 8,
+  },
+  legend: {
+    width: 60,
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    height: 180,
+  },
+  legendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  legendLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#1a2a3a',
+    lineHeight: 12,
+  },
+  legendSub: {
+    fontSize: 8,
+    color: '#888',
+    lineHeight: 11,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 180,
+    gap: 6,
+  },
+  emptyEmoji: {
+    fontSize: 32,
+  },
+  emptyText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  emptySubText: {
+    fontSize: 12,
+    color: '#999',
+  },
+});
+
+// ─── Calendar dot colors ─────────────────────────────────────────────────────
+
+const calendarMoodColors: Record<string, string> = {
+  ...moodColors,
+};
+
+// ─── Main screen component ───────────────────────────────────────────────────
+
 export default function MoodTrendsChart() {
-  const { entries, refetchCalendar, loading, error, setSelectedDate } = useMood();
+  const { entries, segments, refetchCalendar, loading, error, setSelectedDate } = useMood();
   const [currentMonthOffset, setCurrentMonthOffset] = useState(0);
   const router = useRouter();
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+  const monthNamesShort = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
 
   const getCurrentMonthYear = (offset = 0) => {
     const date = new Date();
     date.setMonth(date.getMonth() + offset);
     return {
-      month: date.getMonth(),
+      month: date.getMonth(),       // 0-indexed
       year: date.getFullYear(),
-      dateObj: date
+      dateObj: date,
     };
   };
 
-  const monthNames = ["January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ];
-
   const currentMonthData = getCurrentMonthYear(currentMonthOffset);
   const currentMonthName = monthNames[currentMonthData.month];
+  const currentMonthShort = monthNamesShort[currentMonthData.month];
   const currentYear = currentMonthData.year;
-  
+  const monthLabel = `${currentMonthShort} ${currentYear}`;
+
   useEffect(() => {
     const monthData = getCurrentMonthYear(currentMonthOffset);
-    refetchCalendar(monthData.year, monthData.month + 1);
+    refetchCalendar(monthData.year, monthData.month + 1); // API expects 1-indexed month
   }, [currentMonthOffset]);
-
-  const getMonthEntries = () => {
-    const monthPrefix = `${currentYear}-${(currentMonthData.month + 1).toString().padStart(2, '0')}`;
-    
-    return Object.keys(entries)
-      .filter(dateKey => dateKey.startsWith(monthPrefix))
-      .sort()
-      .map(date => {
-        const day = parseInt(date.split("-")[2]);
-        const entry = entries[date];
-        return {
-          day,
-          value: entry.value || 5,
-          mood: entry.mood,
-          date: date,
-        };
-      });
-  };
-
-  const parsed = getMonthEntries();
-  
-  const labels = parsed.map(i => i.day.toString());
-  const values = parsed.map(i => i.value);
-  
-  const chartData = {
-    labels: labels.length > 0 ? labels : [" "],
-    datasets: [
-      {
-        data: values.length > 0 ? values : [5],
-        color: () => '#2B4A7F',
-        strokeWidth: 2,
-      },
-    ],
-  };
-
-  const handlePreviousMonth = () => {
-    setCurrentMonthOffset(prev => prev - 1);
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonthOffset(prev => prev + 1);
-  };
 
   const isNextMonthInFuture = () => {
     const now = new Date();
@@ -103,190 +385,82 @@ export default function MoodTrendsChart() {
     );
   };
 
+  // Calendar marked dates
   const markedDates: Record<string, { dots: { color: string }[] }> = {};
   Object.keys(entries).forEach((date) => {
-    const mood = entries[date].mood as keyof typeof moodColors;
+    const mood = entries[date].mood as keyof typeof calendarMoodColors;
     markedDates[date] = {
-      dots: [{ color: moodColors[mood] || moodColors.Unknown }],
+      dots: [{ color: calendarMoodColors[mood] || calendarMoodColors.Unknown }],
     };
   });
 
+  const currentCalendarMonth = `${currentYear}-${(currentMonthData.month + 1)
+    .toString()
+    .padStart(2, '0')}`;
+
   function onDayPress(day: { dateString: string }) {
-    const entry = entries[day.dateString];
     setSelectedDate(day.dateString);
-    
     router.push({
       pathname: '/mood_diary/[date]',
-      params: { date: day.dateString }
+      params: { date: day.dateString },
     });
   }
 
-  const currentCalendarMonth = `${currentYear}-${(currentMonthData.month + 1).toString().padStart(2, '0')}`;
-
   return (
-    <> 
+    <>
+      {/* Top "View Entries" button — unchanged */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>View Entries</Text>
         </TouchableOpacity>
       </View>
-      
+
       <View style={styles.wrapper}>
-        {/* Month Navigation */}
+        {/* Month navigation — unchanged */}
         <View style={styles.monthNavigationContainer}>
-          <TouchableOpacity 
-            onPress={handlePreviousMonth}
+          <TouchableOpacity
+            onPress={() => setCurrentMonthOffset(prev => prev - 1)}
             style={styles.navButton}
             disabled={loading}
           >
-            <Ionicons name="chevron-back" size={24} color={loading ? "#CCCCCC" : "#2B4A7F"} />
+            <Ionicons name="chevron-back" size={24} color={loading ? '#CCCCCC' : '#2B4A7F'} />
           </TouchableOpacity>
-          
+
           <Text style={styles.sectionTitle}>
             Mood Trends — {currentMonthName} {currentYear}
           </Text>
-          
-          <TouchableOpacity 
-            onPress={handleNextMonth}
+
+          <TouchableOpacity
+            onPress={() => setCurrentMonthOffset(prev => prev + 1)}
             style={styles.navButton}
             disabled={isNextMonthInFuture() || loading}
           >
-            <Ionicons 
-              name="chevron-forward" 
-              size={24} 
-              color={isNextMonthInFuture() || loading ? "#CCCCCC" : "#2B4A7F"} 
+            <Ionicons
+              name="chevron-forward"
+              size={24}
+              color={isNextMonthInFuture() || loading ? '#CCCCCC' : '#2B4A7F'}
             />
           </TouchableOpacity>
         </View>
 
-        {/* Chart Card */}
+        {/* Chart card */}
         <View style={styles.chartCard}>
           {loading ? (
             <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>Loading...</Text>
+              <ActivityIndicator size="small" color="#2B4A7F" />
+              <Text style={styles.loadingText}>Loading trends…</Text>
             </View>
           ) : (
-            <>
-              {/* Main Content Row */}
-              <View style={styles.chartRow}>
-                {/* Chart Area */}
-                <View style={styles.chartArea}>
-                  <LineChart
-                    data={chartData}
-                    width={screenWidth * 0.76}
-                    height={200}
-                    chartConfig={{
-                      backgroundGradientFrom: '#fff',
-                      backgroundGradientTo: '#fff',
-                      decimalPlaces: 0,
-                      color: (opacity = 1) => `rgba(43, 74, 127, ${opacity})`,
-                      labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                      style: {
-                        borderRadius: 16,
-                      },
-                      propsForDots: {
-                        r: '6',
-                        strokeWidth: '2',
-                        stroke: '#fff',
-                      },
-                      propsForLabels: {
-                        fontSize: 10,
-                      },
-                      propsForVerticalLabels: {
-                        fontSize: 10,
-                        dy: 5,
-                      },
-                      propsForHorizontalLabels: {
-                        fontSize: 10,
-                        dx: -8,
-                      },
-                      propsForBackgroundLines: {
-                        strokeWidth: 1,
-                        stroke: '#e0e0e0',
-                      },
-                    }}
-                    bezier
-                    withVerticalLines={false}
-                    withHorizontalLines={true}
-                    withHorizontalLabels={false}
-
-                    withInnerLines={false}
-                    withOuterLines={false}
-                    fromZero={false}
-                    segments={4}
-                    // formatYLabel={(value) => {
-                    //   const num = parseFloat(value);
-                    //   return num % 1 === 0 ? num.toString() : num.toFixed(0);
-                    // }}
-                    style={styles.chart}
-                    decorator={() => {
-                      return parsed.map((item, index) => {
-                        if (labels.length <= 1) return null;
-                        
-                        const xPosition = (index / (labels.length - 1)) * (screenWidth * 0.7 - 60) + 30;
-                        const yPosition = 200 - ((item.value - 0) / (10 - 0)) * 180;
-                        
-                        const mood = item.mood as keyof typeof moodColors;
-                        const dotColor = moodColors[mood] || '#CCCCCC';
-                        
-                        return (
-                          <View
-                            key={index}
-                            // style={[
-                            //   styles.customDot,
-                            //   {
-                            //     left: xPosition - 6,
-                            //     top: yPosition - 6,
-                            //     backgroundColor: dotColor,
-                            //     borderColor: '#fff',
-                            //   }
-                            // ]}
-                          />
-                        );
-                      });
-                    }}
-                  />
-                </View>
-                
-                {/* Vertical Emoji List - Only emojis */}
-                <View style={styles.emojiListContainer}>
-                  {/* <ScrollView 
-                    showsVerticalScrollIndicator={false}
-                    style={styles.emojiScrollView}
-                    contentContainerStyle={styles.emojiScrollContent}
-                  >
-                    {parsed.map((item, index) => (
-                      <View key={index} style={styles.emojiItem}>
-                        <MoodIcon 
-                          mood={item.mood} 
-                          size="small"
-                        />
-                      </View>
-                    ))}
-                    
-                    {parsed.length === 0 && (
-                      <View style={styles.noEmojiContainer}>
-                        <Text style={styles.noEmojiText}>No entries</Text>
-                      </View>
-                    )}
-                  </ScrollView> */}
-                  <View style={styles.staticEmojiColumn}>
-    <MoodIcon mood="happy" size="medium" />
-    <MoodIcon mood="calm" size="medium" />
-    <MoodIcon mood="lonely" size="medium" />
-  </View>
-                </View>
-              </View>
-            </>
+            <MoodSegmentChart segments={segments} monthLabel={monthLabel} />
           )}
         </View>
 
-        {/* Calendar Section */}
+        {/* Calendar section — unchanged */}
         <View style={styles.calendarContainer}>
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#1E90FF" />
-              <Text style={styles.loadingText}>Loading mood calendar...</Text>
+              <Text style={styles.loadingText}>Loading mood calendar…</Text>
             </View>
           ) : error ? (
             <View style={styles.errorContainer}>
@@ -312,10 +486,12 @@ export default function MoodTrendsChart() {
   );
 }
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  header: { 
-    alignItems: 'center', 
-    marginBottom: 20, 
+  header: {
+    alignItems: 'center',
+    marginBottom: 20,
   },
   monthNavigationContainer: {
     flexDirection: 'row',
@@ -340,115 +516,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   chartCard: {
-    backgroundColor: "white",
-    padding: 16,
+    backgroundColor: 'white',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 16,
     marginVertical: 10,
-    width: "96%",
-    minHeight: 260,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    width: '96%',
+    minHeight: 240,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    // elevation: 5,
-  },
-  chartRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    height: 200,
-  },
-  chartArea: {
-    flex: 1,
-    marginRight: 8,
-    alignItems: 'flex-start',
-  },
-  chart: {
-    borderRadius: 18,
-    marginLeft: -18,
-  },
-  customDot: {
-    position: 'absolute',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    zIndex: 10,
-  },
-  emojiListContainer: {
-    width: 40,
-    height: 150,
-    borderLeftWidth: 0.5,
-    borderLeftColor: '#efeded',
-    paddingLeft: 8,
-    paddingTop: 12
-  },
-  staticEmojiColumn: {
-  flex: 1,
-  justifyContent: 'space-between',
-  alignItems: 'center',
-},
-  emojiScrollView: {
-    // height: 200,
-  },
-  emojiScrollContent: {
-    // paddingRight: 4,
-    alignItems: 'center',
-  },
-  emojiItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-    paddingVertical: 4,
-    width: 40,
-  },
-  noEmojiContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
-  },
-  noEmojiText: {
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  xAxisContainer: {
-    // flexDirection: 'row',
-    // justifyContent: 'space-between',
-    // marginTop: 8,
-    // paddingHorizontal: 10,
-    // paddingLeft: 20,
-  },
-  xAxisLabel: {
-    alignItems: 'center',
-    minWidth: 20,
-  },
-  xAxisText: {
-    fontSize: 10,
-    color: '#666',
-    fontWeight: '500',
   },
   calendarContainer: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     padding: 18,
     borderRadius: 16,
     marginVertical: 10,
-    width: "96%",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    width: '96%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
   },
   wrapper: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   button: {
     backgroundColor: 'white',
@@ -457,18 +550,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 2,
   },
-  buttonText: { 
-    fontSize: 16, 
-    fontWeight: '500' 
+  buttonText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
   loadingContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
+    gap: 10,
   },
   loadingText: {
-    marginTop: 10,
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
   },
   errorContainer: {
