@@ -21,7 +21,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 // import { useHugSending } from '@/src/hooks/useHugSending';
 import Toast from 'react-native-toast-message';
 import { useHugSending } from '@/src/screenHooks/useHugSending';
-import { getVirtualHugsAISuggestions } from '@/src/services/apis';
+import { getHugPrompts, getVirtualHugsAISuggestions } from '@/src/services/apis';
 
 export default function AddFewWordsScreen() {
   const params = useLocalSearchParams();
@@ -30,6 +30,8 @@ export default function AddFewWordsScreen() {
     const hugType = params.hugType as string;
     const isAiChoice = params.isAiChoice === 'true';
     const emoji = params.emoji;
+
+    
   
       const {
       sendHugToReceiver,
@@ -55,13 +57,21 @@ const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 useEffect(() => {
   const fetchSuggestions = async () => {
     try {
+      const extractedHugType = hugType
+  ?.toLowerCase()
+  .replace(' hug', '')
+  .trim();
       setLoadingSuggestions(true);
-      const response = await getVirtualHugsAISuggestions();
-      if (response?.messages?.length) {
-        setSuggestions(response.messages);
-        // Pre-fill message with first suggestion
-        setMessage(response.messages[0]);
-      }
+      
+      
+      const response = await getHugPrompts(extractedHugType);
+
+if (response?.prompts?.length) {
+  setSuggestions(response.prompts);
+
+  // Only prefill if empty
+  setMessage(prev => prev || response.prompts[0]);
+}
     } catch (error) {
       console.error("Failed to fetch suggestions:", error);
     } finally {

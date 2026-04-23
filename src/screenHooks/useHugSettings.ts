@@ -1,5 +1,5 @@
 // Updated useHugSettings.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Vibration } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { updateHugSettings, getHugSettings } from '@/src/services/apis';
@@ -49,35 +49,26 @@ export const useHugSettings = () => {
 
   const [sliderValue, setSliderValue] = useState(apiToSlider(7));
 
+    // ✅ Track whether settings have been loaded from API
+  // This prevents any saves from firing before initial fetch completes
+  const isInitialized = useRef(false);
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+
   // Trigger haptic feedback
-  const triggerHapticFeedback = useCallback(async (testMode: boolean = false) => {
-    if (!settings.haptic_feedback && !testMode) {
-      return; // Don't vibrate if haptic feedback is disabled
-    }
-    
+ const triggerHapticFeedback = useCallback(async (testMode = false) => {
+    const current = settingsRef.current;
+    if (!current.haptic_feedback && !testMode) return;
     try {
-      const intensity = settings.intensity;
-      
-      // Option 1: Using React Native Vibration (works on both iOS & Android)
-      const pattern = getVibrationPattern(intensity);
-      Vibration.vibrate(pattern, false);
-      
-      // Option 2: Using Expo Haptics (more refined, iOS specific)
-      // You can use either or both
-      await triggerExpoHaptics(intensity);
-      
+      Vibration.vibrate(getVibrationPattern(current.intensity), false);
+      await triggerExpoHaptics(current.intensity);
       if (testMode) {
-        Toast.show({
-          type: 'success',
-          text1: 'Haptic Feedback Test',
-          // text2: `Vibration triggered at intensity ${intensity}/10`,
-          visibilityTime: 1500,
-        });
+        Toast.show({ type: 'success', text1: 'Haptic Feedback Test', visibilityTime: 1500 });
       }
     } catch (error) {
       console.error('Error triggering haptic feedback:', error);
     }
-  }, [settings.haptic_feedback, settings.intensity]);
+  }, []); // ✅ No deps needed — reads from ref
 
   // Trigger Expo Haptics based on intensity
   const triggerExpoHaptics = async (intensity: number) => {
@@ -111,6 +102,8 @@ export const useHugSettings = () => {
       
       setSettings(apiSettings);
       setSliderValue(apiToSlider(apiSettings.intensity));
+       // ✅ Mark as initialized AFTER data is loaded
+      isInitialized.current = true;
       
     } catch (error) {
       console.error('Error fetching hug settings:', error);
@@ -166,40 +159,50 @@ export const useHugSettings = () => {
     }
   }, [settings, triggerHapticFeedback]);
 
-  // Update individual setting with haptic feedback
+  // ✅ Single clean updateSetting — guards against pre-init calls
   const updateSetting = useCallback(async (key: keyof HugSettingsData, value: any) => {
-    const oldHapticEnabled = settings.haptic_feedback;
-    const oldIntensity = settings.intensity;
-    
+    if (!isInitialized.current) return false; // 🛑 Block saves before fetch completes
+
+    const current = settingsRef.current;
+    const oldHapticEnabled = current.haptic_feedback;
+    const oldIntensity = current.intensity;
+
     let finalValue = value;
-    
-    // Convert slider value for intensity
     if (key === 'intensity') {
       finalValue = sliderToApi(value);
     }
-    
-    const newSettings = { ...settings, [key]: finalValue };
-    
-    // Update state optimistically
+
+    const newSettings = { ...current, [key]: finalValue };
+
+    // Optimistic update
     setSettings(newSettings);
     if (key === 'intensity') {
       setSliderValue(value);
     }
-    
-    // Save to API
-    const success = await updateHugSettings(newSettings);
-    
-    if (success) {
-      // Trigger haptic feedback
+
+    try {
+      setSaving(true);
+      await updateHugSettings(newSettings);
+
+      // Haptic feedback on relevant changes
       if (key === 'haptic_feedback' && value === true && !oldHapticEnabled) {
         triggerHapticFeedback(true);
-      } else if (key === 'intensity' && settings.haptic_feedback) {
+      } else if (key === 'intensity' && newSettings.haptic_feedback && oldIntensity !== finalValue) {
         triggerHapticFeedback(true);
       }
+
+      return true;
+    } catch (error) {
+      console.error('Error updating setting:', error);
+      // Rollback on failure
+      setSettings(current);
+      setSliderValue(apiToSlider(current.intensity));
+      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to save settings' });
+      return false;
+    } finally {
+      setSaving(false);
     }
-    
-    return success;
-  }, [settings, triggerHapticFeedback]);
+  }, [triggerHapticFeedback]);
 
   // Test haptic feedback
   const testHapticFeedback = useCallback(() => {

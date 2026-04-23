@@ -34,6 +34,9 @@ const VirtualHugFlow = () => {
     hugs,
     friends,
     presets,
+    hugPrompts,
+    aiSuggestion,
+    loadingRevealSetting,
 
     filteredUsers,
     communityUsers,
@@ -264,7 +267,7 @@ const VirtualHugFlow = () => {
     <Text style={styles.heartEmoji}>💗</Text>
   </View>
   <Text style={styles.lonelyText}>
-    {virtualHugsSuggestions?.suggestion ?? "Feeling lonely? Send a hug to someone!"}
+    {aiSuggestion?.messages ?? "Feeling lonely? Send a hug to someone!"}
   </Text>
   {lastCheckInMood?.toLowerCase() === 'lonely' && (
     <Ionicons
@@ -339,15 +342,15 @@ const VirtualHugFlow = () => {
             textAlignVertical="top"
           />
 
-            {virtualHugsSuggestions?.messages?.slice(0, 2).map((preset, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.presetCard}
-              onPress={() => setMessage(preset)}
-            >
-              <Text style={styles.presetText}>{preset}</Text>
-            </TouchableOpacity>
-            ))}
+            {hugPrompts.slice(0, 2).map((prompt, index) => (
+  <TouchableOpacity
+    key={index}
+    style={styles.presetCard}
+    onPress={() => setMessage(prompt)}
+  >
+    <Text style={styles.presetText}>{prompt}</Text>
+  </TouchableOpacity>
+))}
 
           <TouchableOpacity 
             style={styles.addEmojiContainer}
@@ -369,6 +372,7 @@ const VirtualHugFlow = () => {
                 onValueChange={setIsAnonymous}
                 trackColor={{ false: '#E5E7EB', true: '#8B7CF6' }}
                 thumbColor={'#fff'}
+                disabled={loadingRevealSetting}
               />
             </View>
 

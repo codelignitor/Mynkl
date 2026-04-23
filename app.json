@@ -12,21 +12,23 @@
       "android"
     ],
     "newArchEnabled": false,
+    
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.mynkl",
-      "infoPlist": {
+      "useNextNotificationsApi": true,
+      "config": {
+          "googleMaps": {
+            "apiKey": "AIzaSyDnoc6XxrzYXuCC2Tg-QKcoIs3RLcHmuS0"
+          }
+        },
+       "infoPlist": {
         "UIBackgroundModes": [
           "audio"
         ],
         "NSLocationWhenInUseUsageDescription": "We need your location to show nearby moods.",
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        },
-        "config": {
-          "googleMaps": {
-            "apiKey": "AIzaSyDnoc6XxrzYXuCC2Tg-QKcoIs3RLcHmuS0"
-          }
         }
       }
     },

@@ -150,9 +150,9 @@ export default function TabLayout() {
        <Tabs.Screen
         name="hugs_selection/index"
         options={{
-          // href: null, 
+          href: null, 
           title: 'hugs_selection',
-          tabBarButton: () => null, 
+          // tabBarButton: () => null, 
           tabBarIcon: ({ color }) => <Ionicons name="chatbox" size={24} color={color} />,
         }}
       />

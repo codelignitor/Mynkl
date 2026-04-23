@@ -132,7 +132,7 @@ const HugBackFlow = () => {
 
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={goToPreviousScreen} style={styles.backButton}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#7C3AED" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>mynkl</Text>
@@ -241,7 +241,19 @@ const HugBackFlow = () => {
 
         <View style={styles.confirmationContent}>
           {/* Header */}
-          <Text style={styles.confirmationHeaderTitle}>mynkl</Text>
+          <View style={styles.header}>
+  <TouchableOpacity
+    onPress={() => router.back()}
+    style={styles.backButton}
+  >
+    <Ionicons name="arrow-back" size={24} color="#7C3AED" />
+  </TouchableOpacity>
+
+  <Text style={styles.headerTitle}>mynkl</Text>
+
+  {/* Spacer to keep title centered */}
+  <View style={{ width: 24 }} />
+</View>
 
           {/* Avatar - Show anonymous or actual based on isAnonymous flag */}
           <View style={styles.avatarContainer}>

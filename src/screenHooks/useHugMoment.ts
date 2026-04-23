@@ -66,13 +66,13 @@ export const useHugMoment = () => {
       }
 
       // Select a random user from the list
-      const randomUser = response.data[Math.floor(Math.random() * response.data.length)];
-      
+      // const randomUser = response.data[Math.floor(Math.random() * response.data.length)];
+      const selectedUser = response.data[0];
       // Navigate to next screen with the selected user
       router.push({
         pathname: '/virtual-hug/hug-community/Hug-moment/hug-type',
         params: { 
-          receiverId: randomUser.user_id,
+          receiverId: selectedUser.user_id,
           aiTag: aiTag,
           momentId: selectedMoment.toString()
         }
@@ -83,7 +83,7 @@ export const useHugMoment = () => {
     Toast.show({
       type: 'error',
       text1: 'No user found',
-      text2: 'No one is available for this moment right now. Try another moment.',
+      text2: 'Sorry! No one is available for this moment right now. Try another moment.',
     });
   } else {
     Toast.show({

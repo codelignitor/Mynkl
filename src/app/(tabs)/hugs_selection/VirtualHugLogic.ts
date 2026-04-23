@@ -1,4 +1,4 @@
-import { getBestUser, getCheckInAiAnalysis, getUsers, getVirtualHugsAISuggestions, sendHug } from '@/src/services/apis';
+import { getBestUser, getCheckInAiAnalysis, getHugPrompts, getHugRevealSetting, getUsers, getVirtualHugsAISuggestions, sendHug } from '@/src/services/apis';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 
@@ -24,6 +24,13 @@ export const useVirtualHugLogic = () => {
   const [communityUsers, setCommunityUsers] = useState([]);
   const [virtualHugsSuggestions, setVirtualHugsSuggestions] = useState([]);
   const [isAnonymous, setIsAnonymous] = useState(false); // 👈 ADD THIS
+
+  const [aiSuggestion, setAiSuggestion] = useState<any>(null);
+  const [hugPrompts, setHugPrompts] = useState<string[]>([]);
+
+  // const [isAnonymous, setIsAnonymous] = useState(false);
+const [loadingRevealSetting, setLoadingRevealSetting] = useState(false);
+
 
   
    const [bestUser, setBestUser] = useState(null);          // ← NEW
@@ -109,13 +116,56 @@ export const useVirtualHugLogic = () => {
       const response = await getVirtualHugsAISuggestions();
       // console.log('Virtual Hugs Suggestions:', response);
 
-       setVirtualHugsSuggestions(response);
+       setAiSuggestion(response); // keep full object
 
       
     } catch (error) {
-      
+       console.log(error);
     }
   }
+
+  const extractHugType = (value: string) => {
+  return value?.toLowerCase().replace(' hug', '').trim();
+};
+
+const getVirtualHugPrompts = async () => {
+  try {
+    const selectedHugData =
+      selectedHug !== null ? hugs[selectedHug] : getRandomHugType();
+
+    const hugType = extractHugType(selectedHugData?.value);
+
+    const response = await getHugPrompts(hugType);
+
+    setHugPrompts(response?.prompts || []);
+
+  } catch (error) {
+    console.log('Error fetching prompts', error);
+    setHugPrompts([]);
+  }
+};
+
+
+const getRevealNameSetting = async () => {
+  try {
+    setLoadingRevealSetting(true);
+
+    const response = await getHugRevealSetting();
+
+    const shouldBeAnonymous = response?.reveal_name_in_hugs;
+
+    // ✅ NEW mapping:
+    // true  => anonymous ON
+    // false => anonymous OFF
+
+    setIsAnonymous(shouldBeAnonymous);
+
+  } catch (error) {
+    console.log("Error fetching reveal setting:", error);
+  } finally {
+    setLoadingRevealSetting(false);
+  }
+};
 
   const getLastCheckInMood = async () => {
   try {
@@ -258,11 +308,14 @@ const filteredUsers = (activeTab === 'Friend List' ? friends : communityUsers)
 
   useEffect(() => {
     getUserList();
-    
+    if (currentScreen === 'personalMessage') {
+      getVirtualHugPrompts();
+  }
     getVirtualHugsSuggestions();
-    // getBestUserHandler();    
+    // getBestUserHandler(); 
+     getRevealNameSetting();    
     getLastCheckInMood();  
-  }, []);
+  }, [currentScreen]);
   // Return all state and functions that the UI component needs
   return {
     // State
@@ -273,7 +326,8 @@ const filteredUsers = (activeTab === 'Friend List' ? friends : communityUsers)
     searchText,
     selectedFriends,
     message,
-    
+    hugPrompts,
+    aiSuggestion,
     isSelectHugDisabled,
     // Data
     hugs,
@@ -302,6 +356,8 @@ const filteredUsers = (activeTab === 'Friend List' ? friends : communityUsers)
     setActiveTab,
     setSearchText,
     setMessage,
+    loadingRevealSetting,
+    setLoadingRevealSetting,
     virtualHugsSuggestions
 
     

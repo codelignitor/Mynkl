@@ -57,7 +57,8 @@ if (isAiChoice) {
       message,
       emoji: emojiMap[finalHugType] || '🤗',
       receiver_type: 'Community',
-      type: 'anonymous', 
+      type: 'anonymous',
+      isAnonymous: true,
     };
 
 

@@ -185,7 +185,7 @@ export const useOnboardingLogic = () => {
       
       // Navigate to check-in screen
       setTimeout(() => {
-        router.push('/addCheckIn');
+        router.push('/(tabs)/recevie_hugs');
       }, 800);
       
       return response;

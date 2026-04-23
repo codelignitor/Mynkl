@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-export default function GratitudeSentScreen({ route, navigation }) {
+export default function GratitudeSentScreen({ route }) {
   // Get recipient name from params
   const { recipientName = 'them' } = route?.params || {};
 
@@ -20,6 +20,10 @@ export default function GratitudeSentScreen({ route, navigation }) {
     console.log('Done pressed');
     router.push('/(tabs)/recevie_hugs');
   };
+
+  const handleBack = () => {
+      router.back();
+    };
 
   return (
     <View style={styles.wrapper}>
@@ -29,11 +33,23 @@ export default function GratitudeSentScreen({ route, navigation }) {
           colors={['#F8F0FF', '#F0E8FF', '#E8E0FF']}
           style={styles.gradientContainer}
         >
+
+          <View style={styles.header}>
+  <TouchableOpacity 
+    style={styles.backButton}
+    onPress={handleBack}
+    activeOpacity={0.7}
+  >
+    <Ionicons name="arrow-back" size={26} color="#7B6BA8" />
+  </TouchableOpacity>
+</View>
           <View style={styles.container}>
             {/* Main Content */}
             <View style={styles.content}>
               {/* Heart Icon Container */}
               <View style={styles.heartContainer}>
+
+                
                 <View style={styles.heartCircle}>
                   {/* Replace this View with your Image component */}
                   {/* <Image 
@@ -100,6 +116,18 @@ const styles = StyleSheet.create({
   gradientContainer: {
     flex: 1,
   },
+  header: {
+  position: 'absolute',
+  top: 50, // adjust if needed
+  left: 20,
+  zIndex: 10,
+},
+
+backButton: {
+  width: 40,
+  height: 40,
+  justifyContent: 'center',
+},
   container: {
     flex: 1,
     paddingHorizontal: 24,

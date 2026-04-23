@@ -450,6 +450,23 @@ export const getVirtualHugsAISuggestions = async () => {
 };
 
 
+export const getHugPrompts = async (hugType: string) => {
+  const response = await axiosInstance.get(
+    `/virtual_hugs/hug-prompts`,
+    {
+      params: { hug_type: hugType }
+    }
+  );
+  return response.data;
+};
+
+export const getHugRevealSetting = async () => {
+  const response = await axiosInstance.get(
+    `/virtual_hugs/hug-settings/reveal-name`
+  );
+  return response.data;
+};
+
 //calm_spots
 export const saveReflection = async (payload: any) => {
   const response = await axiosInstance.post(`/meditation/reflections`,payload);

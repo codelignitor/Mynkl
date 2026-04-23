@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -32,6 +32,8 @@ export default function HugSettingsScreen() {
 const [localSettings, setLocalSettings] = useState(settings);
 // Add local slider state
 const [localSliderValue, setLocalSliderValue] = useState(sliderValue);
+
+const isSliderDragging = useRef(false);
 
   // Sync when settings change
 useEffect(() => {
@@ -72,16 +74,16 @@ useEffect(() => {
 );
 
   // Update intensity handler
-const handleIntensityChange = useCallback(async (value: number) => {
-  // Update local slider state immediately
+// Replace handleIntensityChange with this:
+const handleIntensityChange = useCallback((value: number) => {
+  if (!isSliderDragging.current) return; // ✅ Ignore programmatic changes
   setLocalSliderValue(value);
-  
-  // Debounce API call
-  const timer = setTimeout(async () => {
-    await updateIntensity(value);
-  }, 300);
+}, []);
 
-  return () => clearTimeout(timer);
+const handleIntensityComplete = useCallback(async (value: number) => {
+  // ✅ Only call API when user finishes dragging — no debounce timer leak
+  isSliderDragging.current = false;
+  await updateIntensity(value);
 }, [updateIntensity]);
 
   if (loading) {
@@ -145,7 +147,8 @@ const handleIntensityChange = useCallback(async (value: number) => {
                     minimumValue={0}
                     maximumValue={1}
                     value={localSliderValue} // Use local slider value
-                    onValueChange={handleIntensityChange} // Use the new handler
+                    onValueChange={handleIntensityChange}       // only updates local state
+  onSlidingComplete={handleIntensityComplete}  // ✅ API call only on release
                     minimumTrackTintColor="#7f93dbff"
                     maximumTrackTintColor="#858789ff"
                     thumbTintColor="#7f88dbff"

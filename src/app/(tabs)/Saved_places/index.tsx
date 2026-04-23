@@ -103,10 +103,11 @@ const transformPlace = (apiPlace: SavedPlace): Place => {
   return {
     id: apiPlace.id.toString(),
     title: apiPlace.name,
-    matchPercent: Math.min(matchPercent, 95), // Cap at 95%
+    matchPercent: Math.min(matchPercent, 85), // Cap at 85%
     matchLabel: getMatchLabel(apiPlace.mood),
-    distance: formatDistance(apiPlace.distance),
-    highlight: `${apiPlace.user_ratings_total} people felt uplifted here`,
+    distance: (apiPlace.distance),
+    // highlight: `${apiPlace.user_ratings_total} people felt uplifted here`,
+    highlight: `Rated ${apiPlace.rating}⭐ by ${apiPlace.user_ratings_total} people `,
     image: getPlaceImage(apiPlace),
     saved: true,
     mood: apiPlace.mood,
@@ -242,6 +243,7 @@ const SafePlacesScreen = () => {
       
       setInsights(response.insight);
       const transformedPlaces = response.places.map(transformPlace);
+      // console.log('Transformed Places 👉', transformedPlaces);
       setPlaces(transformedPlaces);
     } catch (err) {
       console.error('Error fetching saved places:', err);
@@ -329,7 +331,7 @@ const SafePlacesScreen = () => {
           {/* Content based on active tab */}
           {activeTab === 'Saved' ? renderContent() : (
             <View style={styles.comingSoonContainer}>
-              <Text style={styles.comingSoonText}>AI Picks Coming Soon! 🤖</Text>
+              <Text style={styles.comingSoonText}>AI Picks Coming Soon! </Text>
             </View>
           )}
 

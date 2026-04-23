@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   ScrollView,
   Switch,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -21,6 +22,7 @@ export default function AISupportPreferencesScreen( ) {
   const [veryAlone, setVeryAlone] = useState(true);
   const [peopleOnly, setPeopleOnly] = useState(false);
 
+  const [saving, setSaving] = useState(false);
 
   const handleBack = () => {
     // if (navigation) {
@@ -62,43 +64,45 @@ export default function AISupportPreferencesScreen( ) {
   }, []);
 
   const handleSave = async () => {
-    try {
-      const payload = {
-        ai_support_preferences: {
-          tone: selectedTone,
-          temporary_override: {
-            people_only: peopleOnly,
-          },
-          availability: {
-            while_waiting_for_hug: whileWaiting,
-            nighttime_comforts: nighttime,
-            when_very_alone: veryAlone,
-          },
+  try {
+    setSaving(true); // 👈 start loading
+
+    const payload = {
+      ai_support_preferences: {
+        tone: selectedTone,
+        temporary_override: {
+          people_only: peopleOnly,
         },
-      };
+        availability: {
+          while_waiting_for_hug: whileWaiting,
+          nighttime_comforts: nighttime,
+          when_very_alone: veryAlone,
+        },
+      },
+    };
 
-      await saveAISupportPreferences(payload);
+    await saveAISupportPreferences(payload);
 
-      Toast.show({
-        type: 'success',
-        text1: 'AI-Affirmations saved Successfully.',
-        visibilityTime: 2000,
-        position: 'top',
-      });
+    Toast.show({
+      type: 'success',
+      text1: 'AI-Affirmations saved Successfully.',
+      visibilityTime: 2000,
+      position: 'top',
+    });
 
-      // console.log('Saved Preferences:', payload);
+  } catch (error) {
+    console.log('Error saving AI preferences', error);
 
-    } catch (error) {
-      console.log('Error saving AI preferences', error);
-
-      Toast.show({
-        type: 'error',
-        text1: 'Error saving preferences',
-        visibilityTime: 2000,
-        position: 'top',
-      });
-    }
-  };
+    Toast.show({
+      type: 'error',
+      text1: 'Error saving preferences',
+      visibilityTime: 2000,
+      position: 'top',
+    });
+  } finally {
+    setSaving(false); // 👈 stop loading
+  }
+};
 
   return (
     <View style={styles.wrapper}>
@@ -295,12 +299,20 @@ export default function AISupportPreferencesScreen( ) {
 
             {/* Save Button */}
             <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleSave}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
+  style={[
+    styles.saveButton,
+    saving && { opacity: 0.7 } // 👈 visual feedback
+  ]}
+  onPress={handleSave}
+  activeOpacity={0.8}
+  disabled={saving} // 👈 prevent multiple clicks
+>
+  {saving ? (
+    <ActivityIndicator color="#FFFFFF" />
+  ) : (
+    <Text style={styles.saveButtonText}>Save</Text>
+  )}
+</TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>

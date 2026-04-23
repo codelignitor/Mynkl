@@ -269,12 +269,12 @@ export const handleSavePlace = async (placeDetails: any, mood: string, router: R
     Alert.alert("Saving...", "Please wait", [{ text: "OK" }], { cancelable: false });
 
     // ⭐ Get user current location
-    // const currentLocation = await getCurrentLocation();
-
+    const currentLocation = await getCurrentLocation();
+    console.log("Current Location for Saving Place 👉", currentLocation?.latitude , currentLocation?.longitude);
     const placeData: PlaceData = {
       name: placeDetails.name,
-      lat: placeDetails?.latitude || 0,   
-      lng: placeDetails?.longitude || 0,  
+      lat: placeDetails?.lat || 0,   
+      lng: placeDetails?.lng || 0,  
       address: placeDetails.address,
       place_id: placeDetails.place_id || "",
       rating: placeDetails.rating || 0,

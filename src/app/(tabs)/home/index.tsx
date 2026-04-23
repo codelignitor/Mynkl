@@ -441,7 +441,7 @@ const MoodMapScreen = () => {
             <Text style={styles.appIconText}>MoodMap</Text>
           </TouchableOpacity>
 
-          {/* <TouchableOpacity 
+          <TouchableOpacity 
             style={[
               styles.appIconCard, 
               selectedSections.hugs && { backgroundColor: '#b7c2cc' }
@@ -452,7 +452,7 @@ const MoodMapScreen = () => {
               <Icon name="heart" size={24} color="#ff4f8b" />
             </View>
             <Text style={styles.appIconText}>Hugs</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
 
         <View style={styles.menuSectionContainer}>

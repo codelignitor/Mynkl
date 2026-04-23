@@ -62,17 +62,18 @@ export default function SenderHugBackScreen() {
 
   const handleSendAnotherHug = () => {
     console.log('Send another hug pressed');
-    router.push({
-      pathname: "/normalhugbackflow",
-    params: {
-      message,
-      hugType,
-      hugSenderName,
-      hugprofilePic,
-      senderid,
-      sendedat,
-    },
-  });
+  //   router.push({
+  //     pathname: "/normalhugbackflow",
+  //     params: {
+  //     message,
+  //     hugType,
+  //     hugSenderName,
+  //     hugprofilePic,
+  //     senderid,
+  //     sendedat,
+  //   },
+  // });
+  Alert.alert("Send another hug", "will be added the flow with identity reveal feature in next version");
   };
 
   const handleBlock = () => {
@@ -149,7 +150,7 @@ export default function SenderHugBackScreen() {
 
                 <View style={styles.userInfo}>
                   <Text style={styles.userName}>
-                    {isAnonymous ? "Someone" : senderName}
+                    {isAnonymous ? "Someone hugged you back" : senderName}
                   </Text>
 
                   <Text style={styles.hugInfo}>
