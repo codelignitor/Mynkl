@@ -43,7 +43,8 @@ export const useMomentHugBackFlow = () => {
         original_hug_id: originalHugId,
         hug_type: selected?.value,
         message: message,
-        receiver_id: params?.senderId,
+        emoji: selected?.emoji,
+        // receiver_id: params?.senderId,
         is_anonymous: true,
       };
 

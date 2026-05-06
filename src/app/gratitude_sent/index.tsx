@@ -52,14 +52,14 @@ export default function GratitudeSentScreen({ route }) {
                 
                 <View style={styles.heartCircle}>
                   {/* Replace this View with your Image component */}
-                  {/* <Image 
-                    source={require('./assets/heart-icon.png')} 
+                  <Image 
+                    source={require('../../assets/images/Heart-icon.png')} 
                     style={styles.heartImage}
                     resizeMode="contain"
-                  /> */}
-                  <View style={styles.heartPlaceholder}>
+                  />
+                  {/* <View style={styles.heartPlaceholder}>
                     <Text style={styles.heartEmoji}>💜</Text>
-                  </View>
+                  </View> */}
                 </View>
               </View>
 
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
   },
   header: {
   position: 'absolute',
-  top: 50, // adjust if needed
-  left: 20,
+  top: 60, // adjust if needed
+  left: 30,
   zIndex: 10,
 },
 
@@ -139,7 +139,7 @@ backButton: {
     paddingBottom: 100,
   },
   heartContainer: {
-    marginBottom: 40,
+    marginBottom: 20,
   },
   heartCircle: {
     width: 200,
@@ -167,8 +167,8 @@ backButton: {
     fontSize: 80,
   },
   heartImage: {
-    width: 120,
-    height: 120,
+    width: 180,
+    height: 180,
   },
   title: {
     fontSize: 32,

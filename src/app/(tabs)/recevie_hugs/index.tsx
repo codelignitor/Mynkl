@@ -70,11 +70,12 @@ useEffect(() => {
   const now = new Date();
 
   // Convert API time to UTC+5
-  const utcPlus5Offset = 5 * 60 * 60 * 1000;
-  const past = new Date(new Date(utcString).getTime() + utcPlus5Offset);
-  const nowPlus5 = new Date(now.getTime() + utcPlus5Offset);
+  // const utcPlus5Offset = 5 * 60 * 60 * 1000;
+  const utcPlus2Offset = 5 * 60 * 60 * 1000;
+  const past = new Date(new Date(utcString).getTime() + utcPlus2Offset);
+  const nowPlus = new Date(now.getTime() + utcPlus2Offset);
 
-  const diffInMs = nowPlus5 - past;
+  const diffInMs = nowPlus - past;
   const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
   const diffInDays = Math.floor(diffInHours / 24);
@@ -142,6 +143,7 @@ useEffect(() => {
       sendedat: item?.created_at,
       responseType: item?.responsetype,
       isHugBack: item?.is_hug_back,
+      type: item?.type,
     };
 
     // ✅ GRATITUDE FLOW (NO STATUS UPDATE)
@@ -169,7 +171,7 @@ useEffect(() => {
     setHugsData((prev) => prev.filter((hug) => hug.id !== item.id));
 
     // Existing routing logic
-    if (receiverType === "ai" || receiverType === "community") {
+    if (receiverType === "ai" || receiverType === "Hug_moments") {
       router.push({
         pathname: "/virtual-hug/receive-hug",
         params,

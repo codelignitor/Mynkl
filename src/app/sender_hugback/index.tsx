@@ -25,6 +25,7 @@ export default function SenderHugBackScreen() {
     hugprofilePic,
     senderid,
     sendedat,
+    hugId,
   } = params;
 
   const isAnonymous =
@@ -57,7 +58,19 @@ export default function SenderHugBackScreen() {
 
   const handleStartChat = () => {
     console.log('Start chat pressed');
-    Alert.alert("Start chat", "will be implemented when move to this feature");
+    // Alert.alert("Start chat", "will be implemented when move to this feature");
+    router.push({
+      pathname: '/Identity_Reveal_prompt',
+      params: {
+        hugId,
+        receiverName : senderName ,
+        receiverProfilePic: profilePic,
+        originalHugId: hugId,
+        selectedHugType: hug_type,
+        message: message,
+      },
+    });
+
   };
 
   const handleSendAnotherHug = () => {
@@ -150,7 +163,7 @@ export default function SenderHugBackScreen() {
 
                 <View style={styles.userInfo}>
                   <Text style={styles.userName}>
-                    {isAnonymous ? "Someone hugged you back" : senderName}
+                    {isAnonymous ? "Someone hugged you \nback" : senderName}
                   </Text>
 
                   <Text style={styles.hugInfo}>

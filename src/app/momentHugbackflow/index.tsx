@@ -86,11 +86,22 @@ const {
     );
 
     return (
-      <ImageBackground
-        source={require('../../assets/images/backgrounds/Sending a hug - Screen 7.png')}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      >
+      // <ImageBackground
+      //   source={require('../../assets/images/backgrounds/Sending a hug - Screen 7.png')}
+      //   style={styles.backgroundImage}
+      //   resizeMode="cover"
+      // >
+
+      <LinearGradient
+          colors={[
+            '#EDE7F6', // very light lavender (top-left)
+            '#F3E5F5', // soft pinkish-lavender
+            '#E1F5FE', // very light blue (bottom-right glow)
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ flex: 1 }}
+        >
         <SafeAreaView style={styles.container}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -143,18 +154,32 @@ const {
             </LinearGradient>
           </TouchableOpacity>
         </SafeAreaView>
-      </ImageBackground>
+        </LinearGradient>
+      // </ImageBackground>
     );
   };
 
   // Screen 3: Personal Message
   const renderPersonalMessageScreen = () => {
     return (
-      <ImageBackground
-        source={require('../../assets/images/backgrounds/Sending a hug - Screen 8.png')}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      >
+      // <ImageBackground
+      //   source={require('../../assets/images/backgrounds/Sending a hug - Screen 8.png')}
+      //   style={styles.backgroundImage}
+      //   resizeMode="cover"
+      // >
+
+      <LinearGradient
+          colors={[
+            '#EDE7F6', // very light lavender (top-left)
+            '#F3E5F5', // soft pinkish-lavender
+            '#E1F5FE', // very light blue (bottom-right glow)
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ flex: 1 }}
+        >
+
+        
         <SafeAreaView style={styles.messageContainer}>
           <View style={styles.messageHeader}>
             <TouchableOpacity onPress={goToPreviousScreen}>
@@ -229,7 +254,8 @@ const {
             </TouchableOpacity>
           </ScrollView>
         </SafeAreaView>
-      </ImageBackground>
+        </LinearGradient>
+      // </ImageBackground>
     );
   };
 
@@ -237,11 +263,22 @@ const {
   const renderConfirmationScreen = () => {
     const router = useRouter();
     return (
-      <ImageBackground
-        source={require('../../assets/images/backgrounds/Sending a hug - Screen 10.png')}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      >
+      // <ImageBackground
+      //   source={require('../../assets/images/backgrounds/Sending a hug - Screen 10.png')}
+      //   style={styles.backgroundImage}
+      //   resizeMode="cover"
+      // >
+
+      <LinearGradient
+          colors={[
+            '#EDE7F6', // very light lavender (top-left)
+            '#F3E5F5', // soft pinkish-lavender
+            '#E1F5FE', // very light blue (bottom-right glow)
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ flex: 1 }}
+        >
         <SafeAreaView style={styles.confirmationSafeArea}>
           <TouchableOpacity style={styles.confirmationBackButton} onPress={goToPreviousScreen}>
             <Ionicons name="arrow-back" size={28} color="#333" />
@@ -270,7 +307,8 @@ const {
             <Text style={styles.dashboardButtonText}>Back to Dashboard</Text>
           </TouchableOpacity>
         </SafeAreaView>
-      </ImageBackground>
+        </LinearGradient>
+      // </ImageBackground>
     );
   };
 

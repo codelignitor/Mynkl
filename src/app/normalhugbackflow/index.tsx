@@ -34,6 +34,8 @@ const HugBackFlow = () => {
     customMessage,
     charCount,
     isLoading,
+    isPromptsLoading,
+    hugPrompts,
     
     // Params data
     receiverName,
@@ -158,7 +160,7 @@ const HugBackFlow = () => {
 
           {/* Predefined Messages */}
           <View style={styles.messagesContainer}>
-            {predefinedMessages.map((message, index) => (
+            {/* {predefinedMessages.map((message, index) => (
               <TouchableOpacity
                 key={index}
                 style={[
@@ -177,7 +179,32 @@ const HugBackFlow = () => {
                   {message}
                 </Text>
               </TouchableOpacity>
-            ))}
+            ))} */}
+
+            {isPromptsLoading ? (
+    <ActivityIndicator size="small" color="#7C3AED" />
+  ) : (
+    hugPrompts.map((message, index) => (
+      <TouchableOpacity
+        key={index}
+        style={[
+          styles.messageCard,
+          selectedMessage === message && styles.messageCardSelected,
+        ]}
+        onPress={() => handleMessageSelect(message)}
+        activeOpacity={0.7}
+      >
+        <Text
+          style={[
+            styles.messageText,
+            selectedMessage === message && styles.messageTextSelected,
+          ]}
+        >
+          {message}
+        </Text>
+      </TouchableOpacity>
+    ))
+  )}
           </View>
         </ScrollView>
 
@@ -239,21 +266,24 @@ const HugBackFlow = () => {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="transparent" />
 
+
+        <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons name="arrow-back" size={24} color="#7C3AED" />
+            </TouchableOpacity>
+
+            <Text style={styles.headerTitle}>mynkl</Text>
+
+            {/* Spacer to keep title centered */}
+            <View style={{ width: 24 }} />
+          </View>
+
         <View style={styles.confirmationContent}>
           {/* Header */}
-          <View style={styles.header}>
-  <TouchableOpacity
-    onPress={() => router.back()}
-    style={styles.backButton}
-  >
-    <Ionicons name="arrow-back" size={24} color="#7C3AED" />
-  </TouchableOpacity>
-
-  <Text style={styles.headerTitle}>mynkl</Text>
-
-  {/* Spacer to keep title centered */}
-  <View style={{ width: 24 }} />
-</View>
+          
 
           {/* Avatar - Show anonymous or actual based on isAnonymous flag */}
           <View style={styles.avatarContainer}>
@@ -261,7 +291,7 @@ const HugBackFlow = () => {
               {isAnonymous ? (
                 // Anonymous user - show placeholder
                 <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarEmoji}>❓</Text>
+                  <Text style={styles.avatarEmoji}>👤</Text>
                 </View>
               ) : (
                 // Actual user - show profile pic
@@ -290,12 +320,10 @@ const HugBackFlow = () => {
             Sometimes a small gesture{'\n'}makes a big difference.
           </Text>
 
-          {/* Start Chat Button - Only show if not anonymous */}
-          {!isAnonymous && (
+          {/* Start Chat Button -*/}
             <TouchableOpacity style={styles.chatButton} onPress={handleStartChat}>
               <Text style={styles.chatButtonText}>Start Chat</Text>
             </TouchableOpacity>
-          )}
 
           {/* Block | Report - Only show if not anonymous */}
           {!isAnonymous && (
@@ -310,15 +338,6 @@ const HugBackFlow = () => {
             </View>
           )}
 
-          {/* If anonymous, show a different CTA */}
-          {isAnonymous && (
-            <TouchableOpacity 
-              style={styles.backToDashboardButton} 
-              onPress={() => router.push('/(tabs)/recevie_hugs')}
-            >
-              <Text style={styles.backToDashboardButtonText}>Back to Home</Text>
-            </TouchableOpacity>
-          )}
         </View>
       </SafeAreaView>
     );

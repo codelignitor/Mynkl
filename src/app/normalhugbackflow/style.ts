@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
     marginBottom: 30,
   },
   backButton: {
-    padding: 8,
+    paddingLeft: 8,
   },
   headerTitle: {
     fontSize: 20,
@@ -66,7 +66,7 @@ export const styles = StyleSheet.create({
     right: 10,
   },
   hugEmoji: {
-    fontSize: 48,
+    fontSize: 38,
     marginBottom: 12,
   },
   hugLabel: {

@@ -118,14 +118,14 @@ export default function HugReceivedScreen() {
               <Text style={styles.buttonText}>Send a Hug Back</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[styles.button, styles.chatButton]}
               onPress={handleStartChat}
               activeOpacity={0.8}
             >
               <Text style={styles.buttonIcon}>💬</Text>
               <Text style={styles.buttonText}>Start a Chat</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         
         </View>

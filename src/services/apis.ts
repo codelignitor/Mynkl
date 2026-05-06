@@ -261,6 +261,7 @@ export const getCheckInAiAnalysis = async () => {
 
 export const getMoodSuggestions = async () => {
   const response = await axiosInstance.get('/activity/AI-Suggestions');
+  console.log('✅ Mood suggestions fetched:', response.data);
   return response.data; 
 };
 
@@ -521,14 +522,40 @@ export const MeditationsoptsNearby = async (lat: number, lon: number) => {
   return response.data;
 };
 
-//open_to_talk
-export const openToTalk = async (payload: any) => {
-  const response = await axiosInstance.post(`/open_to_talk`,payload);
+export const openToTalk = async (payload: {
+  toggle: boolean;
+  chatMoodSelector: string;
+  availability: 'AVAILABLE' | 'AWAY';
+}) => {
+  const response = await axiosInstance.post(`/open_to_talk`, payload);
   return response.data;
 };
 
+// services/apis.ts
+
+export const fetchConversationPrompts = async (payload: {
+  sessionId: string;
+  conversationState: string;
+  requesterMood: string;
+  recentPromptIds: string[];
+  manualRequest: boolean;
+  userTyping: boolean;
+  remoteTyping: boolean;
+  shownCount: number;
+  dismissCount: number;
+  secondsSinceLastPrompt: number;
+}) => {
+  const response = await axiosInstance.post(
+    `/open_to_talk/prompts`, // <-- your endpoint
+    payload
+  );
+
+  return response.data;
+};
+
+
 export const opentotalkFeedback = async (payload :any) => {
-  const response = await axiosInstance.post(`/open_to_talk/feedback`,payload);
+  const response = await axiosInstance.post(`/open_to_talk/chat-feedback`,payload);
   return response.data;
 };
 
@@ -540,6 +567,46 @@ export const opentotalkInsights = async () => {
 export const insightTips = async () => {
   const response = await axiosInstance.get(`/open_to_talk/mood-insight-tip`);
   return response.data;
+};
+
+export const conversationSuggestion = async () => {
+  const response = await axiosInstance.get(`/open_to_talk/conversation-suggestion`);
+  return response.data;
+};
+
+
+export const suggestedUsers = async () => {
+  const response = await axiosInstance.get(`/open_to_talk/suggested-users`);
+  return response.data;
+};
+
+
+export const blockUser = async (user_id: string) => {
+  try {
+    const response = await axiosInstance.post(`/open_to_talk/block`, {
+      user_id,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error?.response?.data || { message: "Something went wrong" };
+  }
+};
+
+export const reportUser = async (
+  user_id: string,
+  reason: string,
+  description: string
+) => {
+  try {
+    const response = await axiosInstance.post(`/open_to_talk/report`, {
+      user_id,
+      reason,
+      description,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error?.response?.data || { message: "Something went wrong" };
+  }
 };
 
 //Notification 
@@ -718,13 +785,12 @@ export const buildOnboardingPayload = (answers) => {
 
 export const submitOnboarding = async (answers: any) => {
   try {
-    const payload = buildOnboardingPayload(answers);
-
-    const res = await axiosInstance.post("/home/onboarding", payload);
-
+    // Just send answers directly - no transformation needed!
+    const res = await axiosInstance.post("/home/onboarding", answers);
     return await res.data;
   } catch (err) {
     console.error("Onboarding API error:", err);
+    throw err; // Don't forget to throw so your component knows it failed
   }
 };
 
@@ -823,7 +889,7 @@ export const acknowledgeHug = async (hugId: any, responseType = "SEND_GRATITUDE"
 export const respondToHug = async (payload: { original_hug_id: string | string[]; hug_type: any; message: string; }) => {
   try {
     const response = await axiosInstance.post(
-      "/hug/respond",
+      `/virtual_hugs/${payload.original_hug_id}/hug-back`,
       payload
     );
 
@@ -846,6 +912,16 @@ export const sendHugBack = async (hugId: any, payload: {
   return response.data;
 };
 
+export const submitRevealIdentity = async (hugId: any, consent: boolean) => {
+  const response = await axiosInstance.post(`/virtual_hugs/${hugId}/reveal-consent`, { consent });
+  console.log('✅ Reveal identity response:', response.data);
+  return response.data;
+};
+
+export const getRevealStatus = async (hugId: any) => {
+  const response = await axiosInstance.get(`/virtual_hugs/${hugId}/reveal-status`);
+  return response.data; // { status: "PENDING" }
+};
 
 export interface SavedPlace {
   id: number;

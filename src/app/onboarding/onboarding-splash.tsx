@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Image } from "react-native";
 
 export default function IntroScreen() {
   return (
@@ -11,9 +11,14 @@ export default function IntroScreen() {
         <View style={styles.logoContainer}>
           <View style={styles.logoCircle}>
             {/* You can replace this text with an Image later */}
-            <Text style={styles.logoText}>🌀</Text>
+            {/* <Text style={styles.logoText}>🌀</Text> */}
+            <Image
+                source={require("../../assets/logo/splash-icon1.png")} // replace with your path
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
           </View>
-          <Text style={styles.appName}>mynkl</Text>
+          {/* <Text style={styles.appName}>mynkl</Text> */}
         </View>
 
         {/* Title */}
@@ -64,6 +69,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+    logoImage: {
+    width: 180,   // adjust based on your design
+    height: 180,
+  },
   logoText: {
     fontSize: 38,
   },
@@ -80,6 +89,7 @@ const styles = StyleSheet.create({
     color: "#1A1A1A",
     marginBottom: 12,
     textAlign: "center",
+    paddingTop: 50,
   },
 
   description: {
@@ -88,6 +98,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
     marginBottom: 40,
+    paddingHorizontal: 30,
   },
 
   beginBtn: {
@@ -97,6 +108,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
     marginBottom: 18,
+    marginTop: 40,
   },
   beginText: {
     fontSize: 18,

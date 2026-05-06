@@ -36,6 +36,26 @@ if (__DEV__) {
 const App = () => {
   const isUserLoggedIn = useSelector((state: RootState) => state.auth.isUserLoggedIn);
   const [loading, setLoading] = useState(true);
+  
+  const HUG_ID_KEY = 'LAST_IDENTITY_REVEAL_HUG_ID';
+  
+  const saveHugId = async (hugId: string) => {
+  try {
+    await AsyncStorage.setItem(HUG_ID_KEY, hugId);
+    console.log('✅ Stored hug_id:', hugId);
+  } catch (e) {
+    console.error('❌ Error saving hug_id:', e);
+  }
+};
+
+const getHugId = async () => {
+  try {
+    return await AsyncStorage.getItem(HUG_ID_KEY);
+  } catch (e) {
+    console.error('❌ Error getting hug_id:', e);
+    return null;
+  }
+};
 
   useEffect(() => {
     const initFCM = async () => {
@@ -115,7 +135,7 @@ const App = () => {
         });
 
         // --- Add notification tap handler ---
-    const handleNotificationResponse = (remoteMessage: any) => {
+    const handleNotificationResponse = async (remoteMessage: any) => {
       const data = remoteMessage?.data;
       if (!data) return;
 ///virtual-hug/hug-community/Hug-moment?hugId=${data.hug_id}
@@ -129,6 +149,20 @@ const App = () => {
         case 'notificationCenter':
           router.push('/Notifications');
           break;
+
+        case 'identy_reveal':  
+          if (data.hug_id) {
+            await saveHugId(String(data.hug_id)); // ✅ overwrite previous
+            router.push({
+              pathname: '/Reveal_request', // 👈 your target screen
+               params: {
+                hug_id: String(data.hug_id), // ✅ force string
+                consent: String(data.consent),
+              },
+          });
+          console.log('Navigating to Reveal_request with hugId:', data.hug_id);
+         }
+          break;
         default:
           console.log('Unknown notification type:', data.type);
       }
@@ -136,12 +170,23 @@ const App = () => {
 
     // ✅ Notification tapped handler
       const responseListener = Notifications.addNotificationResponseReceivedListener(
-        response => {
+        async response => {
           const data = response.notification.request.content.data;
           console.log('📲 Notification tapped:', data);
 
           if (data.type === 'new_hug' && data.hug_id) {
             router.push(`/(tabs)/recevie_hugs?openHugId=${data.hug_id}`);
+          }
+          if (data.type === 'identy_reveal' && data.hug_id) {
+            await saveHugId(String(data.hug_id)); // ✅ store latest (overwrite)
+            router.push({
+              pathname: '/Reveal_request', 
+              params: {
+                hug_id: String(data.hug_id),
+                consent: String(data.consent),
+              },
+            });
+            console.log('Listener hug_id:', data.hug_id);
           }
         }
       );

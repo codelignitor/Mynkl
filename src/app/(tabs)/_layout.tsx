@@ -134,6 +134,7 @@ export default function TabLayout() {
         options={{
           href: null, // 🔥 IMPORTANT
           title: 'mood_diary',
+          // tabBarButton: () => null,
           tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
       />
@@ -143,6 +144,7 @@ export default function TabLayout() {
         options={{
           href: null, // 🔥 IMPORTANT
           title: 'mood_diary',
+          // tabBarButton: () => null,
           tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
       /> 
@@ -150,7 +152,7 @@ export default function TabLayout() {
        <Tabs.Screen
         name="hugs_selection/index"
         options={{
-          href: null, 
+          href: null, // 🔥 IMPORTANT
           title: 'hugs_selection',
           // tabBarButton: () => null, 
           tabBarIcon: ({ color }) => <Ionicons name="chatbox" size={24} color={color} />,
@@ -160,8 +162,9 @@ export default function TabLayout() {
        <Tabs.Screen
         name="Saved_places/index"
         options={{
-          href: null, // 🔥 IMPORTANT
+          // href: null, // 🔥 IMPORTANT
           title: 'Saved Places',
+          tabBarButton: () => null, 
           tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
       /> 

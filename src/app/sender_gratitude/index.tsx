@@ -78,7 +78,7 @@ const badgeColor = isIdentified ? '#FFD700' : '#5B8FDB';
   if (isIdentified && profilePic) {
     return (
       <Image 
-        source={{ uri: profilePic }}
+        source={{ uri: profilePic}}
         style={styles.avatarImage}
       />
     );
@@ -87,9 +87,13 @@ const badgeColor = isIdentified ? '#FFD700' : '#5B8FDB';
   if (isIdentified && !profilePic) {
     return (
       <View style={styles.fallbackAvatar}>
-        <Text style={styles.fallbackAvatarText}>
+        {/* <Text style={styles.fallbackAvatarText}>
           {senderName.charAt(0).toUpperCase()}
-        </Text>
+        </Text> */}
+        <Image 
+          source={{ uri: profilePic ?? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face" }}
+          style={styles.avatarImage}
+         />
       </View>
     );
   }

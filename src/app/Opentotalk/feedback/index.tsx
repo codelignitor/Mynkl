@@ -1,11 +1,33 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, TextInput, Image, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  ScrollView,
+  Alert,
+  Platform,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import styles from './style';
-import { Ionicons } from '@expo/vector-icons';
-import { useFeedbackScreen, avatarUrl } from '../../../screenHooks/_usefeedback';
+import { useFeedbackScreen } from '../../../screenHooks/_usefeedback';
 import { opentotalkFeedback } from '../../../services/apis';
+import { useLocalSearchParams } from 'expo-router';
 
+// ─── Mood config ──────────────────────────────────────────────────────────────
+const MOODS = [
+  { key: 'awful',   emoji: '😟', label: 'Awful',   headline: 'That was tough.',    sub: 'We hope your next chat feels better.' },
+  { key: 'sad',     emoji: '😕', label: 'Sad',     headline: 'Sorry to hear that.', sub: 'Your feelings matter to us.' },
+  { key: 'okay',    emoji: '😐', label: 'Okay',    headline: 'Fair enough.',        sub: 'Every chat is a chance to connect.' },
+  { key: 'good',    emoji: '🙂', label: 'Good',    headline: 'Glad to hear it!',   sub: 'You both had a nice conversation.' },
+  { key: 'amazing', emoji: '🔥', label: 'Amazing', headline: 'Great! 🎉',          sub: 'You both enjoyed this conversation.' },
+];
+
+const DEFAULT_HEADLINE = 'How did this chat feel?';
+const DEFAULT_SUB      = 'Tap a mood below to share how it went.';
+
+// ─── Component ────────────────────────────────────────────────────────────────
 const FeedbackScreen = () => {
   const {
     selectedMood,
@@ -15,114 +37,194 @@ const FeedbackScreen = () => {
     router,
   } = useFeedbackScreen();
 
-  // Local state for toggles
   const [sendFriendRequest, setSendFriendRequest] = React.useState(false);
-  const [reportUser, setReportUser] = React.useState(false);
-  const [blockUser, setBlockUser] = React.useState(false);
+  const [reportUser,        setReportUser]        = React.useState(false);
+  const [blockUser,         setBlockUser]          = React.useState(false);
 
-  // Dummy receiver_id
-  const receiver_id = '3fa85f64-5717-4562-b3fc-2c963f66afa6';
+  const {
+    username,
+    conversationStyle,
+    userId,
+  } = useLocalSearchParams();
+
+
+  const activeMood = MOODS.find((m) => m.key === selectedMood);
+  const headline   = activeMood?.headline ?? DEFAULT_HEADLINE;
+  const subline    = activeMood?.sub      ?? DEFAULT_SUB;
 
   const handleSubmit = async () => {
     try {
       const payload = {
-        receiver_id,
-        mood: selectedMood || '',
+        receiver_id: userId,
+        mood: selectedMood,
         feedback_text: note || '',
         send_friend_request: sendFriendRequest,
         report_user: reportUser,
         block_user: blockUser,
       };
+      console.log('Submitting feedback with payload:', payload);
       const res = await opentotalkFeedback(payload);
-      console.log('Feedback API response:', res);
+      console.log('Feedback response:', res);
+
       Alert.alert('Success', (res as any).message || 'Feedback submitted successfully.');
-      // Optionally navigate or reset state here
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to submit feedback.';
-      Alert.alert('Error', errorMessage);
+      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to submit feedback.');
     }
   };
 
   return (
-    <LinearGradient
-      colors={["#0a2323", "#1b2d3a", "#1b3a2a", "#0a2323"]}
-      locations={[0, 0.4, 0.8, 1]}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-      style={styles.gradient}
-    >
-      <View style={styles.container}>
-          {/* Back Button */}
-          <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.push('/Opentotalk/AI_matches')}
-        >
-          <Ionicons name="arrow-back" size={28} color="#fff" />
-        </TouchableOpacity>
-        {/* Header */}
-        <Text style={styles.header}>mynkl</Text>
-        <Text style={styles.title}>Post-Chat Feedback{"\n"}{"\n"}& Insights</Text>
-        <Text style={styles.subtitle}>How did this chat make you feel?</Text>
+    <View style={styles.root}>
+      {/* Soft mint background */}
+      <LinearGradient
+        colors={['#e4f8f4', '#d0f2ec', '#c8eee8', '#ddf6f2']}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+        style={styles.gradient}
+      />
 
-        {/* Emoji Row */}
+      {/* Back button */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.push('/Opentotalk/StartChat')}
+      >
+        <Ionicons name="arrow-back" size={24} color="#2a9d8f" />
+      </TouchableOpacity>
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* ── Headline ─────────────────────────────────────────────────────── */}
+        <Text style={styles.title}>{headline}</Text>
+
+        {/* Mood sub-label shown when a mood is selected */}
+        {activeMood && (
+          <Text style={styles.moodHighlight}>
+            {activeMood.emoji} {activeMood.label}!
+          </Text>
+        )}
+
+        <Text style={styles.subtitle}>{subline}</Text>
+
+        {/* ── Emoji mood row ────────────────────────────────────────────────── */}
         <View style={styles.emojiRow}>
-          {['happy', 'neutral', 'sad'].map((mood) => (
-            <TouchableOpacity
-              key={mood}
-              onPress={() => setSelectedMood(mood)}
-              style={styles.emojiButton}
-              activeOpacity={0.8}
+          {MOODS.map((mood) => {
+            const isSelected = selectedMood === mood.key;
+            return (
+              <TouchableOpacity
+                key={mood.key}
+                onPress={() => setSelectedMood(mood.key)}
+                style={styles.emojiBtn}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.emojiCircle, isSelected && styles.emojiCircleSelected]}>
+                  <Text style={styles.emojiChar}>{mood.emoji}</Text>
+                </View>
+                <Text style={[styles.emojiLabel, isSelected && styles.emojiLabelSelected]}>
+                  {mood.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* ── Optional note ─────────────────────────────────────────────────── */}
+        <Text style={styles.sectionLabel}>OPTIONAL NOTE</Text>
+        <View style={styles.noteWrap}>
+          <TextInput
+            style={styles.noteInput}
+            placeholder="Add a note (optional)..."
+            placeholderTextColor="#9bbcbb"
+            value={note}
+            onChangeText={setNote}
+            multiline
+          />
+        </View>
+
+        {/* ── Want to stay connected card ───────────────────────────────────── */}
+        <View style={styles.connectCard}>
+          <Text style={styles.connectTitle}>Want to stay connected?</Text>
+          <TouchableOpacity
+            style={[styles.friendRequestBtn, sendFriendRequest && styles.friendRequestBtnActive]}
+            onPress={() => setSendFriendRequest((v) => !v)}
+            activeOpacity={0.85}
+          >
+            <LinearGradient
+              colors={sendFriendRequest ? ['#2a9d8f', '#2a9d8f'] : ['#48c9b8', '#48c9b8']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.friendRequestGradient}
             >
-              <Text style={[styles.emoji, selectedMood === mood && styles.emojiSelected]}>
-                {mood === 'happy' ? '😊' : mood === 'neutral' ? '😐' : '😞'}
+              <Text style={styles.friendRequestText}>
+                {sendFriendRequest ? '✓ Request Sent' : '✨ Send Friend Request'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Report / Block ────────────────────────────────────────────────── */}
+        <View style={styles.safetyCard}>
+          <Text style={styles.safetyTitle}>Report / Block Options</Text>
+          <Text style={styles.safetyDesc}>For safety and moderation.</Text>
+          <View style={styles.safetyBtnRow}>
+            <TouchableOpacity
+              style={[styles.safetyBtn, reportUser && styles.safetyBtnActive]}
+              onPress={() => setReportUser((v) => !v)}
+            >
+              <MaterialIcons
+                name="flag"
+                size={15}
+                color={reportUser ? '#e05c5c' : '#2a9d8f'}
+                style={{ marginRight: 5 }}
+              />
+              <Text style={[styles.safetyBtnText, reportUser && styles.safetyBtnTextActive]}>
+                {reportUser ? 'Reported ✓' : 'Report'}
               </Text>
             </TouchableOpacity>
-          ))}
-        </View>
 
-        {/* Note Input */}
-        <TextInput
-          style={styles.noteInput}
-          placeholder="Add a note..."
-          placeholderTextColor="#b3b3b3"
-          value={note}
-          onChangeText={setNote}
-        />
-
-        {/* Chemistry Card */}
-        <View style={styles.chemistryCard}>
-          <Image source={{ uri: avatarUrl }} style={styles.avatar} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.chemistryText}>You and Julia had strong chemistry!</Text>
-            <TouchableOpacity style={styles.friendRequestBtn} activeOpacity={0.85} onPress={() => setSendFriendRequest((v) => !v)}>
-              <Text style={styles.friendRequestText}>Send Friend Request{sendFriendRequest ? ' ✓' : ''}</Text>
+            <TouchableOpacity
+              style={[styles.safetyBtn, blockUser && styles.safetyBtnActive]}
+              onPress={() => setBlockUser((v) => !v)}
+            >
+              <MaterialIcons
+                name="block"
+                size={15}
+                color={blockUser ? '#e05c5c' : '#2a9d8f'}
+                style={{ marginRight: 5 }}
+              />
+              <Text style={[styles.safetyBtnText, blockUser && styles.safetyBtnTextActive]}>
+                {blockUser ? 'Blocked ✓' : 'Block'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Report/Block Options */}
-        <View style={styles.reportBlockContainer}>
-          <Text style={styles.reportBlockLabel}>Report/Block Options</Text>
-          <Text style={styles.safetyAdvice}>For safety advice att oin corderation.</Text>
-          <View style={styles.reportBlockRow}>
-            <TouchableOpacity onPress={() => setReportUser((v) => !v)}>
-              <Text style={styles.reportBlockBtn}>Report{reportUser ? ' ✓' : ''}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setBlockUser((v) => !v)}>
-              <Text style={styles.reportBlockBtn}>Block{blockUser ? ' ✓' : ''}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <TouchableOpacity 
-        onPress={() => router.push('/Opentotalk/Insights')}
+        {/* ── CTAs ─────────────────────────────────────────────────────────── */}
+        <TouchableOpacity
+          style={styles.submitBtn}
+          onPress={handleSubmit}
+          activeOpacity={0.85}
         >
-            <Text style={styles.NextBtn}>Next</Text>
+          <LinearGradient
+            colors={['#48c9b8', '#48c9b8', '#48c9b8']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.submitGradient}
+          >
+            <Text style={styles.submitText}>Submit Feedback</Text>
+          </LinearGradient>
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Text style={styles.SubmitBtn} onPress={handleSubmit}>Submit</Text>
-        </TouchableOpacity>
-      </View>
-    </LinearGradient>
+
+        {/* <TouchableOpacity
+          style={styles.nextBtn}
+          onPress={() => router.push('/Opentotalk/Insights')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.nextText}>Next →</Text>
+        </TouchableOpacity> */}
+      </ScrollView>
+    </View>
   );
 };
 

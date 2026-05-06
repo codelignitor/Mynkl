@@ -1,62 +1,91 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Switch, TouchableOpacity } from 'react-native';
+import { View, Text, Switch, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { MaterialIcons, FontAwesome, Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import Toast from 'react-native-toast-message';
 import styles from './style';
-import { useReadyToChat, options as chatOptions } from '../../../screenHooks/_useReadytochat';
-import { openToTalk, insightTips } from '../../../services/apis';
+import { useReadyToChat, options as chatOptions, ChatOption } from '../../../screenHooks/_useReadytochat';
+import { conversationSuggestion } from '../../../services/apis';
 
+// ─── Icon map ────────────────────────────────────────────────────────────────
 const iconMap = {
-  text: { Icon: MaterialIcons, iconName: 'textsms' },
-  voice: { Icon: FontAwesome, iconName: 'microphone' },
-  video: { Icon: Feather, iconName: 'video' },
+  text:  { Icon: MaterialIcons, iconName: 'textsms' },
+  voice: { Icon: FontAwesome,   iconName: 'microphone' },
+  video: { Icon: Feather,       iconName: 'video' },
 };
 
+const conversationStyles = ['Light', 'Balanced', 'Deep', 'Supportive'];
+
+/** "LIGHT" → "Light" */
+const normaliseTone = (tone: string): string => {
+  const map: Record<string, string> = {
+    LIGHT:      'Light',
+    BALANCED:   'Balanced',
+    DEEP:       'Deep',
+    SUPPORTIVE: 'Supportive',
+  };
+  return map[tone?.toUpperCase()] ?? 'Balanced';
+};
+
+/** "TEXT" → "text" */
+const normaliseModality = (modality: string): ChatOption => {
+  const map: Record<string, ChatOption> = {
+    TEXT:  'text',
+    VOICE: 'voice',
+    VIDEO: 'video',
+  };
+  return map[modality?.toUpperCase()] ?? 'voice';
+};
+
+// ─── Component ───────────────────────────────────────────────────────────────
 const OpenToTalkScreen = () => {
   const {
     isOpen,
-    setIsOpen,
+    setIsOpen,        // fires POST /open_to_talk on every toggle change
     selectedOption,
     setSelectedOption,
-    status,
-    setStatus,
-    showStatusToast,
     selectedLabel,
     options,
     loading,
+    toggleLoading,
     startChat,
   } = useReadyToChat();
 
-  // State for insight tip
-  const [insightTip, setInsightTip] = useState('');
-  const [tipLoading, setTipLoading] = useState(true);
-  const [tipError, setTipError] = useState<string | null>(null);
+  const [suggestion, setSuggestion] = useState<{
+    confidence: number;
+    reasonText: string;
+    suggestedTone: string;
+    suggestedModality: ChatOption;
+  } | null>(null);
+  const [suggestionLoading, setSuggestionLoading] = useState(true);
+  const [suggestionError, setSuggestionError]     = useState<string | null>(null);
+  const [selectedStyle, setSelectedStyle]         = useState('Balanced');
 
+  // ── Fetch suggestion on mount ──────────────────────────────────────────────
   useEffect(() => {
-    const fetchTip = async () => {
-      setTipLoading(true);
-      setTipError(null);
+    const fetchSuggestion = async () => {
+      setSuggestionLoading(true);
+      setSuggestionError(null);
       try {
-        console.log('Calling insightTips API...');
-        const res = await insightTips();
-        console.log('insightTips API response:', res);
-        if (res && res.tip) {
-          setInsightTip(res.tip);
-        } else if (typeof res === 'string') {
-          setInsightTip(res);
-        } else {
-          setInsightTip('No tip available.');
-        }
-      } catch (err) {
-        console.log('insightTips API error:', err);
-        setTipError('Failed to load insight tip.');
+        const res = await conversationSuggestion();
+        // res: { suggested_modality, suggested_tone, confidence, reason_code, reason_text }
+        const data = {
+          confidence:        Math.round((res.confidence ?? 0) * 100), // 0.78 → 78
+          reasonText:        res.reason_text ?? '',
+          suggestedTone:     normaliseTone(res.suggested_tone),
+          suggestedModality: normaliseModality(res.suggested_modality),
+        };
+        setSuggestion(data);
+        // Pre-select API-suggested values in the UI
+        setSelectedStyle(data.suggestedTone);
+        setSelectedOption(data.suggestedModality);
+      } catch {
+        setSuggestionError('Could not load suggestion.');
       } finally {
-        setTipLoading(false);
+        setSuggestionLoading(false);
       }
     };
-    fetchTip();
+    fetchSuggestion();
   }, []);
 
   const router = useRouter();
@@ -64,154 +93,176 @@ const OpenToTalkScreen = () => {
   const handleStartWith = async () => {
     const response = await startChat();
     if (response) {
-      router.push('/Opentotalk/AI_matches');
+      // router.push('/Opentotalk/AI_matches');
+      // onPress={() =>
+     setTimeout(() => {
+      router.push({
+        pathname: '/Opentotalk/AI_matches',
+        params: {
+          // username: currentUser.username,
+          conversationStyles: selectedStyle,
+          voice: selectedOption,
+          // profilePicture: currentUser.profile_picture ?? '',
+          // userId: currentUser.id,
+        },
+      });
+    }, 500); // slight delay for better UX before navigation
     }
   };
 
   return (
     <LinearGradient
-      colors={['#0f2e2e', '#0b5747', '#0e7c6b', '#2c5364']}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
+      colors={['#d6f5f0', '#c2eee8', '#b8eae3', '#e0f7f4']}
+      start={{ x: 0.2, y: 0 }}
+      end={{ x: 0.8, y: 1 }}
       style={styles.gradient}
     >
-      <View style={styles.container}>
-        <View style={styles.headerRow}>
-  {/* Left */}
-  <TouchableOpacity onPress={() => router.back()} style={styles.side}>
-    <MaterialIcons name="arrow-back" size={24} color="#fff" />
-  </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.container}>
 
-  {/* Center */}
-  <View style={styles.center}>
-    <Text style={styles.header}>mynkl</Text>
-  </View>
+          {/* Header */}
+          <View style={styles.headerRow}>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={styles.side}>
+              <MaterialIcons name="arrow-back" size={24} color="#2a9d8f" />
+            </TouchableOpacity>
+            <View style={styles.center}>
+              <Text style={styles.header}>mynkl</Text>
+            </View>
+            <View style={styles.side} />
+          </View>
 
-  {/* Right spacer */}
-  <View style={styles.side} />
-</View>
-        <Text style={styles.title}>Hello!</Text>
-        <Text style={styles.subtitle}>Ready for a chat?</Text>
-        <View style={styles.toggleRow}>
-          <Text style={styles.toggleLabel}>Open to Talk</Text>
-          <Switch
-            value={isOpen}
-            onValueChange={(value) => {
-              setIsOpen(value);
-              if (value) {
-                showStatusToast(status);
-              }
-            }}
-            trackColor={{ false: '#444', true: '#1ed760' }}
-            thumbColor={isOpen ? '#fff' : '#888'}
-          />
-        </View>
-        {/* Status Bar */}
-        <View style={styles.statusBar}>
-          <TouchableOpacity
-            style={[
-              styles.statusOption,
-              status === 'available' && styles.statusOptionSelected
-            ]}
-            onPress={() => {
-              if (!isOpen) return;
-              setStatus('available');
-              showStatusToast('available');
-            }}
-            disabled={!isOpen}
+          {/* Title */}
+          <Text style={styles.title}>Hello!</Text>
+          <Text style={styles.subtitle}>Ready for a chat?</Text>
+
+          {/* Open to Talk Toggle */}
+          <View style={styles.toggleRow}>
+            <Text style={styles.toggleLabel}>Open to Talk</Text>
+            {toggleLoading ? (
+              <ActivityIndicator size="small" color="#2a9d8f" />
+            ) : (
+              <Switch
+                value={isOpen}
+                onValueChange={setIsOpen}          // ← fires API on every toggle
+                trackColor={{ false: '#ccc', true: '#2a9d8f' }}
+                thumbColor="#fff"
+              />
+            )}
+          </View>
+
+          {/* Suggestion / Insight Card — Glassmorphism */}
+          <LinearGradient
+            colors={['rgba(255,255,255,0.55)', 'rgba(200,245,238,0.4)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.suggestionCard}
           >
-            <Text style={{ fontSize: 18, opacity: isOpen ? 1 : 0.5 }}>🟢</Text>
-            <Text style={[
-              styles.statusLabel,
-              status === 'available' && styles.statusLabelSelected,
-              !isOpen && { opacity: 0.5 }
-            ]}>Available</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.statusOption,
-              status === 'away' && styles.statusOptionSelected
-            ]}
-            onPress={() => {
-              if (!isOpen) return;
-              setStatus('away');
-              showStatusToast('away');
-            }}
-            disabled={!isOpen}
+            <View style={styles.suggestionInner}>
+              {suggestionLoading ? (
+                <ActivityIndicator size="small" color="#2a9d8f" style={{ flex: 1 }} />
+              ) : suggestionError ? (
+                <Text style={styles.suggestionSub}>{suggestionError}</Text>
+              ) : suggestion ? (
+                <>
+                  <View style={styles.suggestionDotWrap}>
+                    <View style={styles.suggestionDot} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    {/* reason_text as headline (reason_code hidden as per requirement) */}
+                    <Text style={styles.suggestionTitle}>{suggestion.reasonText}</Text>
+                    {/* confidence as percentage */}
+                    <Text style={styles.suggestionSub}>
+                      Suggested for you ({suggestion.confidence}% success rate)
+                    </Text>
+                    <Text style={styles.suggestionSub}>Based on your recent mood trend.</Text>
+                  </View>
+                </>
+              ) : null}
+            </View>
+          </LinearGradient>
+
+          {/* Conversation Style — pre-selected from suggested_tone */}
+          <View style={styles.sectionBlock}>
+            <Text style={styles.sectionLabel}>Conversation Style:</Text>
+            <View style={styles.styleRow}>
+              {conversationStyles.map((s) => (
+                <TouchableOpacity
+                  key={s}
+                  style={[styles.stylePill, selectedStyle === s && styles.stylePillSelected]}
+                  onPress={() => setSelectedStyle(s)}
+                  activeOpacity={0.75}
+                >
+                  <Text style={[styles.stylePillText, selectedStyle === s && styles.stylePillTextSelected]}>
+                    {s}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Mode of Communication — pre-selected from suggested_modality */}
+          <LinearGradient
+            colors={['rgba(255,255,255,0.5)', 'rgba(190,240,232,0.38)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.modeCard}
           >
-            <Text style={{ fontSize: 18, opacity: isOpen ? 1 : 0.5 }}>🟡</Text>
-            <Text style={[
-              styles.statusLabel,
-              status === 'away' && styles.statusLabelSelected,
-              !isOpen && { opacity: 0.5 }
-            ]}>Away</Text>
-          </TouchableOpacity>
+            <Text style={styles.modeTitle}>Mode of Communication</Text>
+            <View style={styles.optionsRow}>
+              {chatOptions.map(({ key, label }) => {
+                const isSelected = selectedOption === key;
+                const { Icon, iconName } = iconMap[key];
+                return (
+                  <TouchableOpacity
+                    key={key}
+                    style={[styles.optionBtn, isSelected && styles.optionBtnSelected]}
+                    onPress={() => setSelectedOption(key)}
+                    activeOpacity={0.7}
+                  >
+                    <Icon name={iconName as any} size={26} color={isSelected ? '#2a9d8f' : '#6b9ea0'} />
+                    <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </LinearGradient>
+
+          {/* Start CTA */}
           <TouchableOpacity
-            style={[
-              styles.statusOption,
-              status === 'busy' && styles.statusOptionSelected
-            ]}
-            onPress={() => {
-              if (!isOpen) return;
-              setStatus('busy');
-              showStatusToast('busy');
-            }}
-            disabled={!isOpen}
-          >
-            <Text style={{ fontSize: 18, opacity: isOpen ? 1 : 0.5 }}>🔴</Text>
-            <Text style={[
-              styles.statusLabel,
-              status === 'busy' && styles.statusLabelSelected,
-              !isOpen && { opacity: 0.5 }
-            ]}>Busy</Text>
-          </TouchableOpacity>
-        </View>
-        {/* Insight Tip */}
-        <View style={{ marginBottom: 12 }}>
-          {tipLoading ? (
-            <Text style={{ color: '#fff', textAlign: 'center' }}>Loading tip...</Text>
-          ) : tipError ? (
-            <Text style={{ color: 'red', textAlign: 'center' }}>{tipError}</Text>
-          ) : (
-            <Text style={{ color: '#fff', textAlign: 'center' }}>{insightTip}</Text>
-          )}
-        </View>
-        {/* <Text style={styles.upbeatMsg}>
-          {`You seem upbeat today—try `}
-        </Text> */}
-        <View style={styles.optionsRow}>
-          {chatOptions.map(({ key, label }) => {
-            const isSelected = selectedOption === key;
-            const color = isSelected ? '#1ed760' : '#fff';
-            const { Icon, iconName } = iconMap[key];
-            return (
-              <TouchableOpacity
-                key={key}
-                style={styles.optionBtn}
-                onPress={() => setSelectedOption(key)}
-                activeOpacity={0.7}
-              >
-                <Icon name={iconName as any} size={28} color={color} />
-                <Text style={[styles.optionText, { color }]}>{label}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-        <Text style={styles.upbeatMsg2}>You seem upbeat today—try</Text>
-        <View style={styles.moodInsightCard}>
-          <TouchableOpacity
-            style={styles.startButton}
+            style={styles.startButtonWrap}
             onPress={handleStartWith}
             disabled={loading}
+            activeOpacity={0.85}
           >
-            <Text style={styles.startButtonText}>
-              {loading ? 'Starting...' : `Start With ${selectedLabel.charAt(0).toUpperCase() + selectedLabel.slice(1)}`}
-            </Text>
+            <LinearGradient
+              colors={['#2a9d8f', '#48c9b8', '#a8e6df']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.startButton}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Text style={styles.startButtonText}>Start Open to Talk</Text>
+                  <MaterialIcons name="arrow-forward" size={20} color="#fff" style={{ marginLeft: 8 }} />
+                </>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
+
+          {/* Safety note */}
+          <View style={styles.safetyRow}>
+            <MaterialIcons name="help-outline" size={16} color="#7bbfba" />
+            <Text style={styles.safetyText}>You can leave or block anytime.</Text>
+          </View>
+
         </View>
-      </View>
+      </ScrollView>
     </LinearGradient>
   );
 };
 
-export default OpenToTalkScreen; 
+export default OpenToTalkScreen;

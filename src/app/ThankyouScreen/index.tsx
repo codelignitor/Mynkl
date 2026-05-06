@@ -120,7 +120,7 @@ export default function ThankYouScreen({  }) {
       <View style={styles.bgBase} />
       <View style={styles.bgPurpleTop} />
       <View style={styles.bgBlueBottom} />
-      <View style={styles.bgYellowGlow} />
+      {/* <View style={styles.bgYellowGlow} /> */}
 
       {/* Sparkles */}
       {sparklePositions.map((sp) => (
@@ -201,11 +201,11 @@ const styles = StyleSheet.create({
   // Background layers to simulate purple-lavender gradient
   bgBase: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#D8CEFF',
+    backgroundColor: '#B8C4FF',
   },
   bgPurpleTop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#C4B5F4',
+    backgroundColor: '#B8C4FF',
     opacity: 0.6,
     top: 0,
     height: '55%',
@@ -221,10 +221,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: height * 0.1,
     alignSelf: 'center',
-    width: 280,
-    height: 280,
+    width: 220,
+    height: 220,
     borderRadius: 140,
-    backgroundColor: '#FFE566',
+    backgroundColor: '#fff766',
     opacity: 0.15,
   },
 
@@ -275,13 +275,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   heartImage: {
-    width: 140,
-    height: 140,
+    width: 180,
+    height: 180,
     
   },
   heartPlaceholder: {
-    width: 140,
-    height: 140,
+    width: 180,
+    height: 180,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     paddingHorizontal: 28,
-    paddingBottom: 24,
+    paddingBottom: 48,
   },
   titleRow: {
     flexDirection: 'row',
@@ -335,11 +335,11 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     width: '100%',
-    backgroundColor: '#7B5EA7',
+    backgroundColor: '#5f63e6',
     borderRadius: 32,
     paddingVertical: 17,
     alignItems: 'center',
-    // marginTop: 20,
+    marginBottom: 20,
    
   },
   doneButtonText: {

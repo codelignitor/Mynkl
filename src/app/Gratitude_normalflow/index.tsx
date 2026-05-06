@@ -28,41 +28,71 @@ export default function HugReceivedDetailScreen() {
   const senderid = params.senderid || null;
 
   // Format the time if available
-  const formatTime = (dateString) => {
-    if (!dateString) return 'Recently';
+  // const formatTime = (dateString) => {
+  //   if (!dateString) return 'Recently';
     
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffInDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+  //   try {
+  //     const date = new Date(dateString);
+  //     const now = new Date();
+  //     const diffInDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
       
-      if (diffInDays === 0) {
-        return date.toLocaleTimeString('en-US', { 
-          hour: 'numeric', 
-          minute: '2-digit',
-          hour12: true 
-        });
-      } else if (diffInDays === 1) {
-        return `Yesterday, ${date.toLocaleTimeString('en-US', { 
-          hour: 'numeric', 
-          minute: '2-digit',
-          hour12: true 
-        })}`;
-      } else {
-        return date.toLocaleDateString('en-US', { 
-          month: 'short', 
-          day: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true 
-        });
-      }
-    } catch (error) {
-      return 'Recently';
-    }
-  };
+  //     if (diffInDays === 0) {
+  //       return date.toLocaleTimeString('en-US', { 
+  //         hour: 'numeric', 
+  //         minute: '2-digit',
+  //         hour12: true 
+  //       });
+  //     } else if (diffInDays === 1) {
+  //       return `Yesterday, ${date.toLocaleTimeString('en-US', { 
+  //         hour: 'numeric', 
+  //         minute: '2-digit',
+  //         hour12: true 
+  //       })}`;
+  //     } else {
+  //       return date.toLocaleDateString('en-US', { 
+  //         month: 'short', 
+  //         day: 'numeric',
+  //         hour: 'numeric',
+  //         minute: '2-digit',
+  //         hour12: true 
+  //       });
+  //     }
+  //   } catch (error) {
+  //     return 'Recently';
+  //   }
+  // };
 
-  const displayTime = formatTime(sendedat);
+   const getRelativeTime = (dateString) => {
+  if (!dateString) return '';
+
+  // Append 'Z' if missing to treat as UTC
+  const utcString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+  
+  const now = new Date();
+
+  // Convert API time to UTC+2 (adjusted from UTC+5)
+  const utcPlus2Offset = 2 * 60 * 60 * 1000; // Change this to 2 hours
+  const past = new Date(new Date(utcString).getTime() + utcPlus2Offset);
+  const nowPlus2 = new Date(now.getTime() + utcPlus2Offset);
+
+  const diffInMs = nowPlus2 - past;
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInHours / 24);
+  const diffInWeeks = Math.floor(diffInDays / 7);
+
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} ${diffInMinutes === 1 ? 'min' : 'mins'} ago`;
+  } else if (diffInHours < 24) {
+    return `${diffInHours} ${diffInHours === 1 ? 'hr' : 'hrs'} ago`;
+  } else if (diffInDays < 7) {
+    return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+  } else {
+    return `${diffInWeeks} ${diffInWeeks === 1 ? 'week' : 'weeks'} ago`;
+  }
+};
+
+  const displayTime = getRelativeTime(sendedat);
 
   const handleBack = () => {
     router.back();
@@ -181,7 +211,7 @@ export default function HugReceivedDetailScreen() {
 
               {/* Title */}
               <Text style={styles.title}>
-                {hugSenderName} sent you a{'\n'}
+                {(hugSenderName === 'Anonymous' ? 'Someone' : hugSenderName)} sent you a{'\n'}
                 <Text style={styles.hugType}>{hugType} 💜</Text>
               </Text>
 
