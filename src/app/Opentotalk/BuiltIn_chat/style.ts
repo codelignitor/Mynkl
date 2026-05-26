@@ -153,70 +153,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
 
-  // ── Prompt suggestion card ──────────────────────────────────────────────────
-  promptCard: {
-    backgroundColor: 'rgba(255,255,255,0.82)',
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(42,157,143,0.12)',
-    shadowColor: '#2a9d8f',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    // elevation: 2,
-  },
-  promptLeft: {
-    flex: 1,
-  },
-  promptTitle: {
-    color: '#1a3a38',
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  promptText: {
-    color: '#4a7a74',
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 12,
-    fontStyle: 'italic',
-  },
-  promptActions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  promptInsertBtn: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(42,157,143,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(42,157,143,0.25)',
-  },
-  promptInsertText: {
-    color: '#2a9d8f',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  promptEditBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderWidth: 1,
-    borderColor: 'rgba(42,157,143,0.2)',
-    gap: 4,
-  },
-  promptEditText: {
-    color: '#4a8a84',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-
   // ── Date divider ────────────────────────────────────────────────────────────
   dateDivider: {
     flexDirection: 'row',
@@ -299,47 +235,6 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
 
-  // ── "Want another idea?" card ───────────────────────────────────────────────
-  newIdeaCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.85)',
-    borderRadius: 18,
-    padding: 16,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(42,157,143,0.15)',
-    shadowColor: '#2a9d8f',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    // elevation: 2,
-    gap: 14,
-  },
-  newIdeaRight: {
-    flex: 1,
-  },
-  newIdeaTitle: {
-    color: '#1a3a38',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  newIdeaBtn: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 7,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: 'rgba(42,157,143,0.4)',
-    backgroundColor: 'rgba(42,157,143,0.06)',
-  },
-  newIdeaBtnText: {
-    color: '#2a9d8f',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-
   // ── Composer bar ────────────────────────────────────────────────────────────
   composer: {
     flexDirection: 'row',
@@ -398,79 +293,190 @@ const styles = StyleSheet.create({
     // elevation: 4,
   },
 
-  // ── Modal UI ─────────────────────────────────────────────────────────
-  modalOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.5)",
-  justifyContent: "center",
+  // TOP PROMPT CARD
+promptCard: {
+  backgroundColor: '#fff',
+  borderRadius: 24,
   padding: 20,
+  marginBottom: 22,
+  borderWidth: 1,
+  borderColor: '#d8f0ec',
+  shadowColor: '#7ad7cb',
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 3,
 },
 
-modalContainer: {
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  padding: 16,
+promptTitle: {
+  fontSize: 16,
+  fontWeight: '700',
+  color: '#183b43',
+  marginBottom: 14,
 },
 
-modalTitle: {
-  fontSize: 18,
-  fontWeight: "bold",
+promptText: {
+  fontSize: 16,
+  lineHeight: 28,
+  color: '#4b6a70',
+  marginBottom: 18,
+},
+
+promptActions: {
+  flexDirection: 'row',
+  alignItems: 'center',
+},
+
+promptPrimaryBtn: {
+  flex: 1,
+  height: 32,
+  borderRadius: 18,
+  backgroundColor: '#e8fbf7',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 12,
+  borderWidth: 1,
+  borderColor: '#aee7de',
+},
+
+promptPrimaryBtnText: {
+  color: '#18a999',
+  fontSize: 16,
+  fontWeight: '600',
+},
+
+promptSecondaryBtn: {
+  flex: 1,
+  height: 32,
+  borderRadius: 18,
+  backgroundColor: '#fff',
+  justifyContent: 'center',
+  alignItems: 'center',
+  flexDirection: 'row',
+  borderWidth: 1,
+  borderColor: '#d9e9e7',
+},
+
+promptSecondaryBtnText: {
+  color: '#6f8f96',
+  fontSize: 16,
+  fontWeight: '500',
+},
+
+// IDEA CARD
+ideaCard: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#fff',
+  marginHorizontal: 16,
+  marginBottom: 14,
+  borderRadius: 26,
+  padding: 18,
+  borderWidth: 1,
+  borderColor: '#d8f0ec',
+
+  shadowColor: '#7ad7cb',
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 6 },
+  elevation: 3,
+},
+
+ideaIconWrap: {
+  width: 58,
+  height: 58,
+  borderRadius: 20,
+  backgroundColor: '#eefbf8',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 16,
+},
+
+ideaTitle: {
+  fontSize: 16,
+  fontWeight: '700',
+  color: '#183b43',
   marginBottom: 10,
 },
 
-modalLabel: {
-  marginTop: 10,
-  marginBottom: 5,
-  fontWeight: "500",
-},
-
-reasonContainer: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  gap: 8,
-},
-
-reasonItem: {
-  paddingHorizontal: 10,
-  paddingVertical: 6,
-  borderRadius: 20,
-  backgroundColor: "#eee",
-},
-
-reasonItemActive: {
-  backgroundColor: "#2a9d8f",
-},
-
-reasonText: {
-  fontSize: 12,
-},
-
-modalInput: {
+ideaBtn: {
+  height: 44,
+  borderRadius: 16,
   borderWidth: 1,
-  borderColor: "#ddd",
-  borderRadius: 8,
-  padding: 10,
-  minHeight: 80,
-  textAlignVertical: "top",
+  borderColor: '#b8ebe4',
+  justifyContent: 'center',
+  alignItems: 'center',
+  paddingHorizontal: 18,
+  alignSelf: 'flex-start',
 },
 
-modalActions: {
-  flexDirection: "row",
-  justifyContent: "flex-end",
-  marginTop: 15,
-  gap: 10,
+ideaBtnText: {
+  color: '#18a999',
+  fontSize: 15,
+  fontWeight: '600',
 },
-
-cancelBtn: {
-  padding: 10,
-},
-
-submitBtn: {
-  backgroundColor: "#2a9d8f",
-  paddingHorizontal: 15,
-  paddingVertical: 10,
-  borderRadius: 8,
-},
+  // ── Modal UI ─────────────────────────────────────────────────────────
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    padding: 20,
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalLabel: {
+    marginTop: 10,
+    marginBottom: 5,
+    fontWeight: "500",
+  },
+  reasonContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  reasonItem: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: "#eee",
+  },
+  reasonItemActive: {
+    backgroundColor: "#2a9d8f",
+  },
+  reasonText: {
+    fontSize: 12,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 10,
+    minHeight: 80,
+    textAlignVertical: "top",
+  },
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 15,
+    gap: 10,
+  },
+  cancelBtn: {
+    padding: 10,
+  },
+  submitBtn: {
+    backgroundColor: "#2a9d8f",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
 });
 
 export default styles;

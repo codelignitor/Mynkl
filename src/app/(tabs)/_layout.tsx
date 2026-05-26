@@ -162,9 +162,9 @@ export default function TabLayout() {
        <Tabs.Screen
         name="Saved_places/index"
         options={{
-          // href: null, // 🔥 IMPORTANT
-          title: 'Saved Places',
-          tabBarButton: () => null, 
+          href: null, // 🔥 IMPORTANT
+          title: 'Saved_places',
+          // tabBarButton: () => null, 
           tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
       /> 

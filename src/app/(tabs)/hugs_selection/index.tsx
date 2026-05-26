@@ -16,6 +16,7 @@ import { styles } from './style';
 import { useVirtualHugLogic } from './VirtualHugLogic';
 import { router, useRouter } from 'expo-router';
 import { getUsers } from '@/src/services/apis';
+import GifPickerModal from './gifpickermodal';
 
 const VirtualHugFlow = () => {
  const [showLonelyUser, setShowLonelyUser] = useState(false);
@@ -57,7 +58,15 @@ const VirtualHugFlow = () => {
     setActiveTab,
     setSearchText,
     setMessage,
-    virtualHugsSuggestions
+    virtualHugsSuggestions,
+    // Add these new ones:
+  selectedGif,
+  setSelectedGif,
+  isGifModalVisible,
+  setIsGifModalVisible,
+  fetchGifs,
+currentHugType
+    
   } = useVirtualHugLogic();
 
   // Screen 1: Select Hug
@@ -352,11 +361,23 @@ const VirtualHugFlow = () => {
   </TouchableOpacity>
 ))}
 
+          {/* Updated button to open modal */}
           <TouchableOpacity 
             style={styles.addEmojiContainer}
-            onPress={() => console.log('Add Emoji or GIF')}
+            onPress={() => setIsGifModalVisible(true)} // <-- Open modal here
           >
-            <Text style={styles.addEmoji}>Add Emoji or GIF</Text>
+            {/* Show selected GIF preview if exists */}
+            {selectedGif ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Image 
+                  source={{ uri: selectedGif.url }} 
+                  style={{ width: 40, height: 40, borderRadius: 8 }}
+                />
+                <Text style={styles.addEmoji}>Change GIF</Text>
+              </View>
+            ) : (
+              <Text style={styles.addEmoji}>Add Emoji or GIF</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.anonymousContainer}>
@@ -391,6 +412,20 @@ const VirtualHugFlow = () => {
           </TouchableOpacity>
        
         </ScrollView>
+       
+        {/* Add the Modal component here */}
+        <GifPickerModal
+          visible={isGifModalVisible}
+          onClose={() => setIsGifModalVisible(false)}
+          onSelectGif={(gif) => {
+            setSelectedGif(gif);
+            setIsGifModalVisible(false);
+          }}
+          selectedGifId={selectedGif?.id}
+          fetchGifs={fetchGifs}
+          hugType={currentHugType} // Pass the current hug type
+        />
+
       </SafeAreaView>
       </ImageBackground>
     );

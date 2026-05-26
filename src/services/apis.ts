@@ -193,6 +193,14 @@ export const getOpenToTalkStatus = async (userId: string) => {
   return response.data;
 };
 
+export const getIcebreaker = async (style: string): Promise<string> => {
+  const response = await axiosInstance.get(`/open_to_talk/ice-breaker`, {
+    params: { style: style.toLowerCase() },
+  });
+  return response.data.prompt.text;
+};
+
+
 export const getEventDetails = async (eventId: string) => {
   const response = await axiosInstance.get(`/events/${eventId}`);
   return response.data;
@@ -531,7 +539,10 @@ export const openToTalk = async (payload: {
   return response.data;
 };
 
-// services/apis.ts
+export const getOpenToTalk = async () => {
+  const response = await axiosInstance.get('/open_to_talk');
+  return response.data;
+};
 
 export const fetchConversationPrompts = async (payload: {
   sessionId: string;
@@ -947,4 +958,36 @@ export const getSavedPlacesWithInsights = async (lat: number, lng: number): Prom
     params: { lat, lng }
   });
   return response.data;
+};
+
+
+// Get received hugs (last 14 days)
+export const getReceivedHugs = async () => {
+  const response = await axiosInstance.get(
+    `/virtual_hugs/received-last-14-days`
+  );
+  return response.data;
+};
+
+// Get sent hugs (last 14 days)
+export const getSentHugs = async () => {
+  const response = await axiosInstance.get(
+    `/virtual_hugs/sent-hugs-last-14-days`
+  );
+  return response.data;
+};
+
+export const getconnections =async () => {
+  const response =await axiosInstance.get('/virtual_hugs/recent-connections');
+  return response.data;
+}
+
+export const getGifsByType = async (gifType: string) => {
+  try {
+    const response = await axiosInstance.get(`/virtual_hugs/gifs/by-type/${gifType}`);
+    return response.data;
+  } catch (error) {
+    console.log('Error fetching GIFs by type:', error);
+    throw error;
+  }
 };

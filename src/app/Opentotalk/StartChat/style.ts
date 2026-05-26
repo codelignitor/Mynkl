@@ -1,8 +1,12 @@
 import { StyleSheet } from 'react-native';
+import { colors, spacing } from './tokens';
 
 const styles = StyleSheet.create({
   gradient: {
     flex: 1,
+  },
+  safeAreaContent:{
+    flex: 1
   },
   scrollContent: {
     flexGrow: 1,
@@ -56,27 +60,53 @@ const styles = StyleSheet.create({
   },
 
   // Toggle
+  // toggleRow: {
+  //   flexDirection: 'row',
+  //   alignItems: 'center',
+  //   justifyContent: 'space-between',
+  //   backgroundColor: 'rgba(255, 255, 255, 0.65)',
+  //   borderRadius: 30,
+  //   paddingHorizontal: 22,
+  //   paddingVertical: 14,
+  //   marginBottom: 16,
+  //   width: '100%',
+  //   shadowColor: '#2a9d8f',
+  //   shadowOffset: { width: 0, height: 2 },
+  //   shadowOpacity: 0.08,
+  //   shadowRadius: 8,
+  //   elevation: 2,
+  // },
   toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.65)',
-    borderRadius: 30,
-    paddingHorizontal: 22,
-    paddingVertical: 14,
-    marginBottom: 16,
-    width: '100%',
-    shadowColor: '#2a9d8f',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-  },
+  height: 62,
+  borderRadius: 30,
+  width: '100%',
+  backgroundColor: colors.card,
+  borderWidth: 1,
+  borderColor: colors.cardBorder,
+
+  paddingHorizontal: spacing.xl,
+  marginBottom: spacing.lg,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+
+  shadowColor: colors.shadow,
+  shadowOpacity: 1,
+  shadowRadius: 18,
+  shadowOffset: { width: 0, height: 10 },
+  elevation: 4,
+},
   toggleLabel: {
     color: '#1a3a38',
     fontSize: 18,
     fontWeight: '600',
   },
+
+  sectionHeaderRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 16,
+},
 
   // Suggestion/Insight glassmorphism card
   suggestionCard: {
@@ -136,7 +166,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   stylePill: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.6)',
@@ -183,7 +213,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   optionsRow: {
     flexDirection: 'row',
@@ -243,6 +273,102 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
 
+  // ─── Privacy Section ─────────────────────────────────────
+
+privacySection: {
+  width: '100%',
+  marginBottom: 26,
+},
+
+privacyHeadingRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 14,
+},
+
+privacyHeading: {
+  color: '#123B45',
+  fontSize: 16,
+  fontWeight: '700',
+  marginRight: 10,
+},
+
+privacyCard: {
+  width: '100%',
+  backgroundColor: 'rgba(255,255,255,0.78)',
+  borderRadius: 22,
+
+  paddingHorizontal: 18,
+  paddingVertical: 12,
+
+  borderWidth: 1,
+  borderColor: 'rgba(220,235,238,0.9)',
+
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+
+  shadowColor: '#2a9d8f',
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.08,
+  shadowRadius: 18,
+
+  // elevation: 3,
+},
+
+privacyLeft: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  flex: 1,
+  marginRight: 12,
+},
+
+privacyIconWrap: {
+  width: 54,
+  height: 54,
+  borderRadius: 27,
+
+  backgroundColor: '#DDF7F2',
+
+  alignItems: 'center',
+  justifyContent: 'center',
+
+  marginRight: 14,
+},
+
+privacyTitle: {
+  color: '#123B45',
+  fontSize: 15,
+  fontWeight: '700',
+  marginBottom: 4,
+},
+
+privacySubtitle: {
+  color: '#6B7D8D',
+  fontSize: 12,
+  lineHeight: 22,
+},
+
+privacyFooter: {
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  marginTop: 18,
+  paddingHorizontal: 4,
+},
+
+privacyFooterText: {
+  color: '#7A8C9C',
+  fontSize: 14,
+  lineHeight: 20,
+},
+
+learnMoreText: {
+  color: '#19B7A5',
+  fontSize: 15,
+  fontWeight: '600',
+  marginTop: 2,
+},
+
   // Safety row
   safetyRow: {
     flexDirection: 'row',
@@ -256,41 +382,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
 
-  // Bottom nav
-  bottomNav: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(42,157,143,0.1)',
-    paddingVertical: 10,
-    paddingBottom: 22,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    // elevation: 10,
-  },
-  navItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  navLabel: {
-    fontSize: 11,
-    color: '#9bbcbb',
-    marginTop: 3,
-    fontWeight: '500',
-  },
-  navLabelActive: {
-    color: '#2a9d8f',
-    fontWeight: '700',
-  },
+ 
 });
 
 export default styles;
