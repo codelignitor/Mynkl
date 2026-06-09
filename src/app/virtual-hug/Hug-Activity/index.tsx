@@ -28,11 +28,13 @@ import { getReceivedHugs, getSentHugs } from '@/src/services/apis';
 export type HugsActivityInitialMode = 'sent' | 'received';
 
 type HugStatus =
-  | 'appreciated'      // sent: recipient appreciated it
-  | 'hug_back'         // sent: received a hug back / received: you got hug back
-  | 'no_response'      // sent: no response yet
-  | 'gratitude_sent'   // received: you already sent gratitude
-  | 'pending';         // received: waiting for your action
+  | 'appreciated'
+  | 'hug_back'
+  | 'no_response'
+  | 'gratitude_sent'
+  | 'hug_back_sent'
+  | 'pending'
+  | 'ai_hug'; 
 
 type HugRelation = 'Friend' | 'Community' | 'Hug Moment';
 
@@ -264,14 +266,21 @@ function getHugVisuals(type: string) {
 }
 
 function mapReceivedStatus(item: any): HugStatus {
-  if (item.is_hug_back) {
-    return 'hug_back';
+  if (item.sender?.username === 'AI') {
+    return 'ai_hug';
   }
-
-  if (item.is_hug_back_sent) {
+  
+  // User already sent gratitude
+  if (item.is_acknowledged) {
     return 'gratitude_sent';
   }
 
+  // User already sent a hug back
+  if (item.is_hug_back_sent || item.is_hug_back) {
+    return 'hug_back';
+  }
+
+  // Show CTA buttons
   return 'pending';
 }
 
@@ -340,6 +349,13 @@ const fetchHugs = async () => {
           heartColor: visuals.heartColor,
           heartColor2: visuals.heartColor2,
           heartEmoji: visuals.heartEmoji,
+
+          // NEW
+          message: item.message,
+          senderId: item.sender?.id,
+          senderName: item.sender?.username,
+          profilePic: item.sender?.profile_picture || '',
+          createdAt: item.created_at,
         };
       }) || [];
 
@@ -596,7 +612,7 @@ function HugCard({
         {mode === 'sent' ? (
           <SentStatus status={hug.status} />
         ) : (
-          <ReceivedStatus status={hug.status} hugId={hug.id} />
+          <ReceivedStatus status={hug.status} hug={hug} />
         )}
       </View>
     </Animated.View>
@@ -641,8 +657,41 @@ function SentStatus({ status }: { status: HugStatus }) {
 
 // ─── Received Status / Actions ───────────────────────────────────────────────
 
-function ReceivedStatus({ status, hugId }: { status: HugStatus; hugId: string }) {
+function ReceivedStatus({ status, hug }: { status: HugStatus; hug: HugItem }) {
   const [localStatus, setLocalStatus] = useState(status);
+
+   const handleSendGratitude = () => {
+      console.log('Send Gratitude pressed');
+      
+      // Navigate to gratitude screen with all params
+      router.push({
+        pathname: '/Gratitude_normalflow', // Adjust this path to your actual screen
+        params: {
+          message: hug.message,
+          hugType: hug.type,
+          hugId: hug.id,
+          hugSenderName: hug.senderName,
+          hugprofilePic: hug.profilePic,
+          senderid: hug.senderId,
+          sendedat: hug.createdAt,
+        },
+      });
+    };
+  
+      const handleSendHugBack = () => {
+      console.log('normal Send a Hug Back pressed');
+      
+      // Navigate to send hug screen with sender info
+      router.push({
+        pathname: '/normalhugbackflow', // Adjust this path to your actual screen
+        params: {
+          receiverName: hug.senderName,
+          receiverId: hug.senderId,
+          receiverProfilePic: hug.profilePic,
+          originalHugId: hug.id,
+        },
+      });
+    };
 
   if (localStatus === 'gratitude_sent') {
     return (
@@ -666,14 +715,50 @@ function ReceivedStatus({ status, hugId }: { status: HugStatus; hugId: string })
     );
   }
 
+  if (
+  localStatus === 'hug_back_sent'
+) {
+  return (
+    <View style={[styles.statusBadge, { backgroundColor: colors.blueStatusBg }]}>
+      <Text
+        style={[
+          styles.statusCheck,
+          { color: colors.blueStatusText },
+        ]}
+      >
+        ✓
+      </Text>
+
+        <Text
+          style={[
+            styles.statusText,
+            { color: colors.blueStatusText },
+          ]}
+        >
+          Hug Back sent 💙
+        </Text>
+      </View>
+    );
+  }
+
+  if (localStatus === 'ai_hug') {
+  return (
+    <View style={[styles.statusBadge, { backgroundColor: colors.neutralBg }]}>
+      <Text style={[styles.statusText, { color: colors.neutralText }]}>
+        AI Hugs can't receive responses 🤖
+      </Text>
+    </View>
+  );
+}
+
   // pending — show action buttons
   return (
     <View style={styles.actionRow}>
       <Pressable
-        onPress={() => {
+        onPress={handleSendGratitude}
           // API call: send gratitude for hugId
-          setLocalStatus('gratitude_sent');
-        }}
+          // setLocalStatus('gratitude_sent');
+        
         style={styles.actionPrimary}
       >
         <LinearGradient
@@ -687,10 +772,10 @@ function ReceivedStatus({ status, hugId }: { status: HugStatus; hugId: string })
       </Pressable>
 
       <Pressable
-        onPress={() => {
+        onPress={handleSendHugBack}
           // API call: hug back for hugId
-          setLocalStatus('hug_back');
-        }}
+          // setLocalStatus('hug_back');
+        
         style={styles.actionSecondary}
       >
         <Text style={styles.actionSecondaryText}>Hug Back</Text>

@@ -482,7 +482,7 @@ const StartChatScreen = () => {
     setShowDropdown(false);
     router.push({
       pathname: '/Opentotalk/feedback',
-      params: { username, conversationStyles: conversationStyle, userId },
+      params: { username, conversationStyles: conversationStyle, userId, profilePicture, sessionId, currentUserId: currentUserId},
     });
   };
 

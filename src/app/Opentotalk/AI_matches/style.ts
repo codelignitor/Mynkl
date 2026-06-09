@@ -218,7 +218,7 @@ tagBottomLeft: {
 },
   compatLabelWrap: {
   flex: 1,
-  paddingLeft: 4,
+  paddingLeft: 2,
 },
   compatTitle: {
   color: '#07373D',
@@ -294,6 +294,26 @@ shadowOffset: { width: 0, height: 10 },
     fontWeight: '500',
     lineHeight: 16,
   },
+
+  locationBadge: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: 'rgba(42,157,143,0.10)',
+  borderRadius: 20,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderWidth: 1,
+  borderColor: 'rgba(42,157,143,0.18)',
+  marginTop: -2,
+  marginBottom: 12,
+},
+
+locationBadgeText: {
+  color: '#2a9d8f',
+  fontSize: 13,
+  fontWeight: '600',
+  marginLeft: 4,
+},
 
   // ── Mode & Style label row ─────────────────────────────────────────────────
   modeLabelRow: {

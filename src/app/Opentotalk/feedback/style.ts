@@ -1,19 +1,52 @@
 import { StyleSheet, Platform } from 'react-native';
 
+const TEAL        = '#1a9d8f';
+const TEAL_DARK   = '#0f6e56';
+const TEXT_DARK   = '#0d2b29';
+const TEXT_MID    = '#4a7a74';
+const TEXT_LIGHT  = '#8ab5b0';
+const BORDER      = '#e0efed';
+const CARD_BG     = '#f7fdfb';
+const WHITE       = '#ffffff';
+const RED_REPORT  = '#d44';
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#e4f8f4',
+    backgroundColor: WHITE,
   },
-  gradient: {
+  bgWhite: {
     ...StyleSheet.absoluteFillObject,
+    backgroundColor: WHITE,
+  },
+
+  // ── Safety top-right button ──────────────────────────────────────────────────
+  safetyTopBtn: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 58 : 36,
+    right: 18,
+    zIndex: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    backgroundColor: WHITE,
+  },
+  safetyTopText: {
+    color: TEXT_DARK,
+    fontSize: 14,
+    fontWeight: '600',
   },
 
   // ── Back button ─────────────────────────────────────────────────────────────
   backButton: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 58 : 36,
-    left: 20,
+    left: 18,
     zIndex: 10,
     width: 36,
     height: 36,
@@ -23,35 +56,30 @@ const styles = StyleSheet.create({
 
   // ── Scroll area ─────────────────────────────────────────────────────────────
   scrollContent: {
-    paddingTop: Platform.OS === 'ios' ? 110 : 88,
-    paddingHorizontal: 22,
-    paddingBottom: 40,
+    paddingTop: Platform.OS === 'ios' ? 116 : 92,
+    paddingHorizontal: 20,
+    paddingBottom: 48,
     alignItems: 'center',
   },
 
   // ── Headline ────────────────────────────────────────────────────────────────
   title: {
-    color: '#1a3a38',
-    fontSize: 30,
+    color: TEXT_DARK,
+    fontSize: 28,
     fontWeight: '800',
     textAlign: 'center',
-    lineHeight: 38,
-    marginBottom: 6,
-  },
-  moodHighlight: {
-    color: '#2a9d8f',
-    fontSize: 22,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 4,
+    lineHeight: 36,
+    marginBottom: 8,
+    letterSpacing: -0.3,
   },
   subtitle: {
-    color: '#4a8a84',
+    color: TEXT_MID,
     fontSize: 15,
     textAlign: 'center',
-    marginBottom: 28,
+    marginBottom: 30,
     fontWeight: '400',
     lineHeight: 22,
+    paddingHorizontal: 8,
   },
 
   // ── Emoji mood row ──────────────────────────────────────────────────────────
@@ -59,196 +87,135 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: 30,
-    paddingHorizontal: 4,
+    marginBottom: 28,
+    paddingHorizontal: 2,
   },
   emojiBtn: {
     alignItems: 'center',
     flex: 1,
   },
   emojiCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: '#f0f9f7',
     borderWidth: 1.5,
-    borderColor: 'rgba(42,157,143,0.12)',
+    borderColor: BORDER,
     marginBottom: 6,
-    shadowColor: '#2a9d8f',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    // elevation: 1,
   },
   emojiCircleSelected: {
-    backgroundColor: 'rgba(42,157,143,0.12)',
-    borderColor: '#2a9d8f',
+    backgroundColor: '#e6f8f4',
+    borderColor: TEAL,
     borderWidth: 2,
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    // elevation: 4,
   },
   emojiChar: {
     fontSize: 26,
   },
   emojiLabel: {
-    color: '#7bbfba',
+    color: TEXT_LIGHT,
     fontSize: 11,
     fontWeight: '500',
     textAlign: 'center',
   },
   emojiLabelSelected: {
-    color: '#2a9d8f',
+    color: TEAL,
     fontWeight: '700',
   },
 
-  // ── Optional note ───────────────────────────────────────────────────────────
+  // ── Section label ────────────────────────────────────────────────────────────
   sectionLabel: {
     alignSelf: 'flex-start',
-    color: '#2a9d8f',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    marginBottom: 8,
+    color: TEXT_DARK,
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 10,
   },
+
+  // ── Note input ────────────────────────────────────────────────────────────────
   noteWrap: {
     width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.7)',
+    backgroundColor: WHITE,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(42,157,143,0.15)',
-    marginBottom: 22,
-    shadowColor: '#2a9d8f',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    // elevation: 2,
+    borderWidth: 1.5,
+    borderColor: BORDER,
+    marginBottom: 20,
+    minHeight: 100,
   },
   noteInput: {
     paddingHorizontal: 16,
-    paddingVertical: 14,
-    color: '#1a3a38',
+    paddingTop: 14,
+    paddingBottom: 8,
+    color: TEXT_DARK,
     fontSize: 15,
-    minHeight: 56,
+    minHeight: 72,
     lineHeight: 22,
+  },
+  charCounter: {
+    alignSelf: 'flex-end',
+    paddingRight: 14,
+    paddingBottom: 10,
+    color: TEXT_LIGHT,
+    fontSize: 12,
+    fontWeight: '500',
   },
 
   // ── Connect card ────────────────────────────────────────────────────────────
   connectCard: {
     width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.72)',
+    backgroundColor: CARD_BG,
     borderRadius: 18,
-    padding: 18,
+    paddingVertical: 20,
+    paddingHorizontal: 18,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 18,
     borderWidth: 1,
-    borderColor: 'rgba(42,157,143,0.12)',
-    shadowColor: '#2a9d8f',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    // elevation: 3,
+    borderColor: BORDER,
   },
   connectTitle: {
-    color: '#1a3a38',
-    fontSize: 17,
-    fontWeight: '700',
-    marginBottom: 14,
+    color: TEXT_DARK,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 4,
     textAlign: 'center',
+    letterSpacing: -0.2,
+  },
+  connectSub: {
+    color: TEXT_MID,
+    fontSize: 14,
+    marginBottom: 16,
+    textAlign: 'center',
+    fontWeight: '400',
   },
   friendRequestBtn: {
     width: '100%',
-    borderRadius: 28,
+    borderRadius: 10,
     overflow: 'hidden',
-    shadowColor: '#2a9d8f',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 10,
-    // elevation: 5,
   },
-  friendRequestBtnActive: {
-    shadowOpacity: 0.15,
-  },
-  friendRequestGradient: {
-    paddingVertical: 15,
+  friendRequestInner: {
+    backgroundColor: TEAL,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 10,
+  },
+  friendRequestSent: {
+    backgroundColor: TEAL_DARK,
   },
   friendRequestText: {
-    color: '#fff',
+    color: WHITE,
     fontSize: 16,
     fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-
-  // ── Safety card ─────────────────────────────────────────────────────────────
-  safetyCard: {
-    width: '100%',
-    // backgroundColor: 'rgba(255,255,255,0.65)',
-    // borderRadius: 18,
-    // padding: 16,
-    marginBottom: 22,
-    // borderWidth: 1,
-    // borderColor: 'rgba(224,92,92,0.1)',
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.05,
-    // shadowRadius: 6,
-    // elevation: 2,
-    alignItems: 'center',
-  },
-  safetyTitle: {
-    color: '#1a3a38',
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 3,
-  },
-  safetyDesc: {
-    color: '#7bbfba',
-    fontSize: 13,
-    marginBottom: 14,
-    fontWeight: '400',
-  },
-  safetyBtnRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  safetyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    // paddingHorizontal: 18,
-    // paddingVertical: 10,
-    // borderRadius: 20,
-    // borderWidth: 1.5,
-    // borderColor: 'rgba(224,92,92,0.4)',
-    // backgroundColor: 'rgba(255,255,255,0.7)',
-  },
-  safetyBtnActive: {
-    // color: '#e05c5c',
-    // borderColor: '#e05c5c',
-  },
-  safetyBtnText: {
-    color: '#2a9d8f',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  safetyBtnTextActive: {
-    color: '#e05c5c',
+    letterSpacing: 0.2,
   },
 
   // ── Submit CTA ──────────────────────────────────────────────────────────────
   submitBtn: {
     width: '100%',
-    borderRadius: 28,
+    borderRadius: 10,
     overflow: 'hidden',
-    marginBottom: 12,
-    shadowColor: '#2a9d8f',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
-    // elevation: 6,
+    marginBottom: 20,
   },
   submitGradient: {
     paddingVertical: 17,
@@ -256,22 +223,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   submitText: {
-    color: '#fff',
-    fontSize: 17,
+    color: WHITE,
+    fontSize: 16,
     fontWeight: '700',
     letterSpacing: 0.3,
   },
 
-  // ── Next link ───────────────────────────────────────────────────────────────
-  nextBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+  // ── Report / Block (bottom links) ────────────────────────────────────────────
+  safetyBtnRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingTop: 14,
   },
-  nextText: {
-    color: '#2a9d8f',
-    fontSize: 16,
+  safetyActionBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  safetyActionText: {
+    color: TEXT_DARK,
+    fontSize: 15,
     fontWeight: '600',
-    letterSpacing: 0.2,
+  },
+  reportText: {
+    color: RED_REPORT,
+  },
+  safetyActionTextDone: {
+    color: TEXT_MID,
+    fontWeight: '500',
+  },
+
+  // ── Block confirmation modal ───────────────────────────────────────────────
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    padding: 20,
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
   },
 });
 

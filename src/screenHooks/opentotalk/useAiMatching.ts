@@ -10,6 +10,9 @@ export interface SuggestedUser {
   icebreaker?: string | null;
    // ✅ NEW FIELDS
   interests?: string[];
+   location_label?: string;
+  chat_style?: string;
+  chat_mode?: string;
   conversation_topic_preferences?: string[];
 }
 

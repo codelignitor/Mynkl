@@ -446,7 +446,7 @@ const MoodMapScreen = () => {
               styles.appIconCard, 
               selectedSections.hugs && { backgroundColor: '#b7c2cc' }
             ]}
-            onPress={() => moveToScreen('/Identity_Reveal_prompt/Reveal_connected') }
+            onPress={() => moveToScreen('/Opentotalk/Receiver_friend_flow/connections_Screen') }
           >
             <View style={styles.iconContainer}>
               <Icon name="heart" size={24} color="#ff4f8b" />

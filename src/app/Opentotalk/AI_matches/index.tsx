@@ -16,7 +16,7 @@ import { useAIMatching } from '@/src/screenHooks/opentotalk/useAiMatching';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
 import { useStreamChat } from '@/src/screenHooks/useStreamChat';
-import { getIcebreaker } from '@/src/services/apis';
+import { getIcebreaker, sendMessageNotification } from '@/src/services/apis';
 // import BottomSheetModal from '@/src/components/BottomSheetModal';
 
 const FALLBACK_IMAGE = 'https://randomuser.me/api/portraits/men/32.jpg';
@@ -32,6 +32,13 @@ const CompatibilityDonut = ({ score }: { score: number }) => (
     </View>
   </View>
 );
+
+const getCompatibilityLabel = (score: number) => {
+  if (score > 80) return 'Great Compatibility';
+  if (score > 70) return 'Better Compatibility';
+  if (score >= 50) return 'Good Compatibility';
+  return 'Low Compatibility';
+};
 
 const AIMatchingScreen = () => {
   const router = useRouter();
@@ -65,20 +72,37 @@ const AIMatchingScreen = () => {
   // ── Fade animation for match card ──────────────────────────────────────────
   const cardOpacity = useRef(new Animated.Value(1)).current;
 
-  const fadeOutIn = (callback: () => Promise<void>) => {
+  const animateOpacity = (toValue: number, duration: number) => {
+  return new Promise<void>((resolve) => {
     Animated.timing(cardOpacity, {
-      toValue: 0,
-      duration: 280,
+      toValue,
+      duration,
       useNativeDriver: true,
-    }).start(async () => {
-      await callback();
-      Animated.timing(cardOpacity, {
-        toValue: 1,
-        duration: 320,
-        useNativeDriver: true,
-      }).start();
-    });
-  };
+    }).start(() => resolve());
+  });
+};
+
+const fadeOutIn = async (callback: () => Promise<void>) => {
+  try {
+    // Fade out
+    await animateOpacity(0, 220);
+
+    // Update content
+    await callback();
+
+    // IMPORTANT:
+    // force value before fade-in
+    cardOpacity.setValue(0);
+
+    // Fade in
+    await animateOpacity(1, 260);
+  } catch (err) {
+    console.log('Fade animation error:', err);
+
+    // SAFETY RESET
+    cardOpacity.setValue(1);
+  }
+};
 
   // ── Icebreaker ─────────────────────────────────────────────────────────────
   const conversationStyle = params.conversationStyles ?? 'Balanced';
@@ -123,6 +147,9 @@ const AIMatchingScreen = () => {
     try {
       if (!currUserId || !matchedUserId) return;
 
+      // 🔔 Notify matched user
+      await sendMessageNotification(matchedUserId);
+
       const channel = await startChat(currUserId, matchedUserId);
 
       // Only auto-send the icebreaker if the user did NOT tap "Use Starter"
@@ -138,7 +165,7 @@ const AIMatchingScreen = () => {
         params: {
           channelId:          channel.id,
           username:           currentUser.username,
-          conversationStyles: conversationStyle,
+          conversationStyles: chatStyle,
           profilePicture:     currentUser.profile_picture ?? FALLBACK_IMAGE,
           matchedUserId:      matchedUserId,
           voice:              voice,
@@ -155,23 +182,38 @@ const AIMatchingScreen = () => {
   const handleStartChat    = () => navigateToChat();
   const handleUseStarter   = () => navigateToChat(icebreakerText);
 
+    useEffect(() => {
+    if (loading || error || !currentUser) {
+      cardOpacity.setValue(1);
+    }
+  }, [loading, error, currentUser]);
+
   // ── Next Match ─────────────────────────────────────────────────────────────
   const handleNextUser = async () => {
-    if (isFindingNext) return;
+  if (isFindingNext) return;
+
+  try {
     setIsFindingNext(true);
 
-    fadeOutIn(async () => {
-      try {
-        if (hasNextUser) await goToNextUser();
-        else await refresh();
-      } catch {
-        Toast.show({ type: 'error', text1: 'Failed to load next match' });
+    await fadeOutIn(async () => {
+      // If next user exists → go next
+      if (hasNextUser) {
+        await goToNextUser();
+      } 
+      // If reached end → restart matches seamlessly
+      else {
+        await refresh();
       }
     });
-
-    // Reset loading state after fade completes
-    setTimeout(() => setIsFindingNext(false), 700);
-  };
+  } catch {
+    Toast.show({
+      type: 'error',
+      text1: 'Failed to load next match',
+    });
+  } finally {
+    setIsFindingNext(false);
+  }
+};
 
   const handleShuffleIcebreaker = async () => {
     if (isRefreshingIcebreaker) return;
@@ -194,6 +236,13 @@ const AIMatchingScreen = () => {
   const avatarSource  = currentUser?.profile_picture ? { uri: currentUser.profile_picture } : { uri: FALLBACK_IMAGE };
   const compatScore   = currentUser ? Math.round(currentUser.score) : 0;
   const isPrivateMatch = currentUser?.username === 'Private Match';
+
+  const compatibilityTitle = getCompatibilityLabel(compatScore);
+
+  const chatMode = currentUser?.chat_mode ?? 'TEXT';
+  const chatStyle = currentUser?.chat_style ?? 'Balanced';
+
+  const locationLabel = currentUser?.location_label;
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
@@ -272,8 +321,23 @@ const AIMatchingScreen = () => {
                 {interestTags[0] && <View style={[styles.floatingTag, styles.tagTopRight]}><Text style={styles.tagText}>{interestTags[0]}</Text></View>}
                 {interestTags[1] && <View style={[styles.floatingTag, styles.tagMiddleRight]}><Text style={styles.tagText}>{interestTags[1]}</Text></View>}
                 {interestTags[2] && <View style={[styles.floatingTag, styles.tagBottomLeft]}><Text style={styles.tagText}>{interestTags[2]}</Text></View>}
+              
+              
               </View>
+              
             </View>
+            {locationLabel ? (
+    <View style={styles.locationBadge}>
+      <MaterialIcons
+        name="location-on"
+        size={14}
+        color="#2a9d8f"
+      />
+      <Text style={styles.locationBadgeText}>
+        {locationLabel}
+      </Text>
+    </View>
+  ) : null}
 
             {/* Name */}
             {isPrivateMatch ? (
@@ -290,8 +354,8 @@ const AIMatchingScreen = () => {
               <CompatibilityDonut score={compatScore} />
               <View style={styles.compatLabelWrap}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <Text style={styles.compatTitle}>Great compatibility</Text>
-                  <TouchableOpacity onPress={() => setShowCompatibilityModal(true)} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Text style={styles.compatTitle}>{compatibilityTitle}</Text>
+                  <TouchableOpacity onPress={() => setShowCompatibilityModal(true)} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 18, left: 8, right: 8 }}>
                     <MaterialIcons name="info-outline" size={16} color="#9AA9B8" />
                   </TouchableOpacity>
                 </View>
@@ -353,9 +417,9 @@ const AIMatchingScreen = () => {
             {/* Mode & Style label */}
             <View style={styles.modeLabelRow}>
               <MaterialIcons name="shield" size={16} color="#2a9d8f" style={{ marginRight: 6 }} />
-              <Text style={styles.modeLabelText}>Mode: {voice}</Text>
+              <Text style={styles.modeLabelText}>Mode: {chatMode}</Text>
               <View style={styles.modeDivider} />
-              <Text style={styles.modeLabelText}>Style: {conversationStyle}</Text>
+              <Text style={styles.modeLabelText}>Style: {chatStyle}</Text>
               <TouchableOpacity onPress={() => setShowCompatibilityModal(true)} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={{ marginLeft: 6 }}>
                 <MaterialIcons name="info-outline" size={16} color="#9AA9B8" />
               </TouchableOpacity>
@@ -380,8 +444,8 @@ const AIMatchingScreen = () => {
                 <ActivityIndicator size="small" color="#2a9d8f" />
               ) : (
                 <Text style={styles.nextMatchText}>
-                  {hasNextUser ? 'Find Next Match' : 'Refresh Matches'}
-                </Text>
+                Find Next Match
+              </Text>
               )}
             </TouchableOpacity>
 
@@ -399,7 +463,7 @@ const AIMatchingScreen = () => {
       <BottomSheetModal
         visible={showPrivacyModal}
         onClose={() => setShowPrivacyModal(false)}
-        sheetHeight={520}
+        sheetHeight={550}
       >
         <TouchableOpacity onPress={() => setShowPrivacyModal(false)} style={modalStyles.closeBtn}>
           <MaterialIcons name="close" size={16} color="#666" />
@@ -529,7 +593,7 @@ const modalStyles = StyleSheet.create({
     marginHorizontal: 16, paddingVertical: 15,
     borderRadius: 50, backgroundColor: '#2a9d8f',
     alignItems: 'center', justifyContent: 'center',
-    flexDirection: 'row',
+    flexDirection: 'row', paddingBottom: 30,
   },
   ctaText: { color: '#fff', fontSize: 15, fontWeight: '500' },
 });

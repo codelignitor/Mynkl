@@ -193,6 +193,9 @@ export const getOpenToTalkStatus = async (userId: string) => {
   return response.data;
 };
 
+
+
+
 export const getIcebreaker = async (style: string): Promise<string> => {
   const response = await axiosInstance.get(`/open_to_talk/ice-breaker`, {
     params: { style: style.toLowerCase() },
@@ -617,6 +620,71 @@ export const reportUser = async (
     return response.data;
   } catch (error: any) {
     throw error?.response?.data || { message: "Something went wrong" };
+  }
+};
+
+
+export const opentotalk_SendFriendRequest = async (payload: {
+  receiver_id: string | string[];
+  // session_id: string;
+}) => {
+  const response = await axiosInstance.post(
+    '/open_to_talk/friend-requests',
+    payload
+  );
+
+  return response.data;
+};
+
+export const getFriendRequestStatus = async (
+  // receiverId: string | string[]
+) => {
+  const response = await axiosInstance.get(
+    `/open_to_talk/friend-requests/sent`
+  );
+
+  return response.data;
+};
+
+export const acceptFriendRequest = async (requestId: string) => {
+  const response = await axiosInstance.post(
+    `/open_to_talk/friend-requests/${requestId}/accept`
+  );
+
+  return response.data;
+};
+
+export const declineFriendRequest = async (requestId: string) => {
+  const response = await axiosInstance.post(
+    `/open_to_talk/friend-requests/${requestId}/decline`
+  );
+
+  return response.data;
+};
+
+
+export const getIncomingFriendRequests = async () => {
+  const response = await axiosInstance.get(`/open_to_talk/friend-requests/incoming`);
+  return response.data;
+};
+
+
+export const getConnections = async () => {
+  const response = await axiosInstance.get('/open_to_talk/connections');
+  return response.data;
+};
+
+
+export const sendMessageNotification = async (userId: string) => {
+  try {
+    const response = await axiosInstance.post(
+      `/open_to_talk/send-message-notification/${userId}`
+    );
+
+    return response.data;
+  } catch (error) {
+    console.log("sendMessageNotification error:", error);
+    throw error;
   }
 };
 

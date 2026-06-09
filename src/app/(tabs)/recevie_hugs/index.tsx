@@ -128,6 +128,8 @@ useEffect(() => {
     
   // };
 
+  
+
  const handleHugReceive = async (item) => {
   try {
     const receiverType = item?.receiver_type?.toLowerCase();
@@ -144,9 +146,10 @@ useEffect(() => {
       responseType: item?.responsetype,
       isHugBack: item?.is_hug_back,
       type: item?.type,
+      emoji: item?.emoji,
     };
 
-    // ✅ GRATITUDE FLOW (NO STATUS UPDATE)
+    // GRATITUDE
     if (responseType === "gratitude") {
       router.push({
         pathname: "/sender_gratitude",
@@ -155,7 +158,7 @@ useEffect(() => {
       return;
     }
 
-    // ✅ HUG BACK FLOW (NO STATUS UPDATE)
+    // HUG BACK
     if (item?.is_hug_back === true) {
       router.push({
         pathname: "/sender_hugback",
@@ -164,14 +167,39 @@ useEffect(() => {
       return;
     }
 
-    // ✅ NORMAL HUG FLOW → Update Status
+    // REVEAL HUG CHECK
+    const isRevealHug =
+      item?.emoji &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        item.emoji
+      );
+
+    if (isRevealHug) {
+      await updateHugStatus(item?.id, "seen");
+
+      setHugsData((prev) =>
+        prev.filter((hug) => hug.id !== item.id)
+      );
+
+      router.push({
+        pathname: "/hug_reveal_screen",
+        params,
+      });
+
+      return;
+    }
+
+    // NORMAL HUG
     await updateHugStatus(item?.id, "seen");
 
-    // Remove from list (only normal hugs)
-    setHugsData((prev) => prev.filter((hug) => hug.id !== item.id));
+    setHugsData((prev) =>
+      prev.filter((hug) => hug.id !== item.id)
+    );
 
-    // Existing routing logic
-    if (receiverType === "ai" || receiverType === "Hug_moments") {
+    if (
+      receiverType === "ai" ||
+      receiverType === "hug_moments"
+    ) {
       router.push({
         pathname: "/virtual-hug/receive-hug",
         params,
@@ -182,7 +210,6 @@ useEffect(() => {
         params,
       });
     }
-
   } catch (error) {
     console.error("Failed to handle hug:", error);
   }

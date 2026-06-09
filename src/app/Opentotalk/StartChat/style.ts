@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   stylePill: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.6)',

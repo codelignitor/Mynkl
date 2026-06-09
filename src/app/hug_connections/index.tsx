@@ -81,6 +81,7 @@ interface APIConnectionItem {
   latest_interaction: {
     interaction_id: string;
     interaction_type: string;
+    hug_id: string;
     created_at: string;
   };
   last_interaction_details: APILastInteractionDetails;
@@ -101,19 +102,33 @@ type FilterTab = 'all' | 'connected' | 'anonymous' | 'hug_moments';
 
 interface ConnectionItem {
   id: string;
+
+  interactionId: string;
+  parentHugId: string | null;
+  hugId: string;
+
   name: string;
+  profilePicture: string | null;
+
   isAnonymous: boolean;
   tags: string[];
+
   hugType: string;
   subType?: string;
+
   description: string;
   timeLabel: string;
   rawDate: string;
+
   status: ConnectionStatus;
+
   avatarEmoji: string;
   avatarBg: [string, string];
   hugEmoji: string;
+
   summary: APIConnectionSummary;
+
+  message?: string | null;
 }
 
 // ─── Transform Helpers ────────────────────────────────────────────────────────
@@ -202,21 +217,35 @@ function transform(item: APIConnectionItem): ConnectionItem {
   const hugType = item.last_interaction_details.hug_type ?? 'Calm Hug';
   const avatar = getAvatarStyle(hugType);
   return {
-    id: item.latest_interaction.interaction_id,
-    name: item.user?.username ?? 'Someone',
-    isAnonymous: !item.user,
-    tags: buildTags(item),
-    hugType,
-    subType: buildSubType(item),
-    description: buildDescription(item),
-    timeLabel: formatTimeLabel(item.latest_interaction.created_at),
-    rawDate: item.latest_interaction.created_at,
-    status: deriveStatus(item),
-    avatarEmoji: avatar.emoji,
-    avatarBg: avatar.bg,
-    hugEmoji: getHugEmoji(hugType),
-    summary: item.connection_summary,
-  };
+  id: item.latest_interaction.interaction_id,
+
+  interactionId: item.latest_interaction.interaction_id,
+  parentHugId: item.last_interaction_details.parent_hug_id,
+  hugId: item.latest_interaction.hug_id,
+
+  name: item.user?.username ?? 'Someone',
+  profilePicture: item.user?.profile_picture ?? null,
+
+  isAnonymous: !item.user,
+  tags: buildTags(item),
+
+  hugType,
+  subType: buildSubType(item),
+
+  description: buildDescription(item),
+  timeLabel: formatTimeLabel(item.latest_interaction.created_at),
+  rawDate: item.latest_interaction.created_at,
+
+  status: deriveStatus(item),
+
+  avatarEmoji: avatar.emoji,
+  avatarBg: avatar.bg,
+  hugEmoji: getHugEmoji(hugType),
+
+  summary: item.connection_summary,
+
+  message: item.last_interaction_details.message,
+};
 }
 
 function groupBy(items: ConnectionItem[]) {
@@ -487,8 +516,19 @@ function StatusSection({ item }: { item: ConnectionItem }) {
   const moreStyle = useAnimatedStyle(() => ({ transform: [{ scale: ms.value }] }));
 
    const handleIdentityReveal = () => {
-    router.push('/Identity_Reveal_prompt');
-  };
+    router.push({
+      pathname: '/Identity_Reveal_prompt',
+      params: {
+        receiverName: item.name,
+        receiverProfilePic: item.profilePicture ?? '',
+        selectedHugType: item.hugType,
+        message: item.message ?? '',
+
+        // Use parent_hug_id here
+        originalHugId: item.hugId,
+      },
+    });
+};
 
   const MoreBtn = () => (
     <Animated.View style={moreStyle}>
@@ -516,8 +556,21 @@ function StatusSection({ item }: { item: ConnectionItem }) {
         <MoreBtn />
       </View>
       <Text style={styles.statusDesc}>You can continue{'\n'}supporting each other.</Text>
-      <ActionBtn label="Stay Connected Anonymously" icon="🤍" colors={['#9B59D9', '#7B46D9', '#6D28D9']} onPress={() => {}} />
-      <OutlineBtn label="Reveal Identity" icon="✨" onPress={() => {handleIdentityReveal}} />
+      <ActionBtn 
+       label="Stay Connected Anonymously" icon="🤍" colors={['#9B59D9', '#7B46D9', '#6D28D9']}
+         onPress={() =>
+         router.push({
+          pathname: '/Identity_Reveal_prompt',
+          params: {
+            receiverName: item.name,
+            receiverProfilePic: item.profilePicture ?? '',
+            selectedHugType: item.hugType,
+            message: item.message ?? '',
+            originalHugId: item.hugId,
+          },
+        })
+      } />
+      <OutlineBtn label="Reveal Identity" icon="✨" onPress={handleIdentityReveal}/>
     </View>
   );
 
