@@ -321,6 +321,11 @@ const MoodMapScreen = () => {
     router.push('/virtual-hug/Hug-settings');
   };
 
+  const handleGlobalSettingsPress = () => {
+    console.log('Global Settings pressed');
+    router.push('/privacy_settings');
+  };
+
   const currentEmoji = selectedMood
     ? moodsData.find((mood) => mood.id === selectedMood)?.emoji
     : null;
@@ -381,7 +386,15 @@ const MoodMapScreen = () => {
             style={styles.bellIconContainer} 
             onPress={handleSettingsPress}
           >
-            <Icon name="cog" size={25} color="#ffffff" style={styles.bellIcon} />
+            <Icon name="cog" size={25} color="#ffffff"  />
+          </TouchableOpacity>
+
+          {/* GLobal Settings icon-CTA */}
+          <TouchableOpacity 
+            style={styles.bellIconContainer} 
+            onPress={handleGlobalSettingsPress}
+          >
+            <Icon name="application-settings" size={25} color="#ffffff"  />
           </TouchableOpacity>
         </View>
 
@@ -446,7 +459,7 @@ const MoodMapScreen = () => {
               styles.appIconCard, 
               selectedSections.hugs && { backgroundColor: '#b7c2cc' }
             ]}
-            onPress={() => moveToScreen('/Opentotalk/Receiver_friend_flow/connections_Screen') }
+            onPress={() => moveToScreen('/privacy_settings/anonymous_mode') }
           >
             <View style={styles.iconContainer}>
               <Icon name="heart" size={24} color="#ff4f8b" />

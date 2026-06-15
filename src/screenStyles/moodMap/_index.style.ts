@@ -1,1002 +1,630 @@
 import { ss } from "@/src/constants/ss";
 import { Platform, StyleSheet } from "react-native";
 
+const CARD_SHADOW = {
+  shadowColor: '#6C63FF',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 16,
+  elevation: 4,
+};
+
 export const styles = StyleSheet.create({
-    // Main Container Styles
-    container: {
-       paddingTop: Platform.OS === 'android' ? 44 : 0,
-       backgroundColor:'#768898',
-       flex: 1,
-    },
-    
-    // Header Section Styles
-    headerContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        gap: 12,
-    },
-    searchContainer: {
-        flex: 1,
-       
-    },
-    searchInput:{
-        flex:1
-    },
-    searchRow:{
-        flexDirection:'row'
-    },
-    filterButton: {
-        backgroundColor: '#FFFFFF',
-        padding: 10,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 4,
-        width: 50,
-        height: 50,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    loadingIndicator: {
-        marginVertical: 20,
-    },
-    
-    // Map Container Styles
-    mapContainerStyle: {
-       height: '100%',
-    },
-    
-    // Activities Container Styles
-    activitiesContainer: {
-        backgroundColor: '#768898',
-        padding: 16,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '48.5%',
-    },
-    activitiesLabel: {
-        fontSize: 32, 
-        fontWeight: 'bold', 
-        color: '#fff'
-    },
-    rowContiner: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    seeMore: {
-        fontSize: 16, 
-        fontWeight: 'bold', 
-        color: '#fff'
-    },
-    
-    // Activity Item Styles
-    activityContainer: {
-        borderRadius: 32,
-        marginHorizontal: 16,
-        backgroundColor: '#fff',
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    activityImage: {
-        height: 132,
-        width: 122,
-        borderTopLeftRadius: 32,
-        borderBottomLeftRadius: 32,
-    },
-    activityDetailsContainer: {
-        paddingLeft: 14,
-        flex: 1,
-    },
-    activityArrow: {
-        position: 'absolute', 
-        right: 16,
-    },
-    timeLabel: {
-        fontSize: 16, 
-        color: 'gray' 
-    },
-    activityLabel: {
-        fontSize: 24, 
-        fontWeight: 'bold', 
-        color: '#000',
-    },
-    
-    // Place Section Styles
-    placeContainer: {
-        marginTop: 8, 
-        alignItems: 'center',
-    },
-    placeTitle: {
-        fontWeight: 'bold', 
-        fontSize: 22, 
-        textAlign: 'center',
-        color: '#fff',
-    },
-    placeInfoContainer: {
-        backgroundColor: '#f2f2f2', 
-        borderRadius: 8, 
-        padding: 12, 
-        marginBottom: 4, 
-        marginTop: 8,
-    },
-    placeInfoText: {
-        fontSize: 15,
-        color: '#333',
-    },
-    happyIconContainer: {
-        marginTop: 2,
-    },
-    happyIcon: {
-        width: 68, 
-        height: 68,
-    },
-    
-    // User Section Styles
-    userContainer: {
-        marginTop: 8, 
-        alignItems: 'center',
-    },
-    userTitle: {
-        fontWeight: 'bold', 
-        fontSize: 22, 
-        textAlign: 'center',
-        color: '#fff',
-    },
-    userInfoContainer: {
-        backgroundColor: '#f2f2f2', 
-        borderRadius: 8, 
-        padding: 12, 
-        marginBottom: 4, 
-        marginTop: 8, 
-        alignItems: 'center',
-    },
-    userInfoText: {
-        fontSize: 15,
-        color: '#333',
-    },
-    userButtonContainer: {
-        flexDirection: 'row', 
-        marginTop: 12,
-    },
-    chatButton: {
-        backgroundColor: '#4F8EF7',
-        paddingVertical: 10,
-        paddingHorizontal: 24,
-        borderRadius: 24,
-        marginRight: 12,
-    },
-    chatButtonText: {
-        color: '#fff', 
-        fontWeight: 'bold',
-    },
-    hugButton: {
-        backgroundColor: '#FFD700',
-        paddingVertical: 10,
-        paddingHorizontal: 24,
-        borderRadius: 24,
-    },
-    hugButtonText: {
-        color: '#333', 
-        fontWeight: 'bold',
-    },
-    
-    // ========== FILTER MODAL STYLES ==========
-    
-    // Filter Modal Container
-    filterContainer: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    
-    // Filter Modal Header
-    filterHeader: {
-        marginTop:20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-    },
-    filterBackButton: {
-       backgroundColor:'red'
-    },
-    filterHeaderTitle: {
-        flex: 1,
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#000',
-        textAlign: 'center',
-        marginLeft: -32, // Compensate for back button
-    },
-    filterHeaderRight: {
-        width: 32,
-    },
-    
-    // Filter Modal Description
-    filterDescription: {
-        marginTop:20,
-        fontSize: 16,
-        color: '#666',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        lineHeight: 22,
-    },
-    
-    // Filter Mood Options Container
-    filterMoodContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-    },
-    filterMoodRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 12,
-    },
-    
-    // Individual Mood Button Styles
-    moodButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        borderRadius: 25,
-        flex: 0.48,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-    },
-    selectedMoodButton: {
-        borderColor: '#40E0D0',
-    },
-    moodEmoji: {
-        fontSize: 20,
-        marginRight: 8,
-    },
-    moodText: {
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    
-    // Filter Action Buttons
-    filterButtonContainer: {
-        paddingHorizontal: 20,
-        paddingVertical: 20,
-        marginTop: 'auto',
-    },
-    applyButton: {
-        backgroundColor: '#40E0D0',
-        paddingVertical: 16,
-        borderRadius: 25,
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    applyButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    clearButton: {
-        backgroundColor: '#FFFFFF',
-        paddingVertical: 16,
-        borderRadius: 25,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-        marginBottom:30,
-    },
-    clearButtonText: {
-        color: '#666',
-        fontSize: 16,
-        fontWeight: '500',
-    },
-
-    // ========== LOCATION DETAIL MODAL STYLES ==========
-    
-    // Location Detail Modal Container
-    locationDetailContainer: {
-        flex: 1,
-        backgroundColor: '#F8F9FA',
-    },
-    
-    // Location Detail Header
-    locationDetailHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: '#FFFFFF',
-        borderBottomWidth: 1,
-        borderBottomColor: '#E5E5E5',
-    },
-    backButton: {
-        padding: 8,
-        marginRight: 8,
-    },
-    locationDetailTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#000',
-        textAlign: 'center',
-        flex: 1,
-        marginRight: 40, // Compensate for back button
-    },
-    
-    // Location Detail Content
-    locationDetailContent: {
-        flex: 1,
-    },
-    locationDetailScrollContent: {
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 20,
-    },
-    
-    // Location Card
-    locationCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    locationHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    locationName: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#000',
-        marginLeft: 8,
-    },
-    moodRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    moodLabel: {
-        fontSize: 16,
-        fontWeight: '500',
-        color: '#000',
-        marginLeft: 8,
-    },
-    checkInInfo: {
-        marginTop: 8,
-    },
-    checkInText: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 4,
-    },
-    checkInBreakdown: {
-        fontSize: 14,
-        color: '#888',
-    },
-    
-    // Virtual Hugs Card
-    virtualHugsCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    virtualHugsHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    hugEmoji: {
-        fontSize: 20,
-        marginRight: 8,
-    },
-    virtualHugsTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-    },
-    virtualHugsDesc: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 16,
-        lineHeight: 20,
-    },
-    hugButtonRow: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    sendHugButton: {
-        backgroundColor: '#FFD700',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        flex: 1,
-        alignItems: 'center',
-    },
-    sendHugButtonText: {
-        color: '#000',
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    openToTalkButton: {
-        backgroundColor: '#90EE90',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        flex: 1,
-        alignItems: 'center',
-    },
-    openToTalkButtonText: {
-        color: '#000',
-        fontSize: 14,
-        fontWeight: '600',
-    },
-
-    // ========== MOOD IMAGES STYLES ==========
-    
-    // Container for mood images
-    moodImageContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#F5F5F5',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    
-    // Base mood image style
-    moodImage: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-    },
-    
-    // Selected mood image style
-    moodImageSelected: {
-        width: 35,
-        height: 35,
-        borderRadius: 17.5,
-        borderWidth: 2,
-        borderColor: '#40E0D0',
-    },
-    
-    // Header mood image (for the "Available Moods" section)
-    moodsHeaderImage: {
-        width: 24,
-        height: 24,
-        marginRight: 8,
-    },
-    
-    // Fallback emoji styles (if images don't load)
-    moodDisplayEmoji: {
-        fontSize: 24,
-        textAlign: 'center',
-        marginBottom: 4,
-    },
-    
-    moodDisplayEmojiSelected: {
-        fontSize: 26, // Slightly larger when selected
-    },
-
-    // ========== MOODS SECTION STYLES ==========
-    
-    // Moods Card
-    moodsCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    moodsHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    moodsEmoji: {
-        fontSize: 20,
-        marginRight: 8,
-    },
-    moodsTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-    },
-    moodsDesc: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 16,
-        lineHeight: 20,
-    },
-    moodsList: {
-        maxHeight: 150, // Increased height to allow more content
-        minHeight: 100, // Minimum height to ensure proper display
-    },
-    moodsListContent: {
-        paddingHorizontal: 8,
-        paddingBottom: 16,
-    },
-    moodDisplayItem: {
-        flex: 1,
-        alignItems: 'center',
-        padding: 12,
-        margin: 4,
-        borderRadius: 12,
-        backgroundColor: '#FFFFFF',
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-        minHeight: 80,
-        maxWidth: '30%', // Ensure proper 3-column layout
-    },
-    moodDisplayItemSelected: {
-        backgroundColor: '#F0FFFE',
-        borderColor: '#40E0D0',
-        borderWidth: 2,
-        shadowColor: '#40E0D0',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 4,
-    },
-    moodDisplayName: {
-        fontSize: 12,
-        fontWeight: '500',
-        textAlign: 'center',
-        color: '#333',
-        marginTop: 4,
-        flexWrap: 'wrap',
-    },
-    moodDisplayNameSelected: {
-        color: '#40E0D0',
-        fontWeight: '600',
-    },
-    moodSelectedIndicator: {
-        position: 'absolute',
-        top: 4,
-        right: 4,
-    },
-    
-    // Comments Card
-    commentsCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        minHeight: 200,
-        maxHeight: 300,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    commentsTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#000',
-        marginBottom: 12,
-    },
-    commentsList: {
-        maxHeight: 300,
-        marginBottom: 12,
-        backgroundColor: '#f8f9fa',
-        borderRadius: 8,
-        padding: 12,
-    },
-    commentItem: {
-        backgroundColor: '#F5F5F5',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 8,
-        borderLeftWidth: 3,
-        borderLeftColor: '#40E0D0',
-    },
-    commentText: {
-        fontSize: 14,
-        color: '#333',
-        lineHeight: 20,
-    },
-    commentTimestamp: {
-        fontSize: 12,
-        color: '#666',
-        marginTop: 4,
-    },
-    
-    // Add Comment Styles
-    addCommentContainer: {
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        gap: 8,
-    },
-    commentInput: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-        borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        fontSize: 14,
-        maxHeight: 80,
-    },
-    addCommentButton: {
-        backgroundColor: '#40E0D0',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-    },
-    addCommentButtonText: {
-        color: '#FFFFFF',
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    
-    // Check In Button
-    checkInButton: {
-        backgroundColor: '#FFD700',
-        paddingVertical: 16,
-        borderRadius: 25,
-        alignItems: 'center',
-        marginBottom: 20,
-        marginHorizontal: 20,
-    },
-    checkInButtonText: {
-        color: '#000',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-
-    // ========== USER PIN OVERLAY STYLES ==========
-    
-    // User Pin Overlay Container
-    userPinOverlay: {
-        position: 'absolute',
-        top: '30%',
-        left: '50%',
-        transform: [{ translateX: -125 }], // Half of card width
-        zIndex: 1000,
-    },
-    
-    // User Expanded Card
-    userExpandedCard: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 16,
-        width: 250,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 8,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-        elevation: 15,
-        alignItems: 'center',
-    },
-    
-    // User Expanded Emoji
-    userExpandedEmoji: {
-        fontSize: 48,
-        marginBottom: 8,
-    },
-    
-    // User Expanded Info
-    userExpandedInfo: {
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    userExpandedName: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#000',
-        marginBottom: 4,
-    },
-    userExpandedMood: {
-        fontSize: 16,
-        color: '#666',
-        textTransform: 'capitalize',
-    },
-    
-    // User Action Buttons
-    userHugButton: {
-        backgroundColor: '#FF6B6B',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-        marginBottom: 8,
-        width: '100%',
-        gap: 6,
-    },
-    userHugButtonText: {
-        color: '#FFFFFF',
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    userChatButton: {
-        backgroundColor: '#4ECDC4',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-        width: '100%',
-        gap: 6,
-    },
-    userChatButtonText: {
-        color: '#FFFFFF',
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    
-    // ========== Modal ==========
-    exploreModalOverlay: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        backgroundColor: 'transparent',
-    },
-    exploreModalSheet: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: 0,
-        height: '32%',
-        backgroundColor: '#338C8C',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingHorizontal: 0,
-        width: '100%',
-        // Shadow for iOS
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        // Elevation for Android
-        elevation: 10,
-    },
-    exploreSheetContainer: {
-        backgroundColor: '#338C8C',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingTop: 18,
-        paddingBottom: 10,
-        paddingHorizontal: 0,
-        minHeight: 320,
-        width: '100%',
-    },
-    exploreSheetHandle: {
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    exploreTabsRow: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 18,
-        gap: 10,
-    },
-    exploreTabButton: {
-        backgroundColor: 'rgba(255,255,255,0.10)',
-        paddingHorizontal: 18,
-        paddingVertical: 8,
-        borderRadius: 18,
-        marginHorizontal: 2,
-        minWidth: 90,
-        alignItems: 'center',
-        borderWidth: 0,
-        borderColor: 'transparent',
-    },
-    exploreTabButtonSelected: {
-        backgroundColor: '#B2DFDB',
-        borderWidth: 1.5,
-        borderColor: '#338C8C',
-    },
-    exploreTabText: {
-        color: '#E0F7FA',
-        fontWeight: 'bold',
-        fontSize: 15,
-    },
-    exploreTabTextSelected: {
-        color: '#338C8C',
-    },
-    exploreSuggestionCard: {
-        backgroundColor: '#A7E6E6',
-        borderRadius: 16,
-        padding: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginHorizontal: 18,
-        marginBottom: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 2,
-        elevation: 1,
-    },
-    exploreSuggestionIcon: {
-        width: 32,
-        height: 42,
-        borderRadius: 16,
-        backgroundColor: '#FFE066',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 12,
-    },
-    exploreSuggestionText: {
-        color: '#1A3C3C',
-        fontWeight: '600',
-        fontSize: 16,
-        lineHeight: 22,
-        flex: 1,
-    },
-    exploreSuggestionHeart: {
-        marginLeft: 8,
-    },
-    exploreInfoCard: {
-        backgroundColor: '#B2DFDB',
-        borderRadius: 12,
-        padding: 13,
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginHorizontal: 18,
-        marginBottom: 2,
-    },
-    exploreInfoText: {
-        color: '#1A3C3C',
-        fontSize: 15,
-        flex: 1,
-    },
-    exploreInfoClose: {
-        marginLeft: 8,
-    },
-    exploreButton: {
-        position: 'absolute',
-        bottom: ss(70),
-        right: ss(-20),
-
-        zIndex: 1000,
-    },
-    exploreButtonText: {
-        color: '#00796B',
-        fontWeight: 'bold',
-        fontSize: 17,
-        letterSpacing: 0.2,
-    },
-
-    // ========== USER FLOATING SECTION STYLES ==========
-    userFloatingSection: {
-        position: 'absolute',
-        top: 120,
-        left: 16,
-        right: 16,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 16,
-        padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 8,
-        zIndex: 1000,
-    },
-    userFloatingHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    userMoodIcon: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#FFD700',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 16,
-    },
-    userMoodEmoji: {
-        fontSize: 24,
-    },
-    userInfo: {
-        flex: 1,
-    },
-    userName: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#000',
-        marginBottom: 4,
-    },
-    userMood: {
-        fontSize: 16,
-        color: '#666',
-    },
-    userActionButtons: {
-        gap: 12,
-    },
-    buttonText: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginLeft: 8,
-    },
-    startChatButton: {
-        backgroundColor: '#F5F5F5',
-        paddingVertical: 12,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    closeUserSection: {
-        position: 'absolute',
-        top: 12,
-        right: 12,
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        backgroundColor: '#F5F5F5',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    safeArea: {
+  // ── Root ──────────────────────────────────────────────────
+  container: {
     flex: 1,
-    backgroundColor: '#FAFAF5',
+    backgroundColor: '#F5F4FF',
+    paddingTop: Platform.OS === 'android' ? 44 : 0,
   },
-  header: {
+
+  // ── Header ────────────────────────────────────────────────
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#F5F4FF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0EFF8',
+    gap: 8,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1A1340',
+    letterSpacing: -0.3,
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    color: '#9E9BB5',
+    fontWeight: '400',
+    marginTop: 1,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  headerIconBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#F5F4FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#EBEBF5',
+  },
+
+  // ── All Vibes / Highlights tabs ──────────────────────────
+  vibeTabsRow: {
+    flexDirection: 'row',
+    backgroundColor: '#F5F4FF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EBEBF5',
+  },
+  vibeTabBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    position: 'relative',
+  },
+  vibeTabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#9E9BB5',
+  },
+  vibeTabTextActive: {
+    color: '#837dfa',
+    fontWeight: '700',
+  },
+  vibeTabUnderline: {
+    position: 'absolute',
+    bottom: 0,
+    left: '15%',
+    right: '15%',
+    height: 2.5,
+    backgroundColor: '#6C63FF',
+    borderRadius: 2,
+  },
+
+  // ── Mood pills scroll ─────────────────────────────────────
+  moodPillsScroll: {
+    backgroundColor: '#F5F4FF',
+    maxHeight: 52,
+  },
+  moodPillsContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    gap: 8,
+  },
+  moodPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#EBEBF5',
+  },
+  moodPillActive: {
+    backgroundColor: '#6C63FF',
+    borderColor: '#6C63FF',
+  },
+  moodPillSelected: {
+    backgroundColor: '#fefdfe',
+    borderColor: '#6C63FF',
+  },
+  moodPillText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6B6898',
+  },
+  moodPillTextActive: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  moodPillTextSelected: {
+    color: '#6C63FF',
+  },
+
+  // ── Privacy banner ────────────────────────────────────────
+  privacyBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 12,
+    marginBottom: 6,
+    marginTop: 4,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#F0EFF8',
+    ...CARD_SHADOW,
+  },
+  privacyBannerIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#EDE9FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  privacyBannerTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1A1340',
+  },
+  privacyBannerSub: {
+    fontSize: 11,
+    color: '#9E9BB5',
+    marginTop: 1,
+  },
+  privacyBannerLearn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  privacyBannerLearnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6C63FF',
+  },
+
+  // ── Map ───────────────────────────────────────────────────
+  mapContainerStyle: {
+    height: '100%',
+  },
+  loadingIndicator: {
+    marginVertical: 8,
+  },
+
+  // ── Activities ────────────────────────────────────────────
+  activitiesContainer: {
+    backgroundColor: '#768898',
+    padding: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '48.5%',
+  },
+  activitiesLabel: { fontSize: 32, fontWeight: 'bold', color: '#fff' },
+  rowContiner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  seeMore: { fontSize: 16, fontWeight: 'bold', color: '#fff' },
+  activityContainer: { borderRadius: 32, marginHorizontal: 16, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center' },
+  activityImage: { height: 132, width: 122, borderTopLeftRadius: 32, borderBottomLeftRadius: 32 },
+  activityDetailsContainer: { paddingLeft: 14, flex: 1 },
+  activityArrow: { position: 'absolute', right: 16 },
+  activityLabel: { fontSize: 24, fontWeight: 'bold', color: '#000' },
+  backButton: { padding: 8, marginRight: 8 },
+
+  // ── Explore button (unchanged) ────────────────────────────
+  exploreButton: {
+    position: 'absolute',
+    bottom: ss(70),
+    right: ss(-20),
+    zIndex: 1000,
+  },
+
+  // ── Privacy footer strip ──────────────────────────────────
+  privacyFooterStrip: {
+    position: 'absolute',
+    bottom: 60,
+    left: 30,
+    right: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    paddingVertical: 9,
+    paddingHorizontal: 42,
+    borderTopWidth: 1,
+    borderTopColor: '#F0EFF8',
+    gap: 3,
+    zIndex: 10,
+  },
+  privacyFooterText: {
+    fontSize: 11,
+    color: '#9E9BB5',
+  },
+  privacyFooterLink: {
+    fontSize: 11,
+    color: '#6C63FF',
+    fontWeight: '600',
+  },
+
+  // ── User pin overlay ──────────────────────────────────────
+  userPinOverlay: {
+    position: 'absolute',
+    top: '30%',
+    left: '50%',
+    transform: [{ translateX: -125 }],
+    zIndex: 1000,
+  },
+  userExpandedCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    width: 250,
+    ...CARD_SHADOW,
+    alignItems: 'center',
+  },
+  userExpandedEmoji: { fontSize: 48, marginBottom: 8 },
+  userExpandedInfo: { alignItems: 'center', marginBottom: 16 },
+  userExpandedName: { fontSize: 18, fontWeight: '700', color: '#1A1340', marginBottom: 4 },
+  userExpandedMood: { fontSize: 14, color: '#9E9BB5', textTransform: 'capitalize' },
+  userHugButton: {
+    backgroundColor: '#FF6B9D',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginBottom: 8,
+    width: '100%',
+    gap: 6,
+  },
+  userHugButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
+  userChatButton: {
+    backgroundColor: '#6C63FF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    width: '100%',
+    gap: 6,
+  },
+  userChatButtonText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
+
+  // ── Filter modal ──────────────────────────────────────────
+  filterContainer: { flex: 1, backgroundColor: '#FFFFFF' },
+  filterHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginTop: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0EFF8',
+  },
+  filterBackBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5F4FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  filterHeaderTitle: {
+    flex: 1,
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1340',
+    textAlign: 'center',
+  },
+  filterDescription: {
+    fontSize: 14,
+    color: '#9E9BB5',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    lineHeight: 22,
+  },
+  filterMoodContainer: { paddingHorizontal: 20, paddingVertical: 10 },
+  filterMoodRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  moodButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 25,
+    flex: 0.48,
+    borderWidth: 1.5,
+    borderColor: '#EBEBF5',
+    backgroundColor: '#FAFAFE',
+  },
+  selectedMoodButton: {
+    borderColor: '#6C63FF',
+    backgroundColor: '#EDE9FF',
+  },
+  moodEmoji: { fontSize: 20, marginRight: 8 },
+  moodText: { fontSize: 14, fontWeight: '500', color: '#1A1340' },
+  filterButtonContainer: { paddingHorizontal: 20, paddingVertical: 20, marginTop: 'auto' },
+  applyButton: {
+    backgroundColor: '#6C63FF',
+    paddingVertical: 16,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  applyButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  clearButton: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
+    borderRadius: 25,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#EBEBF5',
+    marginBottom: 30,
+  },
+  clearButtonText: { color: '#9E9BB5', fontSize: 16, fontWeight: '500' },
+
+  // ── Location detail modal ─────────────────────────────────
+  locationDetailContainer: { flex: 1, backgroundColor: '#F5F4FF' },
+  locationDetailHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#F5F4FF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0EFF8',
+  },
+  ldBackBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5F4FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  locationDetailTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1340',
+  },
+  locationDetailContent: { flex: 1 },
+  locationDetailScrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 20,
+    gap: 14,
+  },
+
+  // Place card (redesigned)
+  placeCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 16,
+    ...CARD_SHADOW,
+  },
+  placeCardTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 14,
+  },
+  placeCardImagePlaceholder: {
+    width: 100,
+    height: 80,
+    borderRadius: 14,
+    backgroundColor: '#EDE9FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  placeCardInfo: { flex: 1 },
+  placeCardName: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1340',
+    marginBottom: 6,
+  },
+  placeCardMoodRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  placeCardMoodLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6C63FF',
+  },
+  checkInBadge: {
+    backgroundColor: '#6C63FF',
+    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  checkInBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  placeCardMoodSub: {
+    fontSize: 12,
+    color: '#9E9BB5',
+  },
+  heartBtn: {
+    padding: 4,
+    marginTop: -2,
+  },
+  moodBreakdownBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#EDE9FF',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 14,
+  },
+  moodBreakdownText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6C63FF',
+  },
+  placeCardActions: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  directionsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#EBEBF5',
+    backgroundColor: '#FAFAFE',
+  },
+  directionsBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6C63FF',
+  },
+  savePlaceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#EBEBF5',
+    backgroundColor: '#FAFAFE',
+  },
+  savePlaceBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1A1340',
+  },
+  exploreVibesGradient: {
+    flex: 1,
+    borderRadius: 20,
+  },
+  exploreVibesBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  exploreVibesBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+
+  // Virtual Hugs card
+  virtualHugsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 16,
+    ...CARD_SHADOW,
+  },
+  virtualHugsHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  hugEmoji: { fontSize: 20, marginRight: 8 },
+  virtualHugsTitle: { fontSize: 15, fontWeight: '700', color: '#1A1340' },
+  virtualHugsDesc: { fontSize: 13, color: '#9E9BB5', marginBottom: 14, lineHeight: 19 },
+  hugButtonRow: { flexDirection: 'row', gap: 10 },
+  sendHugButton: {
+    backgroundColor: '#FFD700',
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    flex: 1,
+    alignItems: 'center',
+  },
+  sendHugButtonText: { color: '#1A1340', fontSize: 13, fontWeight: '700' },
+  openToTalkButton: {
+    backgroundColor: '#E6F9EF',
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    flex: 1,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#34C759',
+  },
+  openToTalkButtonText: { color: '#34C759', fontSize: 13, fontWeight: '700' },
+
+  // Comments card
+  commentsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 16,
+    minHeight: 180,
+    maxHeight: 300,
+    ...CARD_SHADOW,
+  },
+  commentsTitle: { fontSize: 15, fontWeight: '700', color: '#1A1340' },
+  commentsList: { maxHeight: 200, marginBottom: 12, backgroundColor: '#F5F4FF', borderRadius: 12, padding: 10 },
+  commentItem: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#6C63FF',
+  },
+  commentText: { fontSize: 13, color: '#1A1340', lineHeight: 18 },
+  addCommentContainer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, marginTop: 8 },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: '#EBEBF5',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    fontSize: 13,
+    maxHeight: 80,
+    color: '#1A1340',
+    backgroundColor: '#FAFAFE',
+  },
+  addCommentButton: {
+    backgroundColor: '#6C63FF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  addCommentButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+
+  // Check-in CTA
+  checkInGradient: {
+    marginHorizontal: 16,
+    marginBottom: 20,
+    borderRadius: 28,
+    ...CARD_SHADOW,
+    shadowColor: '#FF6B9D',
+    shadowOpacity: 0.35,
+  },
+  checkInButton: {
+    paddingVertical: 17,
+    alignItems: 'center',
+  },
+  checkInButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+
+  // ── Spread Love modal (unchanged styles from original) ────
+  safeArea: { flex: 1, backgroundColor: '#FAFAF5' },
+  slHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 14,
     backgroundColor: '#FAFAF5',
-    borderBottomWidth: 0,
   },
-  backBtn: {
+  slBackBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -1009,154 +637,88 @@ export const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#1A1A1A',
-    letterSpacing: -0.3,
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 32,
-    gap: 12,
-  },
+  slHeaderTitle: { fontSize: 22, fontWeight: '800', color: '#1A1A1A', letterSpacing: -0.3 },
+  slScrollContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 32, gap: 12 },
+  groupHugBanner: { backgroundColor: '#FFFDE7', borderRadius: 20, padding: 20, marginBottom: 4 },
+  groupHugHeadline: { fontSize: 18, color: '#1A1A1A', lineHeight: 26, marginBottom: 16 },
+  groupHugBold: { fontWeight: '800', color: '#1A1A1A' },
+  groupHugBtn: { backgroundColor: '#FFD700', paddingVertical: 14, borderRadius: 50, alignItems: 'center', marginBottom: 12 },
+  groupHugBtnText: { fontSize: 16, fontWeight: '700', color: '#1A1A1A', letterSpacing: 0.2 },
+  groupHugStat: { fontSize: 13, color: '#7A6F00', fontWeight: '500' },
+  userCard: { borderRadius: 20, padding: 16, marginBottom: 4 },
+  userCardRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 14 },
+  avatar: { width: 52, height: 52, borderRadius: 26, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  avatarText: { fontSize: 18, fontWeight: '700' },
+  userCardInfo: { flex: 1 },
+  userName2: { fontSize: 17, fontWeight: '700', color: '#1A1A1A', marginBottom: 2 },
+  userMood: { fontSize: 14, fontWeight: '600', marginBottom: 2 },
+  userSubText: { fontSize: 13, color: '#666' },
+  timeLabel: { fontSize: 13, color: 'gray' },
+  hugBtnRow: { flexDirection: 'row', gap: 10 },
+  hugTypeBtn: { flex: 1, paddingVertical: 11, borderRadius: 50, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 2, elevation: 1 },
+  hugTypeBtnFilled: { flex: 1, backgroundColor: '#FFD700' },
+  hugTypeBtnText: { fontSize: 14, fontWeight: '600', color: '#1A1A1A' },
+  hugTypeBtnTextFilled: { fontSize: 14, fontWeight: '700', color: '#1A1A1A' },
+  chatBtn: { paddingVertical: 11, borderRadius: 50, alignItems: 'center', borderWidth: 1.5, marginTop: 2 },
+  chatBtnText: { fontSize: 14, fontWeight: '600' },
+  emptyState: { alignItems: 'center', paddingVertical: 48 },
+  emptyText: { fontSize: 15, color: '#999', textAlign: 'center' },
 
-  // ── Group hug banner ──
-  groupHugBanner: {
-    backgroundColor: '#FFFDE7',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 4,
-  },
-  groupHugHeadline: {
-    fontSize: 18,
-    color: '#1A1A1A',
-    lineHeight: 26,
-    marginBottom: 16,
-  },
-  groupHugBold: {
-    fontWeight: '800',
-    color: '#1A1A1A',
-  },
-  groupHugBtn: {
-    backgroundColor: '#FFD700',
-    paddingVertical: 14,
-    borderRadius: 50,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  groupHugBtnText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1A1A1A',
-    letterSpacing: 0.2,
-  },
-  groupHugStat: {
-    fontSize: 13,
-    color: '#7A6F00',
-    fontWeight: '500',
-  },
-
-  // ── User cards ──
-  userCard: {
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 4,
-  },
-  userCardRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 14,
-  },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  avatarText: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  userCardInfo: {
-    flex: 1,
-  },
-  userName2: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#1A1A1A',
-    marginBottom: 2,
-  },
-//   userMood: {
-//     fontSize: 14,
-//     fontWeight: '600',
-//     marginBottom: 2,
-//   },
-  userSubText: {
-    fontSize: 13,
-    color: '#666',
-  },
-//   timeLabel: {
-//     fontSize: 13,
-//     color: '#999',
-//     fontWeight: '500',
-//     marginTop: 2,
-//   },
-
-  // ── Hug buttons ──
-  hugBtnRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  hugTypeBtn: {
-    flex: 1,
-    paddingVertical: 11,
-    borderRadius: 50,
-    alignItems: 'center',
+  // ── Explore modal (unchanged) ─────────────────────────────
+  exploreModalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'transparent' },
+  exploreModalSheet: {
+    position: 'absolute',
+    left: 0, right: 0, bottom: 0,
+    height: '32%',
+    backgroundColor: '#338C8C',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 10,
   },
-  hugTypeBtnFilled: {
-    flex: 1,
-    backgroundColor: '#FFD700',
-  },
-  hugTypeBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A1A',
-  },
-  hugTypeBtnTextFilled: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1A1A1A',
-  },
-  chatBtn: {
-    paddingVertical: 11,
-    borderRadius: 50,
-    alignItems: 'center',
-    borderWidth: 1.5,
-    marginTop: 2,
-  },
-  chatBtnText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
+  exploreSheetHandle: { alignItems: 'center', marginBottom: 10, paddingTop: 12 },
+  exploreTabsRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 18, gap: 10 },
+  exploreTabButton: { backgroundColor: 'rgba(255,255,255,0.10)', paddingHorizontal: 18, paddingVertical: 8, borderRadius: 18, marginHorizontal: 2, minWidth: 90, alignItems: 'center', borderWidth: 0, borderColor: 'transparent' },
+  exploreTabButtonSelected: { backgroundColor: '#B2DFDB', borderWidth: 1.5, borderColor: '#338C8C' },
+  exploreTabText: { color: '#E0F7FA', fontWeight: 'bold', fontSize: 15 },
+  exploreTabTextSelected: { color: '#338C8C' },
+  exploreSuggestionCard: { backgroundColor: '#A7E6E6', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', marginHorizontal: 18, marginBottom: 10 },
+  exploreSuggestionIcon: { width: 32, height: 42, borderRadius: 16, backgroundColor: '#FFE066', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  exploreSuggestionText: { color: '#1A3C3C', fontWeight: '600', fontSize: 16, lineHeight: 22, flex: 1 },
+  exploreSuggestionHeart: { marginLeft: 8 },
+  exploreInfoCard: { backgroundColor: '#B2DFDB', borderRadius: 12, padding: 13, flexDirection: 'row', alignItems: 'center', marginHorizontal: 18, marginBottom: 2 },
+  exploreInfoText: { color: '#1A3C3C', fontSize: 15, flex: 1 },
+  exploreInfoClose: { marginLeft: 8 },
 
-  // ── Empty state ──
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 48,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: '#999',
-    textAlign: 'center',
-  },
-    
+  // ── Misc kept for compatibility ───────────────────────────
+  searchContainer: { flex: 1 },
+  searchInput: { flex: 1 },
+  searchRow: { flexDirection: 'row' },
+  filterButton: { backgroundColor: '#FFFFFF', padding: 10, paddingHorizontal: 12, borderRadius: 8, width: 50, height: 50, alignItems: 'center', justifyContent: 'center' },
+  locationCard: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, marginBottom: 16 },
+  locationHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  locationName: { fontSize: 18, fontWeight: '600', color: '#000', marginLeft: 8 },
+  moodRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  moodLabel: { fontSize: 16, fontWeight: '500', color: '#000', marginLeft: 8 },
+  checkInInfo: { marginTop: 8 },
+  checkInText: { fontSize: 14, color: '#666', marginBottom: 4 },
+  checkInBreakdown: { fontSize: 14, color: '#888' },
+  userFloatingSection: { position: 'absolute', top: 120, left: 16, right: 16, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 20, zIndex: 1000 },
+  userFloatingHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  userMoodIcon: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#FFD700', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+  userMoodEmoji: { fontSize: 24 },
+  userInfo: { flex: 1 },
+  userName: { fontSize: 20, fontWeight: 'bold', color: '#000', marginBottom: 4 },
+  userActionButtons: { gap: 12 },
+  buttonText: { fontSize: 16, fontWeight: '600', marginLeft: 8 },
+  startChatButton: { backgroundColor: '#F5F5F5', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  closeUserSection: { position: 'absolute', top: 12, right: 12, width: 32, height: 32, borderRadius: 16, backgroundColor: '#F5F5F5', justifyContent: 'center', alignItems: 'center' },
+
+  // ── aliases used in spread love ───────────────────────────
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: '#FAFAF5' },
+  backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  scrollContent: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 32, gap: 12 },
 });

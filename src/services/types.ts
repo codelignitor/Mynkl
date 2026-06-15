@@ -59,6 +59,53 @@ export interface MoodDayDetailResponse {
   latest_checkin: MoodCheckin | null;
 }
 
+export interface PlaceHighlightBreakdown {
+  positive_ratio: number;
+  calm_ratio: number;
+  recent_activity_score: number;
+  unique_user_score: number;
+  diversity_score: number;
+}
+ 
+export interface PlaceCategoryScore {
+  score: number;
+  distance_score?: number;
+  eligible?: boolean;
+}
+ 
+export interface PlaceHighlight {
+  highlight_score: number;
+  breakdown: PlaceHighlightBreakdown;
+  category_scores: {
+    nearby: PlaceCategoryScore;
+    popular_now: PlaceCategoryScore;
+    calm_spaces: PlaceCategoryScore;
+    positive_energy: PlaceCategoryScore;
+  };
+}
+ 
+export interface MapPlace {
+  id: string;
+  type: 'place';
+  name: string;
+  latitude: number;
+  longitude: number;
+  mood: string;
+  mood_summary: string;
+  positive_ratio: number;
+  negative_ratio: number;
+  summary_label: 'POSITIVE' | 'NEGATIVE' | 'MIXED' | 'NEUTRAL';
+  total_checkins: number;
+  unique_users: number;
+  display_checkins: string;
+  display_users: string;
+  highlight: PlaceHighlight;
+  highlighted: boolean;
+  nearby: boolean;
+  mood_specific: boolean;
+}
+
+
 export interface WellnessSuggestion {
   id: string;
   suggestion_type: string;

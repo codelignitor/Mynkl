@@ -129,7 +129,7 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="mood_diary/index"
         options={{
           href: null, // 🔥 IMPORTANT
@@ -147,7 +147,7 @@ export default function TabLayout() {
           // tabBarButton: () => null,
           tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />,
         }}
-      /> 
+      />  */}
 
        <Tabs.Screen
         name="hugs_selection/index"

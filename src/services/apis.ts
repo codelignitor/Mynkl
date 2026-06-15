@@ -1,6 +1,7 @@
 import axiosInstance from './axiosInstance';
 import {
   CheckInPayload,
+  MapPlace,
   MapSearchParams,
   OpenToTalkPayload,
   WellnessSuggestion,
@@ -133,6 +134,8 @@ export const checkIn = async (payload: CheckInPayload | FormData) => {
     }
   }
 
+  console.log('✅ FormData prepared for check-in:', formData);
+
   const response = await axiosInstance.post(`/home/check-in`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -239,6 +242,51 @@ export const uploadImage = async (payload: any) => {
   return response.data;
 };
 
+
+export interface PrivacySettingsPayload {
+  moodmap_contribution_enabled: boolean;
+  approximate_location_enabled: boolean;
+  ai_summary_processing_enabled: boolean;
+  open_to_talk_enabled: boolean;
+  show_mood_publicly: boolean;
+  community_support_enabled: boolean;
+  receive_direct_hugs_enabled: boolean;
+  receive_anonymous_hugs: boolean;
+  ai_affirmations_enabled: boolean;
+  haptic_feedback_enabled: boolean;
+  personal_ai_analysis_enabled: boolean;
+  mood_diary_history_enabled: boolean;
+  personalized_suggestions_enabled: boolean;
+  anonymous_mode_enabled: boolean;
+  presence_visibility_enabled: boolean;
+}
+
+
+ export type PrivacySettingsResponse = PrivacySettingsPayload;
+ 
+
+/**
+ * GET GLOBAL-settings
+ * Fetches the current user's saved privacy & social preferences.
+ */
+export const getPrivacySettings = async (): Promise<PrivacySettingsResponse> => {
+  const response = await axiosInstance.get("/home/privacy-settings", );
+  return response.data;
+};
+ 
+/**
+ * POST GLOBAL-settings
+ * Saves the user's privacy & social preferences.
+ */
+export const savePrivacySettings = async (
+  payload: PrivacySettingsPayload
+): Promise<PrivacySettingsResponse> => {
+  const response = await axiosInstance.post("/home/privacy-settings", payload);
+  return response.data;
+};
+ 
+
+
 export const getMapSearchResults = async (params: MapSearchParams) => {
   const { query, lat, lng, radius, limit, mood } = params;
 
@@ -259,6 +307,27 @@ export const getMapSearchResults = async (params: MapSearchParams) => {
   const response = await axiosInstance.get(url, { params: queryParams });
   return response.data;
 };
+
+
+export const getMapPlaces = async (params: {
+  lat: number;
+  lng: number;
+  query?: string;
+}): Promise<MapPlace[]> => {
+  const queryParams: Record<string, string> = {
+    lat: String(params.lat),
+    lng: String(params.lng),
+  };
+  if (params.query && params.query.trim() !== '') {
+    queryParams.query = params.query;
+  }
+
+  const response = await axiosInstance.get('/home/map/places/', { params: queryParams });
+
+  const data = response.data;
+  return Array.isArray(data) ? data : [];
+};
+
 
 export const preferences = async (payload: any) => {
   const response = await axiosInstance.post(`/home/preferences`, payload);

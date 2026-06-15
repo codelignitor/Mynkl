@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -13,64 +13,55 @@ import {
   Alert,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { styles } from "./index.style";
 import { useAddCheckIn } from "./useAddCheckIn";
 import Header from "@/src/components/common/header";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-// import VoiceInputField from "@/src/components/common/VoiceInputField"; // NEW: Replace AudioRecorderPlayer
 import LocationSearchModal from "./search/LocationSearchModal";
 import VoiceInputField from "@/src/components/common/voiceInputfield";
 import Toast from "react-native-toast-message";
+import * as Location from 'expo-location';
+
+import { AboutNoteModal, WhyWeAskModal } from "@/src/components/check-inModals/CheckInModals";
+import { AboutLocationModal,  PrivacyModal } from "@/src/components/check-inModals/CheckInModals2";
 
 const moods = [
-  {
-    label: 'Happy',
-    emoji: '😊',
-  },
-  {
-    label: 'Calm',
-    emoji: '🙂',
-  },
-  {
-    label: 'Stressed',
-    emoji: '🙁',
-  },
-  {
-    label: 'Lonely',
-    emoji: '😔',
-  },
-  {
-    label: 'Grateful',
-    emoji: '😔',
-  },
-  {
-    label: 'Sad',
-    emoji: '😔',
-  },
-  {
-    label: 'Frustrated',
-    emoji: '😔',
-  },
+  { label: 'Happy', emoji: '😊', image: require('../../assets/images/happy-icon.png'), imageSize: { width: 88, height: 88 } },
+  { label: 'Calm', emoji: '🙂', image: require('../../assets/images/calm-icon.png'), imageSize: { width: 93, height: 93 } },
+  { label: 'Grateful', emoji: '🙂', image: require('../../assets/images/grateful-icon.png'), imageSize: { width: 93, height: 93 } },
+  { label: 'sad', emoji: '😔', image: require('../../assets/images/sad-icon.png'), imageSize: { width: 93, height: 93 } },
+  { label: 'Stressed', emoji: '🙁', image: require('../../assets/images/stressed-icon.png'), imageSize: { width: 88, height: 88 } },
+  { label: 'lonely', emoji: '🙁', image: require('../../assets/images/lonely-icon.png'), imageSize: { width: 93, height: 93 } },
+  { label: 'frustated', emoji: '🙁', image: require('../../assets/images/frustrated.png'), imageSize: { width: 79, height: 79 } },
+ //change the last three emojis(frustrated, lonely, grateful) to better represent the emotions
 ];
 
-export const unstable_settings = {
-  initialRouteName: 'index',
-};
+export const unstable_settings = { initialRouteName: 'index' };
+export const screenOptions = { tabBarButton: () => null };
 
-export const screenOptions = {
-  tabBarButton: () => null,
-};
+type LocationMode = 'place' | 'current' | null;
+type PlaceContext = 'at_place' | 'personal' | null;
 
 export default function AddCheckIn() {
   const params = useLocalSearchParams();
-
   const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
+  const [placeContext, setPlaceContext] = useState<PlaceContext>(null);
+  const [locationMode, setLocationMode] = useState<LocationMode>(null);
+  const [currentLocationData, setCurrentLocationData] = useState<{ lat: number; lng: number; name: string } | null>(null);
+  const [fetchingLocation, setFetchingLocation] = useState(false);
 
   const locationName = params.locationName as string;
   const latitude = params.latitude as string;
   const longitude = params.longitude as string;
   const mood = params.mood as string;
+
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [showWhyModal, setShowWhyModal] = useState(false);
+  const [showAboutlocationModal, setshowAboutlocationModal] = useState(false);
+  const [showprivacyModal, setshowprivacyModal] = useState(false);
+
 
   const {
     isloading,
@@ -85,47 +76,18 @@ export default function AddCheckIn() {
     setRecordedUri,
     isAudioRecording,
     setIsAudioRecording,
-    selectedLocation, 
-    setSelectedLocation
+    selectedLocation,
+    setSelectedLocation,
   } = useAddCheckIn();
 
-  // Function to handle voice transcription
   const handleVoiceTranscription = (transcribedText: string) => {
-    // Append the transcribed text to the input field
-    setText(prev => {
-      if (prev.trim() === '') {
-        return transcribedText;
-      }
-      return prev + ' ' + transcribedText;
-    });
-    
-    // Optional: Show success message
-    Toast.show({
-      type: 'success',
-      text1: 'Voice Note Transcribed',
-      text2: 'Your voice note has been converted to text and added to your note.',
-      position: 'top',
-      visibilityTime: 3000,
-    });
-
+    setText(prev => prev.trim() === '' ? transcribedText : prev + ' ' + transcribedText);
+    Toast.show({ type: 'success', text1: 'Voice Note Transcribed', text2: 'Added to your note.', position: 'top', visibilityTime: 3000 });
   };
 
-  // Function to handle voice input submission
   const handleVoiceSubmit = (transcribedText: string) => {
     setText(transcribedText);
-    Toast.show({
-        type: 'success',
-        // text1: 'Voice message sent',
-        text2: 'Your voice message has been converted and added.',
-        position: 'top',
-        visibilityTime: 3000,
-      });
-
-  };
-
-  // Function to handle text input changes
-  const handleTextChange = (newText: string) => {
-    setText(newText);
+    Toast.show({ type: 'success', text2: 'Voice message converted and added.', position: 'top', visibilityTime: 3000 });
   };
 
   const handleLocationSelect = (location: any) => {
@@ -133,179 +95,320 @@ export default function AddCheckIn() {
     setIsSearchModalVisible(false);
   };
 
-  const openSearchModal = () => {
+  const handleAtPlacePress = () => {
+    setLocationMode('place');
+    setCurrentLocationData(null);
     setIsSearchModalVisible(true);
   };
 
-  const location = params?.locationName ? params?.locationName : null;
+  const handleCurrentLocationPress = async () => {
+    setFetchingLocation(true);
+    setLocationMode('current');
+    setSelectedLocation(null);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Toast.show({ type: 'error', text1: 'Permission denied', text2: 'Location permission is required.' });
+        setLocationMode(null);
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      const [geocode] = await Location.reverseGeocodeAsync({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+      const name = geocode ? [geocode.name, geocode.city].filter(Boolean).join(', ') : 'Current Location';
+      setCurrentLocationData({ lat: loc.coords.latitude, lng: loc.coords.longitude, name });
+    } catch {
+      Toast.show({ type: 'error', text1: 'Location Error', text2: 'Could not get your location.' });
+      setLocationMode(null);
+    } finally {
+      setFetchingLocation(false);
+    }
+  };
 
-  console.log('Location from params:', location);
+  const clearLocation = () => {
+    setLocationMode(null);
+    setSelectedLocation(null);
+    setCurrentLocationData(null);
+  };
 
   if (isloading) {
-    return <SafeAreaView style={styles.container}>
-      <Header style={{ backgroundColor: '#A7E2E0' }} title="Check-In" showBack={true} rightChildren={
-        <TouchableOpacity onPress={() => router.push('/checkIns')}>
-          <Ionicons name='reload' size={24} color="black" />
-        </TouchableOpacity>
-      } />
-      <ActivityIndicator size="large" color="#0000ff" style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
-    </SafeAreaView>
+    return (
+      <SafeAreaView style={styles.container}>
+        <Header style={{ backgroundColor: '#FFFFFF' }} title="Check In" showBack={true} />
+        <ActivityIndicator size="large" color="#6C63FF" style={{ flex: 1 }} />
+      </SafeAreaView>
+    );
   }
+
+  const activeLocation = selectedLocation
+    ? { name: selectedLocation.name, address: selectedLocation.address || selectedLocation.location_name }
+    : currentLocationData
+    ? { name: currentLocationData.name, address: 'Current Location' }
+    : null;
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header style={{ backgroundColor: '#A7E2E0' }} title="Check-In" showBack={true} rightChildren={
-        <TouchableOpacity onPress={() => router.push('/checkIns')}>
-          <Ionicons name='reload' size={24} color="black" />
-        </TouchableOpacity>
-      } />
+      <Header
+        style={{ backgroundColor: '#FFFFFF' }}
+        title="Check In"
+        showBack={true}
+        rightChildren={
+          <TouchableOpacity style={styles.infoButton}   onPress={() => setshowprivacyModal(true)} >
+            <Ionicons name="information-circle-outline" size={24} color="#6C63FF" />
+          </TouchableOpacity>
+        }
+      />
 
-      <ScrollView>
-        <View style={styles.contentContainer}>
-          <Text style={styles.title}>How are you feeling?</Text>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <View style={styles.heroIconWrapper}>
+            <LinearGradient colors={['#FFB6C1', '#FF6B9D']} style={styles.heroIconBg}>
+              <Ionicons name="heart" size={28} color="white" />
+            </LinearGradient>
+          </View>
+          <Text style={styles.heroTitle}>How are you feeling{'\n'}right now?</Text>
+        </View>
 
-          {/* Display passed parameters only when location is enabled */}
-          { locationName ? (
-            <View style={styles.paramContainer}>
-              <Text style={styles.paramTitle}>Location Details:</Text>
-              <Text style={styles.paramText}>📍 {locationName}</Text>
-              <Text style={styles.paramText}>Mood: {mood}</Text>
-            </View>
-          ):(
-            <View style={styles.locationInputContainer}>
-              <TouchableOpacity style={styles.locationInputField} onPress={openSearchModal}>
-                <Ionicons name="search" size={20} color="#4A9B9B" style={styles.searchIcon} />
-                <Text style={styles.locationInputPlaceholder}>Search for a place or activity</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
+        {/* Mood Selector Card */}
+        <View style={styles.card}>
           <FlatList
             data={moods}
             horizontal
             keyExtractor={(item) => item.label}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.moodButton,
-                  selectedMood?.label === item.label && styles.selectedMood,
-                ]}
-                onPress={() => setSelectedMood(item)}
-              >
-                {item.label === 'Happy' && (
-                  <Image source={require('../../assets/images/happy-icon.png')} style={{ width: 88, height: 88 }} />
-                )}
-                {item.label === 'Calm' && (
-                  <Image source={require('../../assets/images/calm-icon.png')} style={{ width: 93, height: 93 }} />
-                )}
-                {item.label === 'Stressed' && (
-                  <Image source={require('../../assets/images/stressed-icon.png')} style={{ width: 88, height: 88 }} />
-                )}
-                {item.label === 'Lonely' && (
-                  <Image source={require('../../assets/images/lonely-icon.png')} style={{ width: 103, height: 103 }} />
-                )}
-                {item.label === 'Grateful' && (
-                  <Image source={require('../../assets/images/grateful-icon.png')} style={{ width: 74, height: 73 }} />
-                )}
-                {item.label === 'Sad' && (
-                  <Image source={require('../../assets/images/sad-icon.png')} style={{ width: 79, height: 79 }} />
-                )}
-                {item.label === 'Frustrated' && (
-                  <Image source={require('../../assets/images/frustrated.png')} style={{ width: 71, height: 73 }} />
-                )}
-              </TouchableOpacity>
-            )}
+            renderItem={({ item }) => {
+              const isSelected = selectedMood?.label === item.label;
+              return (
+                <TouchableOpacity
+                  style={[styles.moodItem, isSelected && styles.moodItemSelected]}
+                  onPress={() => setSelectedMood(item)}
+                  activeOpacity={0.8}
+                >
+                  {/* Glass bubble for emoji */}
+                  <View style={[styles.moodBubble, isSelected && styles.moodBubbleSelected]}>
+                    <Image source={item.image} style={{ width: item.imageSize.width * 0.55, height: item.imageSize.height * 0.55 }} resizeMode="contain" />
+                  </View>
+                  <Text style={[styles.moodLabel, isSelected && styles.moodLabelSelected]}>{item.label}</Text>
+                </TouchableOpacity>
+              );
+            }}
             contentContainerStyle={styles.moodList}
             showsHorizontalScrollIndicator={false}
           />
+        </View>
 
-          {/* Selected Location Details Section */}
-          {selectedLocation && (
-            <View style={styles.selectedLocationContainer}>
-              <View style={styles.selectedLocationContent}>
-                <View style={styles.locationPinContainer}>
-                  <Ionicons 
-                    name="location" 
-                    size={28} 
-                    color="#FF3B30" 
-                  />
+        {/* Add a note Card */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Add a note</Text>
+            <Text style={styles.cardOptional}> (optional)</Text>
+            <TouchableOpacity style={styles.infoIconSmall} onPress={() => setShowNoteModal(true)} >
+              <Ionicons name="information-circle-outline" size={16} color="#9E9BB5" />
+            </TouchableOpacity>
+          </View>
+          <VoiceInputField
+            onTextChange={(t) => setText(t)}
+            onSubmit={handleVoiceSubmit}
+            placeholder="What's on your mind? A few words are enough..."
+            value={text}
+          />
+          <Text style={styles.charCount}>{text.length}/300</Text>
+        </View>
+
+        {/* Related to a place Card */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Related to a place?</Text>
+            <Text style={styles.cardOptional}> (optional)</Text>
+            <TouchableOpacity style={styles.infoIconSmall} onPress={() => setShowWhyModal(true)}>
+              <Ionicons name="information-circle-outline" size={16} color="#9E9BB5" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.placeContextRow}>
+            <TouchableOpacity
+              style={[styles.placeContextOption, placeContext === 'at_place' && styles.placeContextSelected]}
+              onPress={() => setPlaceContext('at_place')}
+              activeOpacity={0.8}
+            >
+              {placeContext === 'at_place' && (
+                <View style={styles.checkBadge}>
+                  <Ionicons name="checkmark" size={12} color="white" />
                 </View>
-                <View style={styles.locationTextContainer}>
-                  <Text style={styles.selectedLocationTitle}>
-                    {selectedLocation.type === 'event' ? selectedLocation.name : selectedLocation.name}
-                  </Text>
-                  <Text style={styles.selectedLocationInstruction}>
-                    {selectedLocation.type === 'event' ? 'Use this event for check-in' : 'Use this place for check-in'}
-                  </Text>
-                  {selectedLocation.type === 'place' && selectedLocation.address && (
-                    <Text style={styles.selectedLocationAddress}>
-                      {selectedLocation.address}
-                    </Text>
-                  )}
-                  {selectedLocation.type === 'event' && selectedLocation.location_name && (
-                    <Text style={styles.selectedLocationAddress}>
-                      {selectedLocation.location_name}
-                    </Text>
-                  )}
+              )}
+              <Ionicons name="location" size={28} color={placeContext === 'at_place' ? '#6C63FF' : '#9E9BB5'} />
+              <Text style={[styles.placeContextTitle, placeContext === 'at_place' && styles.placeContextTitleSelected]}>At a Place</Text>
+              <Text style={styles.placeContextSub}>Influenced by{'\n'}the environment</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.placeContextOption, placeContext === 'personal' && styles.placeContextSelected]}
+              onPress={() => setPlaceContext('personal')}
+              activeOpacity={0.8}
+            >
+              {placeContext === 'personal' && (
+                <View style={styles.checkBadge}>
+                  <Ionicons name="checkmark" size={12} color="white" />
                 </View>
-              </View>
-              <TouchableOpacity 
-                style={styles.changeLocationButton} 
-                onPress={openSearchModal}
-              >
-                <Text style={styles.changeLocationButtonText}>Change</Text>
+              )}
+              <Ionicons name="person" size={28} color={placeContext === 'personal' ? '#6C63FF' : '#9E9BB5'} />
+              <Text style={[styles.placeContextTitle, placeContext === 'personal' && styles.placeContextTitleSelected]}>Just Personal</Text>
+              <Text style={styles.placeContextSub}>About something{'\n'}else</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Where are you Card — only shown when "At a Place" is selected */}
+        {/* {placeContext === 'at_place' && ( */}
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Where are you?</Text>
+              <TouchableOpacity style={styles.infoIconSmall} onPress={() => setShowWhyModal(true)}>
+                <Ionicons name="information-circle-outline" size={16} color="#9E9BB5" />
               </TouchableOpacity>
             </View>
-          )}
 
-          {/* Note Container with Voice Input Field */}
-          <View style={styles.noteContainer}>
-            <VoiceInputField
-              onTextChange={handleTextChange}
-              onSubmit={handleVoiceSubmit}
-              placeholder="Write an optional description"
-              value={text}
-              containerStyle={{ backgroundColor: 'transparent' }} // Optional: Custom style
-            />
-          </View>
+            <View style={styles.locationModeRow}>
+              <TouchableOpacity
+                style={[styles.locationModeBtn, locationMode === 'place' && styles.locationModeBtnSelected]}
+                onPress={handleAtPlacePress}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="location-outline" size={16} color={locationMode === 'place' ? '#6C63FF' : '#555'} />
+                <Text style={[styles.locationModeBtnText, locationMode === 'place' && styles.locationModeBtnTextSelected]}>At a Place</Text>
+              </TouchableOpacity>
 
-          <View style={styles.locationContainer}>
-            <View style={styles.locationContent}>
-              <Text style={styles.locationIcon}>📍</Text>
-              <View style={styles.locationTextContainer}>
-                <Text style={styles.locationText}>Anonymous Check-in</Text>
-                <Text style={styles.locationSubtext}>Hide your identity when checking in</Text>
-              </View>
+              <TouchableOpacity
+                style={[styles.locationModeBtn, locationMode === 'current' && styles.locationModeBtnSelected]}
+                onPress={handleCurrentLocationPress}
+                activeOpacity={0.8}
+                disabled={fetchingLocation}
+              >
+                {fetchingLocation ? (
+                  <ActivityIndicator size="small" color="#6C63FF" />
+                ) : (
+                  <Ionicons name="navigate-outline" size={16} color={locationMode === 'current' ? '#6C63FF' : '#555'} />
+                )}
+                <Text style={[styles.locationModeBtnText, locationMode === 'current' && styles.locationModeBtnTextSelected]}>
+                  {fetchingLocation ? 'Locating…' : 'Current Location'}
+                </Text>
+              </TouchableOpacity>
             </View>
-            <Switch
-              value={AnonymousCheckIn}
-              onValueChange={setAnonymousCheckIn}
-              trackColor={{ false: '#E0E0E0', true: '#4A9B9B' }}
-              thumbColor={AnonymousCheckIn ? '#FFFFFF' : '#FFFFFF'}
-              style={styles.switch}
-            />
+
+            {activeLocation && (
+              <View style={styles.activeLocationRow}>
+                <View style={styles.activeLocationIcon}>
+                  {locationMode === 'current' ? (
+                    <Ionicons name="navigate" size={18} color="#6C63FF" />
+                  ) : (
+                    <Text style={{ fontSize: 18 }}>☕</Text>
+                  )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.activeLocationName}>{activeLocation.name}</Text>
+                  {activeLocation.address ? (
+                    <Text style={styles.activeLocationSub}>Showing general mood trends · <Text style={styles.changeLink} onPress={locationMode === 'place' ? () => setIsSearchModalVisible(true) : undefined}>Change place</Text></Text>
+                  ) : null}
+                </View>
+                <TouchableOpacity onPress={clearLocation}>
+                  <Ionicons name="close" size={20} color="#9E9BB5" />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
+        {/* )} */}
 
-          <LinearGradient
-            colors={['#E91E63', '#3F51B5']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.submitButton}
-          >
-            <TouchableOpacity onPress={handleSubmit} style={{ width: '100%', alignItems: 'center' }}>
-              <Text style={styles.submitButtonText}>Submit</Text>
-            </TouchableOpacity>
-          </LinearGradient>
+        {/* Anonymous Card */}
+        <View style={[styles.card, styles.anonymousCard]}>
+          <View style={styles.anonymousIconWrap}>
+            <Ionicons name="shield-checkmark" size={28} color="#6C63FF" />
+          </View>
+          <View style={styles.anonymousTextWrap}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.anonymousTitle}>Anonymous by default</Text>
+              <TouchableOpacity  onPress={() => setshowprivacyModal(true)}>
+                <Ionicons name="information-circle-outline" size={16} color="#9E9BB5" />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.anonymousBadges}>
+              {[
+                { icon: 'person-remove-outline', label: 'No identities' },
+                { icon: 'bar-chart-outline', label: 'Aggregated only' },
+                { icon: 'location-outline', label: 'No exact locations' },
+                { icon: 'lock-closed-outline', label: "You're in control" },
+              ].map((b) => (
+                <View key={b.label} style={styles.anonymousBadgeItem}>
+                  <Ionicons name={b.icon as any} size={14} color="#6C63FF" />
+                  <Text style={styles.anonymousBadgeLabel}>{b.label}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
         </View>
-      </ScrollView>
-      {/* <Toast/> */}
 
-      {/* Search Modal */}
+        {/* Submit Button */}
+        <LinearGradient
+          colors={['#FF6B9D', '#6C63FF']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.submitGradient}
+        >
+          <TouchableOpacity onPress={() =>
+    handleSubmit({
+      placeContext,
+      currentLocationData,
+    })
+  } style={styles.submitInner}>
+            <Text style={styles.submitText}>Check In</Text>
+            <View style={styles.submitHeartWrap}>
+              <Ionicons name="heart-outline" size={22} color="white" />
+            </View>
+          </TouchableOpacity>
+        </LinearGradient>
+        <Text style={styles.submitHint}>It takes less than 10 seconds</Text>
+
+        {/* Social features row */}
+        <View style={styles.socialRow}>
+          <View>
+            <Text style={styles.socialTitle}>Social features <Text style={styles.cardOptional}>(optional)</Text></Text>
+            <Text style={styles.socialSub}>Connect with others or share support.</Text>
+          </View>
+          <TouchableOpacity style={styles.manageBtn}>
+            <Text style={styles.manageBtnText}>Manage</Text>
+            <Ionicons name="chevron-forward" size={14} color="#6C63FF" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+
       <LocationSearchModal
         visible={isSearchModalVisible}
         onClose={() => setIsSearchModalVisible(false)}
         onLocationSelect={handleLocationSelect}
       />
+
+      <AboutNoteModal
+  visible={showNoteModal}
+  onClose={() => setShowNoteModal(false)}
+  onGotIt={() => setShowNoteModal(false)}
+/>
+
+<WhyWeAskModal
+  visible={showWhyModal}
+  onClose={() => setShowWhyModal(false)}
+  onGotIt={() => setShowWhyModal(false)}
+/>
+
+<PrivacyModal 
+  visible={showprivacyModal}
+  onClose={() => setshowprivacyModal(false)}
+  onGotIt={() => setshowprivacyModal(false)}
+/>
+
+<AboutLocationModal
+  visible={showAboutlocationModal}
+  onClose={() => setshowAboutlocationModal(false)}
+  onGotIt={() => setshowAboutlocationModal(false)}
+/>
     </SafeAreaView>
   );
 }

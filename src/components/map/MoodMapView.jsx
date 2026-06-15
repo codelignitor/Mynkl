@@ -1,9 +1,12 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { View, Text, Platform, ActivityIndicator, Image } from 'react-native';
+import { View, Text, Platform } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapMarker from './MapMarker';
+// import PlaceMapMarker from './PlaceMapMarker';
 import { styles } from '../../screenStyles/styles';
 import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
+import PlaceMarker from './placeMarker';
+// import PlaceMarker from './placeMarker';
 
 const mapStyle = [
   {
@@ -41,7 +44,6 @@ const emojiMap = {
   frustrated: require('../../assets/images/frustrated.png'),
 };
 
-
 const imageSizes = {
   happy: { width: 68, height: 68 },
   calm: { width: 73, height: 73 },
@@ -49,8 +51,8 @@ const imageSizes = {
   lonely: { width: 83, height: 83 },
   alone: { width: 83, height: 83 },
   sad: { width: 83, height: 83 },
-  grateful:{ width: 83, height: 83 },
-  frustrated:{ width: 73, height: 73 },
+  grateful: { width: 83, height: 83 },
+  frustrated: { width: 73, height: 73 },
 };
 
 const MoodMapView = ({
@@ -61,16 +63,35 @@ const MoodMapView = ({
   backgroundColor,
   mapContainerStyle,
   callback,
+
+  // New props
+  places = [],
+  onPlacePress,
+  selectedPlaceId,
 }) => {
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
+
   const mapViewRef = useRef(null);
 
   const onSelectMarker = (location) => {
     setSelectedMarkerId(location.id);
-    callback(location);
+
+    if (callback) {
+      callback(location);
+    }
   };
 
-  const mapKey = useMemo(() => JSON.stringify(currentLocations), [currentLocations]);
+  // Place marker tap
+  const onSelectPlace = (place) => {
+    if (onPlacePress) {
+      onPlacePress(place);
+    }
+  };
+
+  const mapKey = useMemo(
+    () => JSON.stringify(currentLocations),
+    [currentLocations]
+  );
 
   return (
     <>
@@ -81,16 +102,13 @@ const MoodMapView = ({
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         region={mapRegion}
-        showsUserLocation={true}
-        // showsMyLocationButton is only supported on Android
+        showsUserLocation
         followsUserLocation={false}
-        // For iOS, you can use showsUserLocation, but there is no built-in button
       >
-     
         {currentLocations?.map((location) => {
           const isSelected = selectedMarkerId === location.id;
+
           return (
-            
             <Marker
               key={location.id}
               coordinate={{
@@ -111,16 +129,50 @@ const MoodMapView = ({
             </Marker>
           );
         })}
+
+        {/* Place markers */}
+        {places?.map((place) => {
+          const isSelected = selectedPlaceId === place.id;
+
+          return (
+            <Marker
+              key={`place_${place.id}`}
+              coordinate={{
+                latitude: place.latitude,
+                longitude: place.longitude,
+              }}
+              onPress={() => onSelectPlace(place)}
+              tracksViewChanges={false}
+            >
+              <PlaceMarker
+                name={place.name}
+                summaryLabel={place.summary_label}
+                displayCheckins={place.display_checkins}
+                isSelected={isSelected}
+              />
+            </Marker>
+          );
+        })}
       </MapView>
+
       {Platform.OS === 'ios' && (
-        <View style={{ position: 'absolute', top: '35%', right: 10 }}>
+        <View
+          style={{
+            position: 'absolute',
+            top: '35%',
+            right: 10,
+          }}
+        >
           <View
             style={{
               backgroundColor: '#fff',
               borderRadius: 25,
               elevation: 3,
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
+              shadowOffset: {
+                width: 0,
+                height: 2,
+              },
               shadowOpacity: 0.2,
               shadowRadius: 2,
             }}
@@ -132,13 +184,19 @@ const MoodMapView = ({
                 textAlign: 'center',
               }}
               onPress={() => {
-                if (mapRegion) {
-                    // You may want to animate to user's location here
-                    if (mapViewRef && mapViewRef.current && mapRegion) {
-                    mapViewRef.current.animateToRegion(mapRegion, 1000);
-                    }
-                  callback && callback({ type: 'moveToCurrentLocation' });
+                if (
+                  mapRegion &&
+                  mapViewRef?.current
+                ) {
+                  mapViewRef.current.animateToRegion(
+                    mapRegion,
+                    1000
+                  );
                 }
+
+                callback?.({
+                  type: 'moveToCurrentLocation',
+                });
               }}
             >
               📍
@@ -146,9 +204,7 @@ const MoodMapView = ({
           </View>
         </View>
       )}
-       
-    
-   </>
+    </>
   );
 };
 
