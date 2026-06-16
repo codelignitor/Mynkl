@@ -313,7 +313,7 @@ export const styles = StyleSheet.create({
     position: 'absolute',
     right: 24,
     top: '50%',
-    marginTop: -11,
+    marginTop: 10,
   },
   submitHint: {
     textAlign: 'center',

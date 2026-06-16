@@ -12,12 +12,15 @@ import {
 import { BlurView } from 'expo-blur';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 
 // ─── Replace with your actual image ───────────────────────────────────────────
 // import MoodOrb from '../../../assets/images/Place_mIxed_summary.png';
 
 export default function MoodSummaryScreen() {
   const insets = useSafeAreaInsets();
+
+  const params = useLocalSearchParams();
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -37,7 +40,7 @@ export default function MoodSummaryScreen() {
             <View style={styles.cafeAvatar}>
               <Ionicons name="cafe" size={14} color="#fff" />
             </View>
-            <Text style={styles.headerSub}>Cozy Beans Café</Text>
+            <Text style={styles.headerSub}>{params.placeName}</Text>
           </View>
         </View>
 
@@ -117,7 +120,7 @@ export default function MoodSummaryScreen() {
               <View style={styles.statIconWrap}>
                 <Ionicons name="people" size={22} color="#5A4FC8" />
               </View>
-              <Text style={styles.statNumber}>10+</Text>
+              <Text style={styles.statNumber}>{params.users}</Text>
               <Text style={styles.statLabel}>People</Text>
               <Text style={styles.statSubLabel}>Anonymous contributions</Text>
             </View>
@@ -129,7 +132,7 @@ export default function MoodSummaryScreen() {
               <View style={[styles.statIconWrap, styles.statIconAmber]}>
                 <Ionicons name="checkmark-circle-outline" size={22} color="#C47F00" />
               </View>
-              <Text style={styles.statNumber}>25+</Text>
+              <Text style={styles.statNumber}>{params.checkins}</Text>
               <Text style={styles.statLabel}>Check-ins</Text>
               <Text style={styles.statSubLabel}>Last 24 hours</Text>
             </View>

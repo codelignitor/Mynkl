@@ -261,7 +261,7 @@ export default function AddCheckIn() {
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>Where are you?</Text>
-              <TouchableOpacity style={styles.infoIconSmall} onPress={() => setShowWhyModal(true)}>
+              <TouchableOpacity style={styles.infoIconSmall} onPress={() => setshowAboutlocationModal(true)}>
                 <Ionicons name="information-circle-outline" size={16} color="#9E9BB5" />
               </TouchableOpacity>
             </View>

@@ -28,7 +28,6 @@ export function useAddCheckIn() {
   const locationName = params.locationName as string;
   const checkinRefParam = params.locationId as string;
   const typeParam = params.type as string ;
-  const locationCategoryParam = params.locationcategory as string;
   const selectedLocationParam = params.selectedLocation as string ;
   // let selectedLocation: any = null;
   // if (selectedLocationParam) {
@@ -66,277 +65,98 @@ export function useAddCheckIn() {
   //   }
   // };
 
-  const generateCurrentLocationRef = (lat: number, lng: number) => {
-  return `current_${lat.toFixed(4)}_${lng.toFixed(4)}`;
+  const handleSubmit = async () => {
 
-  
-};
-
-  const handleSubmit = async ({
-  placeContext,
-  currentLocationData,
-}: {
-  placeContext: 'at_place' | 'personal' | null;
-  currentLocationData: {
-    lat: number;
-    lng: number;
-    name: string;
-  } | null;
-}) => {
-  try {
-    setIsLoading(true);
-
-    if (!selectedMood) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Please select a mood.",
-      });
-      return;
-    }
-
-    if (!recordedUri && isAudioRecording) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Please record an audio message.",
-      });
-      return;
-    }
-
-    const formData = new FormData();
-
-    formData.append(
-      "mood",
-      selectedMood?.label?.toLowerCase()
-    );
-
-    
-
-    const hasLocationFromMap =
-      latitude &&
-      longitude &&
-      latitude.trim() !== "" &&
-      longitude.trim() !== "";
-
-    /**
-     * CASE 1
-     * Coming from Mood Map
-     */
-    if (hasLocationFromMap) {
-      formData.append("lat", latitude);
-      formData.append("lng", longitude);
-
-      formData.append(
-        "checkin_type",
-        placeContext === "personal"
-          ? "personal"
-          : typeParam
-      );
-
-      if (locationName) {
-        formData.append(
-          "place_name",
-          locationName
-        );
+   
+    try {
+      setIsLoading(true);
+      if (!selectedMood) {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Please select a mood.",
+        });
+        return;
       }
 
-      formData.append(
-        "checkin_ref",
-        checkinRefParam || ""
-      );
+      const hasLocationFromMap = latitude && longitude && latitude.trim() !== '' && longitude.trim() !== '';
+     
 
-      if (selectedLocation?.category) {
-        formData.append(
-          "location_category",
-          selectedLocation.category
-        );
+      // if (!hasLocationFromMap && !hasSelectedLocation) {
+      //   // currentLocation = await getCurrentLocation();
+      //   if (!currentLocation) {
+      //     Toast.show({
+      //       type: "error",
+      //       text1: "Location Error",
+      //       text2: "Unable to get your location. Please try again.",
+      //     });
+      //     return;
+      //   }
+      // }
+
+      if (!recordedUri && isAudioRecording) {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Please record an audio message.",
+        });
+        return;
       }
-    }
 
-    /**
-     * CASE 2
-     * Personal + Current Location
-     */
-    else if (
-      placeContext === "personal" &&
-      currentLocationData
-    ) 
+      const formData = new FormData();
+      formData.append('mood', selectedMood?.label?.toLowerCase());
       
-    {
-      formData.append(
-        "lat",
-        String(currentLocationData.lat)
-      );
+      if (hasLocationFromMap) {
+        formData.append('lat', latitude);
+        formData.append('lng', longitude);
+        formData.append('checkin_type', typeParam);  
+        if (locationName) {
+          formData.append('place_name', locationName);
+        }
+        formData.append('checkin_ref', checkinRefParam);
 
-      formData.append(
-        "lng",
-        String(currentLocationData.lng)
-      );
+      } else  {
+        // Use coordinates from selectedLocation if available; otherwise we already fetched currentLocation above
+          formData.append('lat', String(selectedLocation.lat ));
+          formData.append('lng', String(selectedLocation.lng));
+         formData.append('checkin_type', selectedLocation.type === 'event' ? 'event' : 'place');
+          formData.append('place_name', selectedLocation?.name || selectedLocation?.secondary_text);
+          formData.append('checkin_ref', selectedLocation?.place_id || '');
+      } 
 
-      formData.append(
-        "checkin_type",
-        "personal"
-      );
+      formData.append('location_opt_in', AnonymousCheckIn ? 'true' : 'false'); 
+      // formData.append('anonymous_checkin', AnonymousCheckIn ? 'true' : 'false');
 
-      formData.append(
-        "place_name",
-        currentLocationData.name
-      );
+      if (isAudioRecording && recordedUri) {
+        const fileName = recordedUri?.split('/').pop();
+        const extension = fileName?.split('.').pop();
+        const mimeType = extension === 'ogg' ? 'audio/ogg' : 'audio/m4a';
 
-      const currentRef = generateCurrentLocationRef(
-  currentLocationData.lat,
-  currentLocationData.lng
-);
-      formData.append(
-        "checkin_ref",
-        currentRef
-      );
-    }
-
-    /**
-     * CASE 3
-     * Place selected
-     */
-    else if (selectedLocation) {
-      formData.append(
-        "lat",
-        String(selectedLocation.lat)
-      );
-
-      formData.append(
-        "lng",
-        String(selectedLocation.lng)
-      );
-
-      formData.append(
-        "checkin_type",
-        selectedLocation.type === "event"
-          ? "event"
-          : "place"
-      );
-
-      formData.append(
-        "place_name",
-        selectedLocation?.name ||
-        selectedLocation?.secondary_text ||
-        ""
-      );
-
-      formData.append(
-        "checkin_ref",
-        selectedLocation?.place_id || ""
-      );
-
-      if (selectedLocation?.category) {
-        formData.append(
-          "location_category",
-          selectedLocation.category
-        );
-      }
-    }
-
-    /**
-     * Validation
-     */
-    else {
-      Toast.show({
-        type: "error",
-        text1: "Location Required",
-        text2:
-          "Select a place or use current location.",
-      });
-
-      return;
-    }
-
-    formData.append(
-      "location_opt_in",
-      AnonymousCheckIn
-        ? "true"
-        : "false"
-    );
-
-    if (
-      isAudioRecording &&
-      recordedUri
-    ) {
-      const fileName =
-        recordedUri
-          ?.split("/")
-          .pop();
-
-      const extension =
-        fileName
-          ?.split(".")
-          .pop();
-
-      const mimeType =
-        extension === "ogg"
-          ? "audio/ogg"
-          : "audio/m4a";
-
-      formData.append(
-        "audio",
-        {
+        formData.append('audio', {
           uri: recordedUri,
           name: fileName!,
           type: mimeType,
-        } as any
-      );
+        } as any);
+      } else if (text.trim() !== "") {
+        formData.append('message_text', text);
+      }
 
-    } else if (
-      text.trim() !== ""
-    ) {
-      formData.append(
-        "message_text",
-        text
-      );
+      const response = await checkIn(formData);
+      if (response?.id) {
+        Toast.show({
+          type: "success",
+          text1: "Check-in successful",
+          text2: "Your check-in has been recorded.",
+        });
+        // Trigger automatic map refresh via Redux
+        dispatch(triggerMapRefresh());
+        router.back()
+      }
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
     }
-
-    console.log(
-      "Submitting check-in:",
-      formData
-    );
-
-    const response =
-      await checkIn(
-        formData
-      );
-
-    if (response?.id) {
-      Toast.show({
-        type: "success",
-        text1:
-          "Check-in successful",
-        text2:
-          "Your check-in has been recorded.",
-      });
-
-      dispatch(
-        triggerMapRefresh()
-      );
-
-      router.back();
-    }
-
-  } catch (error) {
-    console.log(
-      "CHECKIN ERROR:",
-      error
-    );
-
-    Toast.show({
-      type: "error",
-      text1: "Error",
-      text2:
-        "internal server error 503",
-    });
-
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return {
     isloading,

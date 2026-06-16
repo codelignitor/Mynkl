@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 
 // ─── Replace with your actual illustration ────────────────────────────────────
 // import CloudIllustration from '@/assets/images/cloud_empty_state.png';
@@ -25,6 +26,7 @@ const INSIGHTS = [
 
 export default function MoodSummaryEmptyScreen() {
   const insets = useSafeAreaInsets();
+   const params = useLocalSearchParams();
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -40,7 +42,7 @@ export default function MoodSummaryEmptyScreen() {
             <Text style={styles.headerTitle}>Mood Summary</Text>
             <Ionicons name="sparkles" size={15} color="#7C6FDB" style={{ marginLeft: 5 }} />
           </View>
-          <Text style={styles.headerSub}>Cozy Beans Café</Text>
+          <Text style={styles.headerSub}>{params.placeName}</Text>
         </View>
 
         <View style={styles.headerActions}>

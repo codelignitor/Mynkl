@@ -36,13 +36,13 @@ const MoodSelector = ({ moods, selectedMood, handleMoodSelection }) => {
                 <Image source={require('../../assets/images/lonely-icon.png')} style={{ width: 103, height: 103 }} />
               )}
               {mood.name === 'Grateful' && (
-                <Image source={require('../../assets/images/grateful-icon.png')} style={{ width: 83, height: 75 }} />
+                <Image source={require('../../assets/images/grateful-icon.png')} style={{ width: 63, height: 55 }} />
               )}
               {mood.name === 'Sad' && (
                 <Image source={require('../../assets/images/sad-icon.png')} style={{ width: 85, height: 83 }} />
               )}
               {mood.name === 'Frustrated' && (
-                <Image source={require('../../assets/images/frustrated.png')} style={{ width: 68, height: 75 }} />
+                <Image source={require('../../assets/images/frustrated.png')} style={{ width: 68, height: 65 }} />
               )}
             </View>
             <Text 
