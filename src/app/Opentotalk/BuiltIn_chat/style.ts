@@ -3,7 +3,7 @@ import { StyleSheet, Platform } from 'react-native';
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#eaf8f5',
+    backgroundColor: '#d0f2ec',
   },
 
   // ── Header ──────────────────────────────────────────────────────────────────
@@ -75,9 +75,13 @@ const styles = StyleSheet.create({
   headerIconBtn: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: 9,
     borderWidth: 1.5,
-    borderColor: 'rgba(42,157,143,0.3)',
+    borderColor: 'rgba(229, 218, 218, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.8)',

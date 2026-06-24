@@ -11,7 +11,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
@@ -23,8 +23,14 @@ const MATCH_AVATAR = "https://randomuser.me/api/portraits/women/44.jpg";
 const MATCH_NAME  = "Maya";
 const MATCH_STYLE = "Calm, Supportive";
 
+
+
 export default function RevealConnectedScreen() {
   const router = useRouter();
+
+  const {
+ originalHugId,
+}=useLocalSearchParams();
 
   // ── Animations ────────────────────────────────────────────────────────────
   const avatarScale   = useRef(new Animated.Value(0.75)).current;
@@ -88,6 +94,31 @@ export default function RevealConnectedScreen() {
     inputRange:  [0, 1],
     outputRange: ["0deg", "360deg"],
   });
+
+  useEffect(()=>{
+
+    const timer=
+    setTimeout(()=>{
+
+    router.replace({
+        pathname:
+        '/Identity_Reveal_prompt/Hug_detail',
+
+        params:{
+
+        hugId:
+        originalHugId,
+
+        },
+
+        });
+
+        },2500);
+
+    return ()=>clearTimeout(timer);
+
+    },[]);
+
 
   return (
     <View style={styles.root}>
@@ -186,21 +217,7 @@ export default function RevealConnectedScreen() {
             { opacity: btnOpacity, transform: [{ translateY: btnTranslate }] },
           ]}
         >
-          <TouchableOpacity
-            style={styles.startChatBtnWrap}
-            onPress={() => router.push("/Opentotalk/StartChat")}
-            activeOpacity={0.88}
-          >
-            <LinearGradient
-              colors={["#7c5cbf", "#9b7fe0", "#7c5cbf"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.startChatBtn}
-            >
-              <MaterialIcons name="chat-bubble-outline" size={18} color="#fff" style={{ marginRight: 10 }} />
-              <Text style={styles.startChatText}>Start Chatting</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+         
 
           <TouchableOpacity
             style={styles.laterBtn}

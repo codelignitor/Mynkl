@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { getMapSearchResults, getLocation, updatedUserProfile, sendHug } from '@/src/services/apis';
+import { getMapSearchResults, updatedUserProfile, sendHug } from '@/src/services/apis';
 import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
 import { useComments } from './moodMap/useComments';
@@ -21,13 +21,13 @@ const FrustratedIcon = require('../assets/images/frustrated.png');
 
 // Constants - MOOD_FILTER_OPTIONS moved from component
 export const MOOD_FILTER_OPTIONS = [
-  { id: 'happy', name: 'Happy', IconComponent: HappyIcon },
+  { id: 'positive', name: 'positive', IconComponent: HappyIcon },
   { id: 'calm', name: 'Calm', IconComponent: CalmIcon },
-  { id: 'sad', name: 'Sad', IconComponent: SadIcon },
-  { id: 'stressed', name: 'Stressed', IconComponent: StressedIcon },
-  { id: 'lonely', name: 'Lonely', IconComponent: LonelyIcon },
-  { id: 'grateful', name: 'Grateful', IconComponent: GratefulIcon },
-  { id: 'frustrated', name: 'Frustrated', IconComponent: FrustratedIcon },
+  { id: 'mixed', name: 'mixed', IconComponent: SadIcon },
+  { id: 'varied', name: 'varied', IconComponent: StressedIcon },
+  // { id: 'lonely', name: 'Lonely', IconComponent: LonelyIcon },
+  // { id: 'grateful', name: 'Grateful', IconComponent: GratefulIcon },
+  // { id: 'frustrated', name: 'Frustrated', IconComponent: FrustratedIcon },
 ];
 
 export interface Hug {

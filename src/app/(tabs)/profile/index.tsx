@@ -250,6 +250,14 @@ const ProfileScreen = () => {
                     <Text style={styles.navigationText}>Saved Places</Text>
                     <Ionicons name="chevron-forward" size={24} color="black" />
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.navigationItem}
+                    onPress={() => router.push("/Opentotalk/Receiver_friend_flow/connections_Screen")}
+                >
+                    <Text style={styles.navigationText}>Connections</Text>
+                    <Ionicons name="chevron-forward" size={24} color="black" />
+                </TouchableOpacity>
             </View>
 
             {/* Logout Button */}

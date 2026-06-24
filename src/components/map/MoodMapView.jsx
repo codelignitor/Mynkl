@@ -105,7 +105,7 @@ const MoodMapView = ({
         showsUserLocation
         followsUserLocation={false}
       >
-        {currentLocations?.map((location) => {
+        {/* {currentLocations?.map((location) => {
           const isSelected = selectedMarkerId === location.id;
 
           return (
@@ -128,7 +128,7 @@ const MoodMapView = ({
               />
             </Marker>
           );
-        })}
+        })} */}
 
         {/* Place markers */}
         {places?.map((place) => {

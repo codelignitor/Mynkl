@@ -1,4 +1,5 @@
 import { getBestUser, getCheckInAiAnalysis, getGifsByType, getHugPrompts, getHugRevealSetting, getUsers, getVirtualHugsAISuggestions, sendHug } from '@/src/services/apis';
+import { saveConnectedHug } from '@/src/utils/connectionStorage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
  
@@ -48,7 +49,29 @@ export const useVirtualHugLogic = () => {
     'You matter more than you know.',
     "Breathe. You're doing just fine.",
   ];
- 
+
+  useEffect(() => {
+  const storeReceiverId = async () => {
+    if (selectedFriends?.[0]) {
+      try {
+        const id = String(selectedFriends[0]).replace(/"/g, '');
+
+        await AsyncStorage.setItem('receiver_id', id);
+      } catch (error) {
+        console.log('Error storing receiver id:', error);
+      }
+    }
+  };
+
+  storeReceiverId();
+}, [selectedFriends]);
+
+const getReceiverId = async () => {
+  const receiver_id = await AsyncStorage.getItem('receiver_id');
+  return receiver_id?.replace(/"/g, '');
+};
+
+  
   // Navigation
   const goToNextScreen = () => {
     if (currentScreen === 'selectHug') setCurrentScreen('chooseRecipient');
@@ -183,7 +206,10 @@ export const useVirtualHugLogic = () => {
   const handleSendHug = async () => {
     const selectedHugData = selectedHug !== null ? hugs[selectedHug] : getRandomHugType();
     const type = isAnonymous ? "anonymous" : "identified";
- 
+    
+    const receiverId = await getReceiverId();
+
+    console.log('receiverId :',receiverId )
     try {
       const payload = {
         "hug_type": selectedHugData?.value,
@@ -202,6 +228,13 @@ export const useVirtualHugLogic = () => {
       if (response?.thread_id) {
         await AsyncStorage.setItem("LATEST_HUG_THREAD_ID", response.thread_id);
         console.log("Thread ID stored:", response.thread_id);
+      
+        await saveConnectedHug({
+        hugId:null,
+        senderId:null,
+        receiverId:
+        selectedFriends[0],
+       });
       }
  
       goToNextScreen();

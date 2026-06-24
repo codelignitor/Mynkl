@@ -459,12 +459,12 @@ const MoodMapScreen = () => {
               styles.appIconCard, 
               selectedSections.hugs && { backgroundColor: '#b7c2cc' }
             ]}
-            onPress={() => moveToScreen('/privacy_settings/anonymous_mode') }
+            onPress={() => moveToScreen('/Identity_Reveal_prompt/Hug_detail') }
           >
             <View style={styles.iconContainer}>
               <Icon name="heart" size={24} color="#ff4f8b" />
             </View>
-            <Text style={styles.appIconText}>Hugs</Text>
+            <Text style={styles.appIconText}>hug</Text>
           </TouchableOpacity> */}
         </View>
 

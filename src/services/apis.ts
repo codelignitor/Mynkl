@@ -1071,6 +1071,18 @@ export const getRevealStatus = async (hugId: any) => {
   return response.data; // { status: "PENDING" }
 };
 
+export const getHugDetail = async (
+  hug_id: string,
+  sender_id: string,
+  receiver_id: string
+) => {
+  const response = await axiosInstance.get(
+     `/virtual_hugs/detail?hug_id=${hug_id}&sender_id=${sender_id}&receiver_id=${receiver_id}`
+  );
+
+  return response.data;
+};
+
 export interface SavedPlace {
   id: number;
   name: string;

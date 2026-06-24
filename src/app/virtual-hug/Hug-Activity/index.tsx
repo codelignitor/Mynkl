@@ -38,6 +38,8 @@ type HugStatus =
 
 type HugRelation = 'Friend' | 'Community' | 'Hug Moment';
 
+type TimeBucket = 'Today' | 'Yesterday' | 'This Week' | 'Earlier';
+
 interface HugItem {
   id: string;
   type: string;         // e.g. "Calm Hug", "Warm Hug"
@@ -48,6 +50,16 @@ interface HugItem {
   heartColor: string;   // for the avatar bg gradient top
   heartColor2: string;  // gradient bottom
   heartEmoji: string;
+
+  // Raw timestamp from the API, used for grouping/sorting into
+  // Today / Yesterday / This Week / Earlier — NOT for display text.
+  createdAt?: string;
+
+  // Extra fields used by the "received" gratitude / hug-back flows
+  message?: string;
+  senderId?: string;
+  senderName?: string;
+  profilePic?: string;
 }
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
@@ -194,20 +206,48 @@ const SENT_HUGS: HugItem[] = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+// Buckets a hug into Today / Yesterday / This Week / Earlier based on its
+// real createdAt timestamp — not the pre-formatted display string, which is
+// ambiguous ("2 days ago" also contains the word "ago").
+function getDateBucket(dateString?: string): TimeBucket {
+  if (!dateString) return 'Earlier';
+
+  const created = new Date(dateString);
+  if (isNaN(created.getTime())) return 'Earlier';
+
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const createdDay = startOfDay(created);
+  const today = startOfDay(new Date());
+
+  const diffDays = Math.round(
+    (today.getTime() - createdDay.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (diffDays <= 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays <= 7) return 'This Week';
+  return 'Earlier';
+}
+
 function groupByTime(hugs: HugItem[]): { label: string; items: HugItem[] }[] {
+  // Newest first overall, so each bucket comes out already sorted too.
+  const sorted = [...hugs].sort((a, b) => {
+    const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return bTime - aTime;
+  });
+
   const groups: Record<string, HugItem[]> = {};
-  for (const hug of hugs) {
-    const key =
-      hug.timeLabel.includes('ago')
-        ? 'Today'
-        : hug.timeLabel === 'Yesterday'
-        ? 'Yesterday'
-        : 'Earlier';
+  for (const hug of sorted) {
+    const key = getDateBucket(hug.createdAt);
     if (!groups[key]) groups[key] = [];
     groups[key].push(hug);
   }
-  const order = ['Today', 'Yesterday', 'Earlier'];
-  return order.filter((k) => groups[k]).map((k) => ({ label: k, items: groups[k] }));
+
+  const order: TimeBucket[] = ['Today', 'Yesterday', 'This Week', 'Earlier'];
+  return order
+    .filter((k) => groups[k]?.length)
+    .map((k) => ({ label: k, items: groups[k] }));
 }
 
 function getRelationStyle(r: HugRelation) {
@@ -382,6 +422,7 @@ const fetchHugs = async () => {
           heartColor: visuals.heartColor,
           heartColor2: visuals.heartColor2,
           heartEmoji: visuals.heartEmoji,
+          createdAt: item.created_at,
         };
       }) || [];
 

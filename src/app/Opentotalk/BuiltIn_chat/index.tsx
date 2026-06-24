@@ -16,7 +16,7 @@ import { MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import styles from './style';
 import Toast from 'react-native-toast-message';
-import { blockUser, reportUser, fetchConversationPrompts } from '@/src/services/apis';
+import { blockUser, reportUser, fetchConversationPrompts, sendMessageNotification } from '@/src/services/apis';
 import { chatApiKey } from '@/chatConfig';
 import { StreamChat, Channel as StreamChannel } from 'stream-chat';
 import { useSelector } from 'react-redux';
@@ -405,6 +405,12 @@ const StartChatScreen = () => {
       setInputText('');
       handleTypingStop();
       await channel.sendMessage({ text });
+      // 🔔 Notify matched user a new message arrived
+    if (userId) {
+      sendMessageNotification(userId as string).catch((err) => {
+        console.log('Send notification error:', err);
+      });
+    }
     } catch (err) {
       console.log('Send message error:', err);
     }
@@ -561,7 +567,7 @@ const StartChatScreen = () => {
 
         <View style={styles.headerActions}>
           <TouchableOpacity style={styles.headerIconBtn}>
-            <MaterialIcons name="phone" size={20} color="#2a9d8f" />
+            <MaterialIcons name="phone" size={20} color="#45d2c1" />
           </TouchableOpacity>
 
           {/* Idea / spark icon — toggles the bottom idea card */}
@@ -572,7 +578,7 @@ const StartChatScreen = () => {
               setShowDropdown(false);
             }}
           >
-            <MaterialIcons name="shield" size={20} color="#2a9d8f" />
+            <MaterialIcons name="shield" size={20} color="#58ead9" />
           </TouchableOpacity>
 
           <TouchableOpacity

@@ -148,7 +148,7 @@ const fadeOutIn = async (callback: () => Promise<void>) => {
       if (!currUserId || !matchedUserId) return;
 
       // 🔔 Notify matched user
-      await sendMessageNotification(matchedUserId);
+      // await sendMessageNotification(matchedUserId);
 
       const channel = await startChat(currUserId, matchedUserId);
 

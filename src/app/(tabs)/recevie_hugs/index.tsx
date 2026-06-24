@@ -17,6 +17,8 @@ import { getPendingHugsDashboard, getVirtualHugOnboardingStatus, receiveHugsList
 import { router } from 'expo-router';
 import hugsLogo from '../../../assets/images/hugs_logo-removebg.png';
 import { LinearGradient } from 'expo-linear-gradient'; 
+import { saveConnectedHug } from '@/src/utils/connectionStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PendingHugsDetailScreen = ({ onBack }) => {
 
@@ -38,6 +40,7 @@ const PendingHugsDetailScreen = ({ onBack }) => {
       // Append new entries to existing list
       setHugsData((prev) => [...(prev ?? []), ...response?.list]);
     }
+    
 
     setCurrentPage(response?.page);
     setTotalPages(response?.total_pages);
@@ -148,6 +151,15 @@ useEffect(() => {
       type: item?.type,
       emoji: item?.emoji,
     };
+
+     // Store senderId + hugId
+    await AsyncStorage.multiSet([
+      ['sender_id', String(params.senderid)],
+      ['hug_id', String(params.hugId)],
+    ]);
+    console.log('sender_id:', params.senderid);
+    console.log('hug_id:', params.hugId);
+
 
     // GRATITUDE
     if (responseType === "gratitude") {

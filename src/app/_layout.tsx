@@ -69,7 +69,7 @@ function MainLayout() {
   }, [fontsLoaded]);
 
   return (
-    <ThemeProvider value={DefaultTheme}>   {/* force light theme */}
+    <ThemeProvider value={DefaultTheme}>   
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
       </Stack>

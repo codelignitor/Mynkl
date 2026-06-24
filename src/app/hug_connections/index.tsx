@@ -20,7 +20,10 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
+import { useSelector } from 'react-redux';
+import Toast from 'react-native-toast-message';
 import { getconnections } from '@/src/services/apis';
+import { useStreamChat } from '@/src/screenHooks/useStreamChat';
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
 
@@ -106,6 +109,10 @@ interface ConnectionItem {
   interactionId: string;
   parentHugId: string | null;
   hugId: string;
+
+  // The matched user's actual id (from APIUser.id). Needed to start a Stream
+  // channel — null whenever the connection is anonymous (no `user` on the API item).
+  userId: string | null;
 
   name: string;
   profilePicture: string | null;
@@ -223,6 +230,8 @@ function transform(item: APIConnectionItem): ConnectionItem {
   parentHugId: item.last_interaction_details.parent_hug_id,
   hugId: item.latest_interaction.hug_id,
 
+  userId: item.user?.id ?? null,
+
   name: item.user?.username ?? 'Someone',
   profilePicture: item.user?.profile_picture ?? null,
 
@@ -277,6 +286,50 @@ export default function ConnectionsScreen() {
   const [connections, setConnections] = useState<ConnectionItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
+
+  // ── Start Chat wiring ──────────────────────────────────────────────────────
+  const authState = useSelector((state: any) => state.auth);
+  const currUserId = authState?.user_id;
+  const { startChat } = useStreamChat();
+
+  // Tracks which card's "Start Chat" button is mid-flight, so we can show a
+  // spinner on just that card and guard against double taps.
+  const [startingChatId, setStartingChatId] = useState<string | null>(null);
+
+  const handleStartChat = useCallback(
+    async (item: ConnectionItem) => {
+      if (!currUserId || !item.userId) {
+        Toast.show({
+          type: 'error',
+          text1: 'Unable to start chat',
+          text2: 'This connection has no identifiable user yet.',
+        });
+        return;
+      }
+      if (startingChatId) return; // already starting one, ignore extra taps
+
+      try {
+        setStartingChatId(item.id);
+        const channel = await startChat(currUserId, item.userId);
+
+        router.push({
+          pathname: '/Opentotalk/BuiltIn_chat',
+          params: {
+            channelId: channel.id,
+            username: item.name,
+            profilePicture: item.profilePicture ?? '',
+            matchedUserId: item.userId,
+          },
+        });
+      } catch (err) {
+        console.log('Start chat error:', err);
+        Toast.show({ type: 'error', text1: 'Failed to start chat', text2: 'Please try again.' });
+      } finally {
+        setStartingChatId(null);
+      }
+    },
+    [currUserId, startChat, startingChatId]
+  );
 
   const load = useCallback(async (isRefresh = false) => {
     try {
@@ -393,7 +446,13 @@ export default function ConnectionsScreen() {
                     {group.label}
                   </Animated.Text>
                   {group.items.map((item, i) => (
-                    <ConnectionCard key={item.id} item={item} delay={200 + gi * 50 + i * 50} />
+                    <ConnectionCard
+                      key={item.id}
+                      item={item}
+                      delay={200 + gi * 50 + i * 50}
+                      onStartChat={handleStartChat}
+                      isStartingChat={startingChatId === item.id}
+                    />
                   ))}
                 </View>
               ))
@@ -416,25 +475,6 @@ export default function ConnectionsScreen() {
             <View style={{ height: 20 }} />
           </ScrollView>
         )}
-
-        {/* Bottom bar */}
-        {/* <View style={styles.bottomBar}>
-          {[
-            { icon: '🤍', label: 'Hug' },
-            { icon: '💬', label: 'Chats' },
-            { icon: '👥', label: 'Connections', active: true },
-            { icon: '•••', label: 'More' },
-          ].map((b) => (
-            <Pressable key={b.label} style={styles.barItem}>
-              {b.active ? (
-                <View style={styles.barIconActive}><Text style={{ fontSize: 16 }}>{b.icon}</Text></View>
-              ) : (
-                <Text style={styles.barIcon}>{b.icon}</Text>
-              )}
-              <Text style={[styles.barLabel, b.active && { color: colors.purple }]}>{b.label}</Text>
-            </Pressable>
-          ))}
-        </View> */}
       </SafeAreaView>
     </View>
   );
@@ -442,7 +482,17 @@ export default function ConnectionsScreen() {
 
 // ─── Connection Card ──────────────────────────────────────────────────────────
 
-function ConnectionCard({ item, delay }: { item: ConnectionItem; delay: number }) {
+function ConnectionCard({
+  item,
+  delay,
+  onStartChat,
+  isStartingChat,
+}: {
+  item: ConnectionItem;
+  delay: number;
+  onStartChat: (item: ConnectionItem) => void;
+  isStartingChat: boolean;
+}) {
   return (
     <Animated.View entering={FadeInDown.duration(280).delay(delay)} style={styles.card}>
       {/* Left: avatar + info */}
@@ -485,7 +535,7 @@ function ConnectionCard({ item, delay }: { item: ConnectionItem; delay: number }
 
       {/* Right: status + actions */}
       <View style={styles.cardRight}>
-        <StatusSection item={item} />
+        <StatusSection item={item} onStartChat={onStartChat} isStartingChat={isStartingChat} />
       </View>
     </Animated.View>
   );
@@ -511,7 +561,15 @@ function TagChip({ label }: { label: string }) {
 
 // ─── Status Section ───────────────────────────────────────────────────────────
 
-function StatusSection({ item }: { item: ConnectionItem }) {
+function StatusSection({
+  item,
+  onStartChat,
+  isStartingChat,
+}: {
+  item: ConnectionItem;
+  onStartChat: (item: ConnectionItem) => void;
+  isStartingChat: boolean;
+}) {
   const ms = useSharedValue(1);
   const moreStyle = useAnimatedStyle(() => ({ transform: [{ scale: ms.value }] }));
 
@@ -545,7 +603,14 @@ function StatusSection({ item }: { item: ConnectionItem }) {
         <MoreBtn />
       </View>
       <Text style={styles.statusDesc}>You can chat and interact.</Text>
-      <ActionBtn label="Start Chat" icon="💬" colors={['#9B59D9', '#7B46D9', '#6D28D9']} onPress={() => {}} />
+      <ActionBtn
+        label={isStartingChat ? 'Starting chat...' : 'Start Chat'}
+        icon="💬"
+        colors={['#9B59D9', '#7B46D9', '#6D28D9']}
+        onPress={() => onStartChat(item)}
+        loading={isStartingChat}
+        disabled={isStartingChat}
+      />
     </View>
   );
 
@@ -610,16 +675,38 @@ function StatusSection({ item }: { item: ConnectionItem }) {
 
 // ─── Buttons ──────────────────────────────────────────────────────────────────
 
-function ActionBtn({ label, icon, colors: gc, onPress }: { label: string; icon: string; colors: [string, string, string]; onPress: () => void }) {
+function ActionBtn({
+  label,
+  icon,
+  colors: gc,
+  onPress,
+  loading = false,
+  disabled = false,
+}: {
+  label: string;
+  icon: string;
+  colors: [string, string, string];
+  onPress: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+}) {
   const s = useSharedValue(1);
   const ps = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
   return (
     <Animated.View style={[{ marginBottom: spacing.sm, borderRadius: radius.pill, overflow: 'hidden' }, ps]}>
-      <Pressable onPress={onPress} onPressIn={() => { s.value = withSpring(0.97); }} onPressOut={() => { s.value = withSpring(1); }}>
-        <LinearGradient colors={gc} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.actionBtn}>
-          <Text style={{ fontSize: 15 }}>{icon}</Text>
+      <Pressable
+        onPress={disabled ? undefined : onPress}
+        onPressIn={() => { if (!disabled) s.value = withSpring(0.97); }}
+        onPressOut={() => { s.value = withSpring(1); }}
+      >
+        <LinearGradient colors={gc} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.actionBtn, disabled && { opacity: 0.75 }]}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Text style={{ fontSize: 15 }}>{icon}</Text>
+          )}
           <Text style={styles.actionBtnText}>{label}</Text>
-          <Text style={styles.actionChevron}>›</Text>
+          {!loading && <Text style={styles.actionChevron}>›</Text>}
         </LinearGradient>
       </Pressable>
     </Animated.View>
@@ -714,12 +801,6 @@ const styles = StyleSheet.create({
   safetyIconWrap: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.purple, alignItems: 'center', justifyContent: 'center' },
   safetyText: { fontSize: typography.chip, color: colors.textSecondary, lineHeight: 16, flex: 1 },
   safetyLink: { fontSize: typography.chip, color: colors.purple, fontWeight: '700', flexShrink: 0 },
-
-  bottomBar: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: 'rgba(123,70,217,0.08)', backgroundColor: 'rgba(255,255,255,0.95)', paddingBottom: spacing.lg, paddingTop: spacing.sm },
-  barItem: { flex: 1, alignItems: 'center', gap: 2 },
-  barIcon: { fontSize: 20, color: colors.textMuted },
-  barLabel: { fontSize: typography.chip, color: colors.textMuted, fontWeight: '500' },
-  barIconActive: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.purple, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
 
   expiredText: { fontSize: typography.small, fontWeight: '700', color: colors.expiredText },
 });
