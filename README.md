@@ -1,3 +1,0 @@
-# Mynkl
-
-Cursor code 
