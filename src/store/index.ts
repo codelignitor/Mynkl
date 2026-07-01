@@ -1,0 +1,34 @@
+// store/index.ts
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import { persistStore, persistReducer, PersistConfig } from 'redux-persist';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import authReducer from './slices/authSlice';
+import mapReducer from './slices/mapSlice';
+
+const rootReducer = combineReducers({
+auth: authReducer,
+map: mapReducer,
+});
+
+export type RootState = ReturnType<typeof rootReducer>;
+
+const persistConfig: PersistConfig<RootState> = {
+  key: 'root',
+  storage: AsyncStorage,
+  whitelist: [
+    'auth'
+],
+};
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+export const store = configureStore({
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
+});
+
+export const persistor = persistStore(store);
+export type AppDispatch = typeof store.dispatch;
