@@ -28,13 +28,13 @@ import { AboutNoteModal, WhyWeAskModal } from "@/src/components/check-inModals/C
 import { AboutLocationModal,  PrivacyModal } from "@/src/components/check-inModals/CheckInModals2";
 
 const moods = [
-  { label: 'Happy', emoji: '😊', image: require('../../assets/images/happy-icon.png'), imageSize: { width: 88, height: 88 } },
-  { label: 'Calm', emoji: '🙂', image: require('../../assets/images/calm-icon.png'), imageSize: { width: 93, height: 93 } },
-  { label: 'Grateful', emoji: '🙂', image: require('../../assets/images/grateful-icon.png'), imageSize: { width: 93, height: 93 } },
-  { label: 'sad', emoji: '😔', image: require('../../assets/images/sad-icon.png'), imageSize: { width: 93, height: 93 } },
-  { label: 'Stressed', emoji: '🙁', image: require('../../assets/images/stressed-icon.png'), imageSize: { width: 88, height: 88 } },
-  { label: 'lonely', emoji: '🙁', image: require('../../assets/images/lonely-icon.png'), imageSize: { width: 93, height: 93 } },
-  { label: 'frustated', emoji: '🙁', image: require('../../assets/images/frustrated.png'), imageSize: { width: 79, height: 79 } },
+  { label: 'Happy', emoji: '😊', image: require('../../assets/images/happy-icon.png'), bg: '#E7F9EC', accent: '#2FB86B' },
+  { label: 'Calm', emoji: '🙂', image: require('../../assets/images/calm-icon.png'), bg: '#E7F7F1', accent: '#22B8A0' },
+  { label: 'Grateful', emoji: '🙂', image: require('../../assets/images/grateful-icon.png'), bg: '#E8F2FC', accent: '#3D9BE9' },
+  { label: 'sad', emoji: '😔', image: require('../../assets/images/sad-icon.png'), bg: '#ECEAFB', accent: '#7C6EEA' },
+  { label: 'Stressed', emoji: '🙁', image: require('../../assets/images/stressed-icon.png'), bg: '#FCEAF1', accent: '#EE5C97' },
+  { label: 'lonely', emoji: '🙁', image: require('../../assets/images/lonely-icon.png'), bg: '#F1EAFB', accent: '#9463EA' },
+  { label: 'frustated', emoji: '🙁', image: require('../../assets/images/frustrated.png'), bg: '#FDECE3', accent: '#F0793B' },
  //change the last three emojis(frustrated, lonely, grateful) to better represent the emotions
 ];
 
@@ -179,15 +179,21 @@ export default function AddCheckIn() {
               const isSelected = selectedMood?.label === item.label;
               return (
                 <TouchableOpacity
-                  style={[styles.moodItem, isSelected && styles.moodItemSelected]}
+                  style={[
+                    styles.moodCard,
+                    { backgroundColor: item.bg, borderColor: isSelected ? item.accent : 'transparent' },
+                    isSelected && [styles.moodCardSelected, { shadowColor: item.accent }],
+                  ]}
                   onPress={() => setSelectedMood(item)}
                   activeOpacity={0.8}
                 >
-                  {/* Glass bubble for emoji */}
-                  <View style={[styles.moodBubble, isSelected && styles.moodBubbleSelected]}>
-                    <Image source={item.image} style={{ width: item.imageSize.width * 0.55, height: item.imageSize.height * 0.55 }} resizeMode="contain" />
-                  </View>
-                  <Text style={[styles.moodLabel, isSelected && styles.moodLabelSelected]}>{item.label}</Text>
+                  {isSelected && (
+                    <View style={[styles.moodCheckBadge, { backgroundColor: item.accent }]}>
+                      <Ionicons name="checkmark" size={11} color="white" />
+                    </View>
+                  )}
+                  <Image source={item.image} style={styles.moodImage} resizeMode="contain" />
+                  <Text style={[styles.moodLabel, isSelected && { color: item.accent, fontWeight: '700' }]}>{item.label}</Text>
                 </TouchableOpacity>
               );
             }}

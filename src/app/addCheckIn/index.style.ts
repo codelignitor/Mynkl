@@ -86,40 +86,49 @@ export const styles = StyleSheet.create({
   // ─── Mood ─────────────────────────────────────────────────
   moodList: {
     paddingVertical: 4,
-    gap: 10,
+    paddingHorizontal: 2,
+    gap: 12,
   },
-  moodItem: {
+  // Each mood is its own self-contained oval/pill card (icon + label
+  // inside one bordered, tinted surface) instead of a floating bubble
+  // with a separate label underneath.
+  moodCard: {
+    width: 80,
+    minHeight: 92,
+    borderRadius: 28,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     alignItems: 'center',
-    marginHorizontal: 4,
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1.5,
+    position: 'relative',
   },
-  moodItemSelected: {},
-  moodBubble: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: 'rgba(245, 244, 255, 0.85)',
+  moodCardSelected: {
+    borderWidth: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  moodCheckBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(108, 99, 255, 0.08)',
-    marginBottom: 6,
-    // glass effect
-    shadowColor: '#6C63FF',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
   },
-  moodBubbleSelected: {
-    borderColor: '#6C63FF',
-    borderWidth: 2,
-    backgroundColor: 'rgba(108, 99, 255, 0.08)',
-    shadowOpacity: 0.2,
+  moodImage: {
+    width: 40,
+    height: 40,
   },
   moodLabel: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#9E9BB5',
+    fontWeight: '600',
+    color: '#6B6880',
     textAlign: 'center',
   },
   moodLabelSelected: {

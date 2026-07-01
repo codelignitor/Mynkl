@@ -150,42 +150,42 @@ export default function VoiceInputField({
           </View>
         )} */}
 
-        {/* Action Buttons */}
-        {/* Action Buttons (Top Right) */}
-<View style={styles.actionsContainer}>
-  {isRecording ? (
-    <View style={styles.recordingActions}>
-      {/* Send / Tick */}
-      <TouchableOpacity
-        style={styles.actionButton}
-        onPress={handleMicPress}
-      >
-        <Ionicons name="checkmark" size={22} color="#222020ff" />
-      </TouchableOpacity>
+        {/* Action Buttons — laid out as a normal flex sibling (not
+            absolutely positioned) so it reserves its own space in the
+            row and never overlaps the text/placeholder. */}
+        <View style={styles.actionsContainer}>
+          {isRecording ? (
+            <View style={styles.recordingActions}>
+              {/* Send / Tick */}
+              <TouchableOpacity
+                style={[styles.actionButton, styles.sendButton]}
+                onPress={handleMicPress}
+              >
+                <Ionicons name="checkmark" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
 
-      {/* Cancel / Cross */}
-      <TouchableOpacity
-        style={styles.actionButton}
-        onPress={handleCancelRecording}
-      >
-        <Ionicons name="close" size={22} color="#FF3B30" />
-      </TouchableOpacity>
-    </View>
-  ) : (
-    <TouchableOpacity
-      style={styles.actionButton}
-      onPress={handleMicPress}
-      disabled={isConverting}
-    >
-      {isConverting ? (
-        <ActivityIndicator size="small" color="#1b1919ff" />
-      ) : (
-        <Ionicons name="mic" size={22} color="#6d6a6aff" />
-      )}
-    </TouchableOpacity>
-  )}
-</View>
-
+              {/* Cancel / Cross */}
+              <TouchableOpacity
+                style={[styles.actionButton, styles.cancelButton]}
+                onPress={handleCancelRecording}
+              >
+                <Ionicons name="close" size={20} color="#FF3B30" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={[styles.actionButton, styles.micButton]}
+              onPress={handleMicPress}
+              disabled={isConverting}
+            >
+              {isConverting ? (
+                <ActivityIndicator size="small" color="#6C63FF" />
+              ) : (
+                <Ionicons name="mic" size={20} color="#6C63FF" />
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Helper Text */}
@@ -201,32 +201,28 @@ export default function VoiceInputField({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    // paddingHorizontal: 16,
-    // paddingVertical: 8,
-    // backgroundColor: '#FFFFFF',
-    // borderTopWidth: 1,
-    // borderTopColor: '#E5E5E5',
   },
   inputContainer: {
     flexDirection: 'row',
-    // alignItems: 'center',
-    // backgroundColor: '#F5F5F5',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    alignItems: 'center',
+    backgroundColor: '#FAFAFE',
+    borderWidth: 1,
+    borderColor: '#EBEBF5',
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     minHeight: 56,
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 15,
     color: '#333333',
     maxHeight: 100,
-    paddingRight: 8,
   },
   waveContainer: {
     flex: 1,
     flexDirection: 'row',
-    // alignItems: 'center',
+    alignItems: 'center',
   },
   waveAnimation: {
     width: 180,
@@ -250,34 +246,35 @@ const styles = StyleSheet.create({
     color: '#31c0bc',
     fontWeight: '500',
   },
+  // Sits as a normal flex item to the right of the text/wave content,
+  // with its own left margin — this is what keeps it from overlapping
+  // the note text no matter how many lines it wraps to.
   actionsContainer: {
-  position: 'absolute',
-  top: 8,
-  right: 8,
-},
+    marginLeft: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
-recordingActions: {
-  alignItems: 'center',
-  gap: 8,
-},
+  recordingActions: {
+    alignItems: 'center',
+    gap: 8,
+  },
 
   actionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  recordButton: {
-    // backgroundColor: '#31c0bc',
+  micButton: {
+    backgroundColor: 'rgba(108, 99, 255, 0.1)',
   },
-  recordingActive: {
-    // backgroundColor: '#4CAF50',
+  sendButton: {
+    backgroundColor: '#6C63FF',
   },
   cancelButton: {
-    // backgroundColor: '#FFEBEE',
-    // borderWidth: 1,
-    // borderColor: '#FFCDD2',
+    backgroundColor: 'rgba(255, 59, 48, 0.1)',
   },
   helperText: {
     fontSize: 12,
